@@ -1,4 +1,4 @@
-('C:\\Users\\samue\\OneDrive\\Documentos\\programação\\projeto\\Aditamento\\build\\GeradorEscalas\\PYZ-00.pyz',
+('C:\\Users\\samue\\OneDrive\\Documentos\\programação\\projeto\\Aditamento\\build_v20\\GeradorEscalas\\PYZ-00.pyz',
  [('__future__',
    'C:\\Users\\samue\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\__future__.py',
    'PYMODULE'),

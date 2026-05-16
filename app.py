@@ -9,7 +9,7 @@ from scheduler import generate_daily_schedule, parse_dt, calculate_points
 class App:
     def __init__(self, root):
         self.root = root
-        self.root.title("Gestor Contínuo de Escalas")
+        self.root.title("Gestor Contínuo de Escalas v1.2")
         self.root.geometry("1100x800")
         
         self.dispensas = {} # {pessoa_id: [(start_date, end_date)]}
@@ -22,6 +22,22 @@ class App:
             base_dir = os.path.dirname(os.path.abspath(__file__))
             
         self.state_file = os.path.join(base_dir, "state.json")
+        
+        # Definir Ícone do App
+        try:
+            icon_path = self.get_resource_path("brasao.png")
+            if os.path.exists(icon_path):
+                img_icon = tk.PhotoImage(file=icon_path)
+                self.root.iconphoto(False, img_icon)
+        except Exception as e:
+            print("Erro ao carregar ícone:", e)
+        
+        self.UNIDADES_DATA = {
+            "BC": {"nome": "BATERIA DE COMANDO", "sigla": "Bia C", "sigla_doc": "BC", "id_start": 301},
+            "1BO": {"nome": "1ª BATERIA DE OBUSES", "sigla": "1ª BO", "sigla_doc": "1ª BO", "id_start": 401},
+            "2BO": {"nome": "2ª BATERIA DE OBUSES", "sigla": "2ª BO", "sigla_doc": "2ª BO", "id_start": 501},
+        }
+        
         self.current_state = self.load_state()
         self.preview_state = None
         
@@ -34,25 +50,57 @@ class App:
         self.atualizar_lista_historico()
         self.atualizar_ranking()
         
-    def load_state(self):
-        default_state = {'pessoas': {}, 'historico_escalas': [], 'dispensas': {}}
-        for i in range(301, 360):
-            default_state['pessoas'][str(i)] = {"ativo": True}
+    def solicitar_unidade(self):
+        selection = {"val": "BC"}
+        win = tk.Toplevel(self.root)
+        win.title("Configuração Inicial")
+        win.geometry("400x300")
+        win.transient(self.root)
+        win.grab_set()
+        
+        ttk.Label(win, text="Selecione a Subunidade:", font=("Segoe UI", 12, "bold")).pack(pady=20)
+        
+        var = tk.StringVar(value="BC")
+        ttk.Radiobutton(win, text="Bateria de Comando (Soldados 301+)", variable=var, value="BC").pack(anchor=tk.W, padx=50, pady=5)
+        ttk.Radiobutton(win, text="1ª Bateria de Obuses (Soldados 401+)", variable=var, value="1BO").pack(anchor=tk.W, padx=50, pady=5)
+        ttk.Radiobutton(win, text="2ª Bateria de Obuses (Soldados 501+)", variable=var, value="2BO").pack(anchor=tk.W, padx=50, pady=5)
+        
+        def confirmar():
+            selection["val"] = var.get()
+            win.destroy()
             
+        ttk.Button(win, text="Confirmar e Iniciar", command=confirmar, style="Accent.TButton").pack(pady=30)
+        
+        self.root.wait_window(win)
+        return selection["val"]
+
+    def load_state(self):
         if os.path.exists(self.state_file):
             try:
                 with open(self.state_file, 'r', encoding='utf-8') as f:
                     state = json.load(f)
-                    if 'pessoas' not in state:
-                        state['pessoas'] = default_state['pessoas']
-                    if 'historico_escalas' not in state:
-                        state['historico_escalas'] = []
-                    if 'dispensas' not in state:
-                        state['dispensas'] = {}
+                    if 'unidade' not in state:
+                        state['unidade'] = self.solicitar_unidade()
+                        self.save_state(state)
                     return state
             except Exception as e:
                 print("Erro ao carregar state.json:", e)
         
+        # Novo Estado Inicial
+        unidade = self.solicitar_unidade()
+        id_start = self.UNIDADES_DATA[unidade]["id_start"]
+        
+        default_state = {
+            'unidade': unidade,
+            'pessoas': {}, 
+            'historico_escalas': [], 
+            'dispensas': {},
+            'nome_cmt': "RENAN LOUREIRO LENTZ - Cap",
+            'nome_sgte': "HEBERT CARLOS VIANA - 2° Sgt"
+        }
+        for i in range(id_start, id_start + 60):
+            default_state['pessoas'][str(i)] = {"ativo": True}
+            
         return default_state
         
     def save_state(self, state):
@@ -291,17 +339,39 @@ class App:
         self.entry_cmt = ttk.Entry(config_frame, font=("Segoe UI", 12))
         self.entry_cmt.pack(fill=tk.X, pady=(0, 15))
         self.entry_cmt.insert(0, self.current_state.get('nome_cmt', "RENAN LOUREIRO LENTZ - Cap"))
+
+        ttk.Label(config_frame, text="Subunidade Atual:", font=("Segoe UI", 12)).pack(anchor=tk.W, pady=(0, 5))
+        self.combo_unidade = ttk.Combobox(config_frame, values=["BC", "1BO", "2BO"], font=("Segoe UI", 12), state="readonly")
+        self.combo_unidade.pack(fill=tk.X, pady=(0, 15))
+        self.combo_unidade.set(self.current_state.get('unidade', "BC"))
         
         ttk.Label(config_frame, text="Nome do Sargenteante:", font=("Segoe UI", 12)).pack(anchor=tk.W, pady=(0, 5))
         self.entry_sgte = ttk.Entry(config_frame, font=("Segoe UI", 12))
         self.entry_sgte.pack(fill=tk.X, pady=(0, 15))
         self.entry_sgte.insert(0, self.current_state.get('nome_sgte', "HEBERT CARLOS VIANA - 2° Sgt"))
         
+        # Novos campos para números de Aditamento e Boletim
+        nums_frame = ttk.Frame(config_frame)
+        nums_frame.pack(fill=tk.X, pady=5)
+        
+        ttk.Label(nums_frame, text="Nr Aditamento:", font=("Segoe UI", 11)).grid(row=0, column=0, sticky=tk.W, padx=5)
+        self.entry_nr_adit = ttk.Entry(nums_frame, width=10, font=("Segoe UI", 11))
+        self.entry_nr_adit.grid(row=0, column=1, sticky=tk.W, padx=5)
+        self.entry_nr_adit.insert(0, self.current_state.get('nr_aditamento', "___"))
+        
+        ttk.Label(nums_frame, text="Nr Boletim Interno:", font=("Segoe UI", 11)).grid(row=0, column=2, sticky=tk.W, padx=5)
+        self.entry_nr_bol = ttk.Entry(nums_frame, width=10, font=("Segoe UI", 11))
+        self.entry_nr_bol.grid(row=0, column=3, sticky=tk.W, padx=5)
+        self.entry_nr_bol.insert(0, self.current_state.get('nr_boletim', "___"))
+        
         ttk.Button(config_frame, text="Salvar Configurações", command=self.salvar_config, style="Accent.TButton").pack(fill=tk.X, pady=10)
 
     def salvar_config(self):
         self.current_state['nome_cmt'] = self.entry_cmt.get().strip()
         self.current_state['nome_sgte'] = self.entry_sgte.get().strip()
+        self.current_state['nr_aditamento'] = self.entry_nr_adit.get().strip()
+        self.current_state['nr_boletim'] = self.entry_nr_bol.get().strip()
+        self.current_state['unidade'] = self.combo_unidade.get()
         self.save_state(self.current_state)
         messagebox.showinfo("Sucesso", "Configurações salvas com sucesso!")
 
@@ -309,6 +379,14 @@ class App:
         try: return datetime.datetime.strptime(date_str, "%d/%m/%Y").date()
         except: return None
         
+    def get_resource_path(self, relative_path):
+        import sys
+        try:
+            base_path = sys._MEIPASS
+        except Exception:
+            base_path = os.path.abspath(".")
+        return os.path.join(base_path, relative_path)
+
     def _parse_dispensas_from_state(self):
         dispensas_str = self.current_state.get('dispensas', {})
         disp_parsed = {}
@@ -522,6 +600,25 @@ class App:
         if not self.preview_state: return
         if messagebox.askyesno("Confirmar", "Confirmar esta escala e avançar o dia?"):
             self.current_state = self.preview_state
+            
+            # Incrementar automaticamente Nr Aditamento e Boletim
+            try:
+                curr_adit = self.current_state.get('nr_aditamento', '0')
+                if curr_adit.isdigit():
+                    self.current_state['nr_aditamento'] = str(int(curr_adit) + 1)
+                    if hasattr(self, 'entry_nr_adit'):
+                        self.entry_nr_adit.delete(0, tk.END)
+                        self.entry_nr_adit.insert(0, self.current_state['nr_aditamento'])
+                
+                curr_bol = self.current_state.get('nr_boletim', '0')
+                if curr_bol.isdigit():
+                    self.current_state['nr_boletim'] = str(int(curr_bol) + 1)
+                    if hasattr(self, 'entry_nr_bol'):
+                        self.entry_nr_bol.delete(0, tk.END)
+                        self.entry_nr_bol.insert(0, self.current_state['nr_boletim'])
+            except Exception as e:
+                print("Erro ao incrementar números:", e)
+
             self.save_state(self.current_state)
             self.btn_confirm.config(state=tk.DISABLED)
             self.btn_print.config(state=tk.NORMAL)
@@ -537,7 +634,8 @@ class App:
         try:
             from docx import Document
             from docx.shared import Pt, Inches
-            from docx.enum.text import WD_ALIGN_PARAGRAPH
+            from docx.enum.text import WD_ALIGN_PARAGRAPH, WD_TAB_ALIGNMENT, WD_TAB_LEADER
+            from docx.enum.table import WD_TABLE_ALIGNMENT, WD_CELL_VERTICAL_ALIGNMENT
             from docx.oxml import OxmlElement
             from docx.oxml.ns import qn
 
@@ -568,10 +666,10 @@ class App:
             d = item['data']
             if isinstance(d, str):
                 d_dt = parse_dt(d)
-                ds = ["Segunda-Feira", "Terça-Feira", "Quarta-Feira", "Quinta-Feira", "Sexta-Feira", "Sábado", "Domingo"][d_dt.weekday()]
+                ds = ["Segunda – feira", "Terça – feira", "Quarta – feira", "Quinta – feira", "Sexta – feira", "Sábado", "Domingo"][d_dt.weekday()]
             else:
                 d_dt = d
-                ds = ["Segunda-Feira", "Terça-Feira", "Quarta-Feira", "Quinta-Feira", "Sexta-Feira", "Sábado", "Domingo"][item['dia_semana']]
+                ds = ["Segunda – feira", "Terça – feira", "Quarta – feira", "Quinta – feira", "Sexta – feira", "Sábado", "Domingo"][item['dia_semana']]
 
             meses = {1:"janeiro", 2:"fevereiro", 3:"março", 4:"abril", 5:"maio", 6:"junho", 7:"julho", 8:"agosto", 9:"setembro", 10:"outubro", 11:"novembro", 12:"dezembro"}
             d_str = f"{d_dt.day} de {meses[d_dt.month]} de {d_dt.year}"
@@ -582,63 +680,120 @@ class App:
             plantao_str = " - ".join(item.get('plantao', [])) if item.get('plantao') else "-"
             apoio_str = " - ".join(item.get('apoio', [])) if item.get('apoio') else "-"
 
-            import os, sys
-            def resource_path(relative_path):
-                try:
-                    base_path = sys._MEIPASS
-                except Exception:
-                    base_path = os.path.abspath(".")
-                return os.path.join(base_path, relative_path)
+            # Dados da Unidade Dinâmica
+            unidade_key = self.current_state.get('unidade', 'BC')
+            udata = self.UNIDADES_DATA.get(unidade_key, self.UNIDADES_DATA['BC'])
+            u_nome = udata['nome']
+            u_sigla = udata['sigla']
+            u_sigla_doc = udata['sigla_doc']
 
-            brasao_path = resource_path("brasao.png")
+
+
+            # --- BRASÃO ---
+            brasao_path = self.get_resource_path("brasao.png")
             if os.path.exists(brasao_path):
                 p_img = document.add_paragraph()
                 p_img.alignment = WD_ALIGN_PARAGRAPH.CENTER
+                p_img.paragraph_format.space_after = Pt(0)
                 run_img = p_img.add_run()
-                run_img.add_picture(brasao_path, width=Inches(0.8))
-            
-            p_visto = document.add_paragraph()
-            p_visto.alignment = WD_ALIGN_PARAGRAPH.CENTER
-            p_visto.add_run("_________________\nVisto Sgte").bold = True
+                run_img.add_picture(brasao_path, width=Inches(0.7))
 
-            p = document.add_paragraph()
-            p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-            p.paragraph_format.line_spacing = Pt(14)
-            p.paragraph_format.space_after = Pt(0)
+            # --- TABELA PARA TEXTO E VISTO ---
+            header_table = document.add_table(rows=1, cols=3)
+            header_table.alignment = WD_TABLE_ALIGNMENT.CENTER
+            header_table.autofit = False
             
-            run = p.add_run("MINISTÉRIO DA DEFESA\nEXÉRCITO BRASILEIRO\n17º GRUPO DE ARTILHARIA DE CAMPANHA\n(6º Regimento de Artilharia Montada/1915)\nGRUPO JERÔNIMO DE ALBUQUERQUE")
-            run.bold = True
+            # Definir larguras fixas (Total 6.9")
+            # Col 0: 0.7, Col 1: 5.5, Col 2: 0.7
+            c_left = header_table.cell(0, 0)
+            c_mid = header_table.cell(0, 1)
+            c_right = header_table.cell(0, 2)
+            c_left.width = Inches(1.2)
+            c_mid.width = Inches(4.5)
+            c_right.width = Inches(1.2)
             
+            # Célula central: Títulos
+            p_mid = c_mid.paragraphs[0]
+            p_mid.alignment = WD_ALIGN_PARAGRAPH.CENTER
+            p_mid.paragraph_format.line_spacing = Pt(11)
+            p_mid.paragraph_format.space_after = Pt(0)
+            
+            run_h = p_mid.add_run("MINISTÉRIO DA DEFESA\nEXÉRCITO BRASILEIRO\n17º GRUPO DE ARTILHARIA DE CAMPANHA\n(6º Regimento de Artilharia Montada/1915)\nGRUPO JERÔNIMO DE ALBUQUERQUE")
+            run_h.bold = True
+            run_h.font.size = Pt(11)
+
+            # Célula da direita: Quadro Visto Sgte
+            tc = c_right._tc
+            tcPr = tc.get_or_add_tcPr()
+            tcBorders = OxmlElement('w:tcBorders')
+            for border in ['top', 'left', 'bottom', 'right']:
+                element = OxmlElement(f'w:{border}')
+                element.set(qn('w:val'), 'single')
+                element.set(qn('w:sz'), '4')
+                element.set(qn('w:space'), '0')
+                element.set(qn('w:color'), '000000')
+                tcBorders.append(element)
+            tcPr.append(tcBorders)
+            
+            p_v = c_right.paragraphs[0]
+            p_v.alignment = WD_ALIGN_PARAGRAPH.CENTER
+            p_v.paragraph_format.space_before = Pt(35)
+            p_v.paragraph_format.space_after = Pt(2)
+            p_v.add_run("__________\n").font.size = Pt(8)
+            run_vs = p_v.add_run("Visto Sgte")
+            run_vs.bold = True
+            run_vs.font.size = Pt(10)
+            run_vs.underline = True
+
+            # --- TEXTOS ABAIXO DO CABEÇALHO ---
             p2 = document.add_paragraph()
             p2.alignment = WD_ALIGN_PARAGRAPH.CENTER
-            p2.add_run(f"Quartel em Natal-RN, {d_str}.\n({ds})")
+            p2.paragraph_format.space_before = Pt(5)
+            p2.paragraph_format.space_after = Pt(0)
+            p2.add_run(f"Quartel em Natal /RN, {d_str}.\n({ds})")
 
-            p3 = document.add_paragraph()
-            p3.alignment = WD_ALIGN_PARAGRAPH.CENTER
-            run3 = p3.add_run("ADITAMENTO AO BOLETIM INTERNO DA BATERIA DE COMANDO Nº ____/2026, referente ao BOLETIM\nINTERNO Nº ____/2026, do 17º GAC.")
-            run3.bold = True
-            run3.font.size = Pt(9)
+            nr_adit = self.current_state.get('nr_aditamento', '___')
+            nr_bol = self.current_state.get('nr_boletim', '___')
+            current_year = datetime.datetime.now().year
+            p4 = document.add_paragraph()
+            p4.alignment = WD_ALIGN_PARAGRAPH.CENTER
+            p4.add_run(f"ADITAMENTO AO BOLETIM INTERNO DA {u_nome} Nr {nr_adit}/{current_year}, referente ao BOLETIM INTERNO Nr {nr_bol}/{current_year}, do 17º GAC.").bold = True
             
-            document.add_paragraph()
+            p_conhecimento = document.add_paragraph()
+            p_conhecimento.alignment = WD_ALIGN_PARAGRAPH.CENTER
+            p_conhecimento.paragraph_format.space_after = Pt(0)
+            p_conhecimento.add_run("Para conhecimento desta Subunidade e devida execução, publico o seguinte:")
 
             p4 = document.add_paragraph()
             p4.alignment = WD_ALIGN_PARAGRAPH.CENTER
-            p4.add_run("Para conhecimento desta Subunidade e devida execução, publico o seguinte:\n")
-            run4 = p4.add_run("1ª Parte\nSERVIÇOS DIÁRIOS")
+            p4.paragraph_format.space_after = Pt(0)
+            run4 = p4.add_run("1ª Parte:\nSERVIÇOS DIÁRIOS")
             run4.bold = True
             
             document.add_paragraph()
 
             table = document.add_table(rows=15, cols=3)
+            table.alignment = WD_TABLE_ALIGNMENT.CENTER
             table.style = 'Table Grid'
             
-            row = table.rows[0]
-            row.cells[0].merge(row.cells[2])
-            cell = row.cells[0]
-            cell.text = f"Serviço Externo para {ds}, {d_str}."
-            cell.paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER
-            cell.paragraphs[0].runs[0].bold = True
-            set_cell_background(cell, "D9D9D9")
+            # Ajustar larguras das colunas da tabela de serviço
+            table.autofit = False
+            widths_main = [Inches(1.5), Inches(0.9), Inches(4.5)]
+            for r in table.rows:
+                for idx, w in enumerate(widths_main):
+                    cell = r.cells[idx]
+                    cell.width = w
+                    cell.vertical_alignment = WD_CELL_VERTICAL_ALIGNMENT.CENTER
+            
+            # Cabeçalho: Serviço Externo
+            row_ext = table.rows[0]
+            c_ext = row_ext.cells[0]
+            c_ext.merge(row_ext.cells[1]).merge(row_ext.cells[2])
+            ds_cap = ds.replace("feira", "Feira")
+            c_ext.text = f"Servico Externo para {ds_cap}, {d_str}."
+            c_ext.paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER
+            c_ext.paragraphs[0].runs[0].bold = True
+            set_cell_background(c_ext, "D9D9D9")
             
             data_rows = [
                 ("MOT VILA", "SD EP", gc.get('mot_vila', '-')),
@@ -647,25 +802,24 @@ class App:
             
             for i, (f1, f2, f3) in enumerate(data_rows):
                 row = table.rows[i+1]
-                row.cells[0].text = f1; row.cells[0].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER; row.cells[0].paragraphs[0].runs[0].bold = True
-                set_cell_background(row.cells[0], "D9D9D9")
-                row.cells[1].text = f2; row.cells[1].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER; row.cells[1].paragraphs[0].runs[0].bold = True
-                set_cell_background(row.cells[1], "D9D9D9")
-                row.cells[2].text = f3; row.cells[2].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER
+                row.cells[0].text = f1; set_cell_background(row.cells[0], "D9D9D9")
+                row.cells[1].text = f2; set_cell_background(row.cells[1], "D9D9D9")
+                row.cells[2].text = f3
             
-            row = table.rows[3]
-            row.cells[0].merge(row.cells[2])
-            cell = row.cells[0]
-            cell.text = f"Serviço Interno para {ds}, {d_str}."
-            cell.paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER
-            cell.paragraphs[0].runs[0].bold = True
-            set_cell_background(cell, "D9D9D9")
+            # Cabeçalho: Serviço Interno
+            row_int = table.rows[3]
+            c_int = row_int.cells[0]
+            c_int.merge(row_int.cells[1]).merge(row_int.cells[2])
+            c_int.text = f"Serviço Interno para {ds_cap}, {d_str}."
+            c_int.paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER
+            c_int.paragraphs[0].runs[0].bold = True
+            set_cell_background(c_int, "D9D9D9")
             
             data_rows_in = [
                 ("OF DIA", "1º TEN", gc.get('of_dia', '-')),
                 ("ADJ OF DIA", "2º SGT", gc.get('adj_of_dia', '-')),
-                ("SGT DIA BIA C", "3º SGT", gc.get('sgt_dia_bia_c', '-')),
-                ("CB DIA BIA C", "CB EP", gc.get('cb_dia_bia_c', '-')),
+                (f"SGT DIA {u_sigla}", "3º SGT", gc.get('sgt_dia_bia_c', '-')),
+                (f"CB DIA {u_sigla}", "CB EP", gc.get('cb_dia_bia_c', '-')),
                 ("MOT DIA", "CB CET", gc.get('mot_dia', '-')),
                 ("PADIOLEIRO", "SD EP", gc.get('padioleiro', '-')),
                 ("SOMBRA", "SD EP", gc.get('sombra', '-')),
@@ -676,19 +830,29 @@ class App:
             
             for i, (f1, f2, f3) in enumerate(data_rows_in):
                 row = table.rows[i+4]
-                row.cells[0].text = f1; row.cells[0].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER; row.cells[0].paragraphs[0].runs[0].bold = True
-                set_cell_background(row.cells[0], "D9D9D9")
-                row.cells[1].text = f2; row.cells[1].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER; row.cells[1].paragraphs[0].runs[0].bold = True
-                set_cell_background(row.cells[1], "D9D9D9")
-                row.cells[2].text = f3; row.cells[2].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER
+                row.cells[0].text = f1; set_cell_background(row.cells[0], "D9D9D9")
+                row.cells[1].text = f2; set_cell_background(row.cells[1], "D9D9D9")
+                row.cells[2].text = f3
 
-            row = table.rows[14]
-            row.cells[0].text = "PARADA DIÁRIA"; row.cells[0].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER; row.cells[0].paragraphs[0].runs[0].bold = True
-            set_cell_background(row.cells[0], "D9D9D9")
-            row.cells[1].text = "-"; row.cells[1].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER
-            set_cell_background(row.cells[1], "D9D9D9")
-            row.cells[2].text = "9h30min"; row.cells[2].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER
-            
+            # Parada Diária
+            row_parada = table.rows[14]
+            row_parada.cells[0].text = "PARADA DIÁRIA"; set_cell_background(row_parada.cells[0], "D9D9D9")
+            row_parada.cells[1].text = "-"; set_cell_background(row_parada.cells[1], "D9D9D9")
+            row_parada.cells[2].text = "9h30min"
+
+            # Ajustar larguras e formatação final de todas as células da tabela principal
+            widths_main = [Inches(1.5), Inches(0.9), Inches(4.5)]
+            for row in table.rows:
+                for idx, w in enumerate(widths_main):
+                    cell = row.cells[idx]
+                    cell.width = w
+                    cell.vertical_alignment = WD_CELL_VERTICAL_ALIGNMENT.CENTER
+                    for p in cell.paragraphs:
+                        p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+                        p.paragraph_format.space_before = Pt(6)
+                        p.paragraph_format.space_after = Pt(6)
+                        for run in p.runs:
+                            run.font.size = Pt(11)
             document.add_paragraph()
             p = document.add_paragraph()
             p.alignment = WD_ALIGN_PARAGRAPH.CENTER
@@ -718,7 +882,7 @@ class App:
             
             p = document.add_paragraph()
             p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-            run = p.add_run(f"{self.current_state.get('nome_cmt', 'RENAN LOUREIRO LENTZ - Cap')}\nComandante da Bateria de Comando")
+            run = p.add_run(f"{self.current_state.get('nome_cmt', 'RENAN LOUREIRO LENTZ - Cap')}\nComandante da {u_nome.title()}")
             run.bold = True
             
             document.add_page_break()
@@ -769,54 +933,95 @@ class App:
             
             total_geral = total_forma + total_outros
             
-            table_pernoite = document.add_table(rows=20, cols=4)
+            table_pernoite = document.add_table(rows=18, cols=5)
+            table_pernoite.alignment = WD_TABLE_ALIGNMENT.CENTER
             table_pernoite.style = 'Table Grid'
             
-            def merge_and_set(r, c1, c2, text, bold=False, align=WD_ALIGN_PARAGRAPH.LEFT, bg=None):
+            # Ajustar larguras para acomodar a coluna SOMA e Punidos
+            # Col 0 (GRAD/PROC): 0.8, Col 1-3 (Texto): 4.7, Col 4 (SOMA/TÉRMINO): 1.0
+            widths_p = [Inches(0.8), Inches(1.5), Inches(1.5), Inches(1.5), Inches(1.0)]
+            for r_idx in range(18):
+                for c_idx in range(5):
+                    table_pernoite.cell(r_idx, c_idx).width = widths_p[c_idx]
+
+            def merge_and_set(r, c1, c2, text, bold=False, align=WD_ALIGN_PARAGRAPH.LEFT, bg=None, font_size=9):
                 cell = table_pernoite.cell(r, c1)
                 if c1 != c2:
                     cell.merge(table_pernoite.cell(r, c2))
                 cell.text = text
                 p = cell.paragraphs[0]
                 p.alignment = align
-                if bold:
-                    for r_run in p.runs: r_run.bold = True
+                p.paragraph_format.space_before = Pt(2)
+                p.paragraph_format.space_after = Pt(2)
+                for r_run in p.runs: 
+                    r_run.bold = bold
+                    r_run.font.size = Pt(font_size)
                 if bg:
                     set_cell_background(cell, bg)
                 return cell
-                
-            c0 = table_pernoite.cell(0, 0)
-            c0.text = "Visto:\n\n\n\nCmt SU"
-            c0.paragraphs[0].runs[0].font.size = Pt(8)
             
-            merge_and_set(0, 1, 3, "MINISTÉRIO DA DEFESA\nEXÉRCITO BRASILEIRO\n17º GRUPO DE ARTILHARIA DE CAMPANHA\nBateria de Comando", bold=True, align=WD_ALIGN_PARAGRAPH.CENTER)
-            merge_and_set(1, 0, 3, f"Controle de Efetivo para {ds}, {d_str}.", bold=True, align=WD_ALIGN_PARAGRAPH.CENTER, bg="D9D9D9")
+            def count_p(val):
+                if not val or val == "-" or val == "": return 0
+                return len([x for x in val.replace(' - ', '-').replace(', ', '-').replace('\n', '-').split('-') if x.strip()])
+                
+            c_of_dia = count_p(gc.get('of_dia'))
+            c_sgt_dia = count_p(gc.get('sgt_dia_bia_c'))
+            c_cb_dia = count_p(gc.get('cb_dia_bia_c'))
+            c_plantoes = len(plantoes)
+            total_forma = c_of_dia + c_sgt_dia + c_cb_dia + c_plantoes
+            
+            c0 = table_pernoite.cell(0, 0)
+            c0.text = "Visto:\n\n_________\nCmt SU"
+            c0.paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER
+            for r in c0.paragraphs[0].runs: r.font.size = Pt(8)
+            
+            merge_and_set(0, 1, 4, f"MINISTÉRIO DA DEFESA\nEXÉRCITO BRASILEIRO\n17º GRUPO DE ARTILHARIA DE CAMPANHA\n{u_nome.title()}", bold=True, align=WD_ALIGN_PARAGRAPH.CENTER)
+            
+            d_str_2 = f"{d_dt.day:02d} de {meses[d_dt.month]} de {d_dt.year}"
+            merge_and_set(1, 0, 4, f"Controle de Efetivo para {ds}, {d_str_2}.", bold=True, align=WD_ALIGN_PARAGRAPH.CENTER, bg="D9D9D9")
+            
             merge_and_set(2, 0, 0, "GRAD", bold=True, align=WD_ALIGN_PARAGRAPH.CENTER, bg="D9D9D9")
             merge_and_set(2, 1, 3, "EM FORMA", bold=True, align=WD_ALIGN_PARAGRAPH.CENTER, bg="D9D9D9")
+            merge_and_set(2, 4, 4, "SOMA", bold=True, align=WD_ALIGN_PARAGRAPH.CENTER, bg="D9D9D9")
+            
             merge_and_set(3, 0, 0, "TEN", bold=True, align=WD_ALIGN_PARAGRAPH.CENTER)
             merge_and_set(3, 1, 3, f"OF DIA: {gc.get('of_dia','')}", bold=True)
+            merge_and_set(3, 4, 4, f"{c_of_dia:02d}", bold=True, align=WD_ALIGN_PARAGRAPH.CENTER)
+            
             merge_and_set(4, 0, 0, "SGT", bold=True, align=WD_ALIGN_PARAGRAPH.CENTER)
-            merge_and_set(4, 1, 3, f"SGT DIA BC: {gc.get('sgt_dia_bia_c','')}", bold=True)
+            merge_and_set(4, 1, 3, f"SGT DIA {u_sigla_doc}: {gc.get('sgt_dia_bia_c','')}", bold=True)
+            merge_and_set(4, 4, 4, f"{c_sgt_dia:02d}", bold=True, align=WD_ALIGN_PARAGRAPH.CENTER)
+            
             merge_and_set(5, 0, 0, "SD EP", bold=True, align=WD_ALIGN_PARAGRAPH.CENTER)
-            merge_and_set(5, 1, 3, f"CB DIA BC: {gc.get('cb_dia_bia_c','')}", bold=True)
+            merge_and_set(5, 1, 3, f"CB DIA {u_sigla_doc}: {gc.get('cb_dia_bia_c','')}", bold=True)
+            merge_and_set(5, 4, 4, f"{c_cb_dia:02d}", bold=True, align=WD_ALIGN_PARAGRAPH.CENTER)
+            
             merge_and_set(6, 0, 0, "SD EV", bold=True, align=WD_ALIGN_PARAGRAPH.CENTER)
             merge_and_set(6, 1, 3, f"PLANTÕES: {' - '.join(plantoes)}", bold=True)
+            merge_and_set(6, 4, 4, f"{c_plantoes:02d}", bold=True, align=WD_ALIGN_PARAGRAPH.CENTER)
+            
             merge_and_set(7, 0, 3, f"TOTAL EM FORMA: {num_words.get(total_forma, str(total_forma))}", bold=True)
-            merge_and_set(8, 0, 3, "PUNIDOS DISCIPLINARMENTE", bold=True, align=WD_ALIGN_PARAGRAPH.CENTER, bg="D9D9D9")
+            merge_and_set(7, 4, 4, f"{total_forma:02d}", bold=True, align=WD_ALIGN_PARAGRAPH.CENTER)
+
+            merge_and_set(8, 0, 4, "PUNIDOS DISCIPLINARMENTE", bold=True, align=WD_ALIGN_PARAGRAPH.CENTER, bg="D9D9D9")
             merge_and_set(9, 0, 0, "PROC.", bold=True, align=WD_ALIGN_PARAGRAPH.CENTER, bg="D9D9D9")
             merge_and_set(9, 1, 1, "GRAD/NOME", bold=True, align=WD_ALIGN_PARAGRAPH.CENTER, bg="D9D9D9")
             merge_and_set(9, 2, 2, "TIPO", bold=True, align=WD_ALIGN_PARAGRAPH.CENTER, bg="D9D9D9")
             merge_and_set(9, 3, 3, "INÍCIO", bold=True, align=WD_ALIGN_PARAGRAPH.CENTER, bg="D9D9D9")
+            merge_and_set(9, 4, 4, "TÉRMINO", bold=True, align=WD_ALIGN_PARAGRAPH.CENTER, bg="D9D9D9")
+            
             merge_and_set(10, 0, 0, "-", align=WD_ALIGN_PARAGRAPH.CENTER)
             merge_and_set(10, 1, 1, "-", align=WD_ALIGN_PARAGRAPH.CENTER)
             merge_and_set(10, 2, 2, "-", align=WD_ALIGN_PARAGRAPH.CENTER)
             merge_and_set(10, 3, 3, "-", align=WD_ALIGN_PARAGRAPH.CENTER)
+            merge_and_set(10, 4, 4, "-", align=WD_ALIGN_PARAGRAPH.CENTER)
+            
             merge_and_set(11, 0, 3, "EM OUTROS DESTINOS", bold=True, align=WD_ALIGN_PARAGRAPH.CENTER, bg="D9D9D9")
+            merge_and_set(11, 4, 4, "SOMA", bold=True, align=WD_ALIGN_PARAGRAPH.CENTER, bg="D9D9D9")
             
-            merge_and_set(12, 0, 0, "SGT", bold=True, align=WD_ALIGN_PARAGRAPH.CENTER)
-            merge_and_set(12, 1, 3, f"ADJ OF DIA: {gc.get('adj_of_dia','')}\nCMT GDA: {gc.get('cmt_gda','')}\nCMT GDA VILA: {gc.get('cmt_gda_vila','')}\nSGT DIA BIA O: {gc.get('sgt_dia_bia_o','')}", bold=True)
+            # Lógica de categorias e contagem para Outros Destinos
+            c_sgt_outros = count_p(gc.get('adj_of_dia')) + count_p(gc.get('cmt_gda')) + count_p(gc.get('cmt_gda_vila')) + count_p(gc.get('sgt_dia_bia_o'))
             
-            # Lógica de categorias para Motoristas e Padioleiro
             mot_dia = gc.get('mot_dia', '')
             mot_vila = gc.get('mot_vila', '')
             padioleiro = gc.get('padioleiro', '')
@@ -824,49 +1029,143 @@ class App:
             mot_dia_cb = mot_dia if gc.get('mot_dia_cat') == 'CB' else ''
             mot_vila_cb = mot_vila if gc.get('mot_vila_cat') == 'CB' else ''
             padioleiro_cb = padioleiro if gc.get('padioleiro_cat') == 'CB' else ''
-            
+            c_cb_outros = count_p(gc.get('cb_gda_qtel')) + count_p(gc.get('cb_gda_vila')) + count_p(gc.get('cb_dia_bia_o')) + count_p(mot_dia_cb) + count_p(mot_vila_cb) + count_p(gc.get('mot_sup_dia')) + count_p(padioleiro_cb)
+
             mot_dia_ep = mot_dia if gc.get('mot_dia_cat') == 'SD EP' else ''
             mot_vila_ep = mot_vila if gc.get('mot_vila_cat') == 'SD EP' else ''
             padioleiro_ep = padioleiro if gc.get('padioleiro_cat') == 'SD EP' else ''
-            
-            mot_dia_ev = mot_dia if gc.get('mot_dia_cat') == 'SD EV' else ''
+            c_ep_outros = count_p(mot_vila_ep) + count_p(mot_dia_ep) + count_p(gc.get('gda_qtel_ep')) + count_p(gc.get('reforco_ep')) + count_p(gc.get('gda_vila')) + count_p(gc.get('permanencia_ht'))
+
             mot_vila_ev = mot_vila if gc.get('mot_vila_cat') == 'SD EV' else ''
             padioleiro_ev = padioleiro if gc.get('padioleiro_cat') == 'SD EV' else ''
+            c_ev_outros = len(guardas) + count_p(gc.get('gda_vila')) + len(apoios) + count_p(padioleiro_ev) + count_p(gc.get('reforco_ev')) + count_p(mot_vila_ev)
+            
+            total_outros = c_sgt_outros + c_cb_outros + c_ep_outros + c_ev_outros
+            total_geral = total_forma + total_outros
+
+            merge_and_set(12, 0, 0, "SGT", bold=True, align=WD_ALIGN_PARAGRAPH.CENTER)
+            merge_and_set(12, 1, 3, f"ADJ OF DIA: {gc.get('adj_of_dia','')}\nCMT GDA: {gc.get('cmt_gda','')}\nCMT GDA VILA: {gc.get('cmt_gda_vila','')}\nSGT DIA 1ª / 2ª BIA O: {gc.get('sgt_dia_bia_o','')}", bold=True)
+            merge_and_set(12, 4, 4, f"{c_sgt_outros:02d}", bold=True, align=WD_ALIGN_PARAGRAPH.CENTER)
 
             merge_and_set(13, 0, 0, "CB EP", bold=True, align=WD_ALIGN_PARAGRAPH.CENTER)
-            merge_and_set(13, 1, 3, f"CB GDA QTEL: {gc.get('cb_gda_qtel','')}\nCB GDA VILA: {gc.get('cb_gda_vila','')}\nCB DIA BIA O: {gc.get('cb_dia_bia_o','')}\nMOT DIA: {mot_dia_cb}\nMOT VILA: {mot_vila_cb}\nMOT SUP DIA: {gc.get('mot_sup_dia','')}\nPADIOLEIRO: {padioleiro_cb}", bold=True)
-            
+            merge_and_set(13, 1, 3, f"CB GDA QTEL: {gc.get('cb_gda_qtel','')}\nCB GDA VILA: {gc.get('cb_gda_vila','')}\nCB DIA 1ª BIA O: {gc.get('cb_dia_bia_o','')}\nCB DIA 2ª BIA O: \nMOT DIA: {mot_dia_cb}\nMOT VILA: {mot_vila_cb}\nMOT SUP DIA: {gc.get('mot_sup_dia','')}\nPADIOLEIRO: {padioleiro_cb}", bold=True)
+            merge_and_set(13, 4, 4, f"{c_cb_outros:02d}", bold=True, align=WD_ALIGN_PARAGRAPH.CENTER)
+
             merge_and_set(14, 0, 0, "SD EP", bold=True, align=WD_ALIGN_PARAGRAPH.CENTER)
             merge_and_set(14, 1, 3, f"MOT VILA: {mot_vila_ep}\nMOT DIA: {mot_dia_ep}\nGDA QTEL: {gc.get('gda_qtel_ep','')}\nREFORÇO: {gc.get('reforco_ep','')}\nGDA VILA: {gc.get('gda_vila','')}\nPERMANÊNCIA HT: {gc.get('permanencia_ht','')}", bold=True)
-            
-            str_gda = " - ".join(guardas)
-            str_apoio = " - ".join(apoios)
+            merge_and_set(14, 4, 4, f"{c_ep_outros:02d}", bold=True, align=WD_ALIGN_PARAGRAPH.CENTER)
+
             merge_and_set(15, 0, 0, "SD EV", bold=True, align=WD_ALIGN_PARAGRAPH.CENTER)
-            merge_and_set(15, 1, 3, f"GDA QTEL: {str_gda}\nGDA VILA: {gc.get('gda_vila','')}\nPERMANÊNCIA HT/PRAIA: {str_apoio}\nPADIOLEIRO: {padioleiro_ev}\nREFORÇO: {gc.get('reforco_ev','')}\nMOT VILA: {mot_vila_ev}\nSOMBRA: {gc.get('sombra','')}", bold=True)
+            merge_and_set(15, 1, 3, f"GDA QTEL: {' - '.join(guardas)}\nGDA VILA: {gc.get('gda_vila','')}\nPERMANÊNCIA HT/PRAIA: {' - '.join(apoios)}\nPADIOLEIRO: {padioleiro_ev}\nREFORÇO: {gc.get('reforco_ev','')}\nMOT VILA: {mot_vila_ev}", bold=True)
+            merge_and_set(15, 4, 4, f"{c_ev_outros:02d}", bold=True, align=WD_ALIGN_PARAGRAPH.CENTER)
             
             merge_and_set(16, 0, 3, f"TOTAL EM OUTROS DESTINOS: {num_words.get(total_outros, str(total_outros))}", bold=True)
+            merge_and_set(16, 4, 4, f"{total_outros:02d}", bold=True, align=WD_ALIGN_PARAGRAPH.CENTER)
+            
             merge_and_set(17, 0, 3, f"TOTAL GERAL: {num_words.get(total_geral, str(total_geral))}", bold=True)
+            merge_and_set(17, 4, 4, f"{total_geral:02d}", bold=True, align=WD_ALIGN_PARAGRAPH.CENTER)
             
-            c18_0 = merge_and_set(18, 0, 0, "Visto:\n\n\n_________\nSgt Dia")
-            c18_0.paragraphs[0].runs[0].font.size = Pt(8)
-            
-            nome_sgte = self.current_state.get('nome_sgte', 'HEBERT CARLOS VIANA - 2° Sgt')
-            merge_and_set(18, 1, 2, f"Quartel em Natal/RN, {d_str}.\n\n{nome_sgte}\nSargenteante da Bateria de Comando", bold=True, align=WD_ALIGN_PARAGRAPH.CENTER)
-            
-            c18_3 = merge_and_set(18, 3, 3, "Visto:\n\n\n_________\nOf Dia")
-            c18_3.paragraphs[0].runs[0].font.size = Pt(8)
-            
-            alteracao_text = "Alteração: Com alteração (  ) Sem alteração (  )\n" + ("_"*105 + "\n") * 4
-            merge_and_set(19, 0, 3, alteracao_text)
-            
-            widths = [Inches(1.0), Inches(3.5), Inches(1.5), Inches(1.5)]
-            for r_idx, row in enumerate(table_pernoite.rows):
-                for idx, width in enumerate(widths):
-                    try: row.cells[idx].width = width
+            # Ajustar larguras da tabela pernoite para totalizar 6.9"
+            widths_p = [Inches(0.8), Inches(1.7), Inches(1.7), Inches(1.7), Inches(1.0)]
+            for row in table_pernoite.rows:
+                for idx, width in enumerate(widths_p):
+                    try: 
+                        cell = row.cells[idx]
+                        cell.width = width
                     except: pass
+
+            # --- TABELA DE ASSINATURAS E ALTERAÇÃO ---
+            table_sig = document.add_table(rows=2, cols=3)
+            table_sig.alignment = WD_TABLE_ALIGNMENT.CENTER
+            table_sig.style = 'Table Grid'
+            table_sig.autofit = False
             
-            document.save(docx_file)
-            os.startfile(docx_file)
+            # Ajustar larguras para totalizar 6.9" e alinhar com a de cima
+            widths_sig = [Inches(1.5), Inches(3.9), Inches(1.5)]
+            for r_idx in range(2):
+                for c_idx in range(3):
+                    table_sig.cell(r_idx, c_idx).width = widths_sig[c_idx]
+
+            # Visto Sgt Dia
+            c_sgt = table_sig.cell(0, 0)
+            p_sgt = c_sgt.paragraphs[0]
+            p_sgt.text = "Visto:"
+            p_sgt.alignment = WD_ALIGN_PARAGRAPH.LEFT
+            p_sgt.runs[0].font.size = Pt(8)
+            
+            p_sgt_line = c_sgt.add_paragraph()
+            p_sgt_line.alignment = WD_ALIGN_PARAGRAPH.CENTER
+            p_sgt_line.paragraph_format.space_before = Pt(25)
+            p_sgt_line.add_run("_________").font.size = Pt(8)
+            p_sgt_line.add_run("\nSgt Dia").font.size = Pt(9)
+            p_sgt_line.runs[1].bold = True
+            p_sgt_line.runs[1].underline = True
+            
+            # Centro (Quartel + Sargenteante)
+            c_mid = table_sig.cell(0, 1)
+            nome_sgte = self.current_state.get('nome_sgte', 'HEBERT CARLOS VIANA - 2° Sgt')
+            
+            p_date = c_mid.paragraphs[0]
+            p_date.alignment = WD_ALIGN_PARAGRAPH.CENTER
+            r_date = p_date.add_run(f"Quartel em Natal/RN, {d_str}.")
+            r_date.bold = True
+            r_date.font.size = Pt(10)
+            
+            p_name = c_mid.add_paragraph()
+            p_name.alignment = WD_ALIGN_PARAGRAPH.CENTER
+            p_name.paragraph_format.space_before = Pt(10)
+            r_name = p_name.add_run(nome_sgte)
+            r_name.bold = True
+            r_name.font.size = Pt(11)
+            
+            p_title = c_mid.add_paragraph(f"Sargenteante da {u_nome.title()}")
+            p_title.alignment = WD_ALIGN_PARAGRAPH.CENTER
+            p_title.paragraph_format.space_after = Pt(0)
+            for r in p_title.runs: 
+                r.font.size = Pt(9)
+                r.underline = True
+            
+            # Visto Of Dia
+            c_of = table_sig.cell(0, 2)
+            p_of = c_of.paragraphs[0]
+            p_of.text = "Visto:"
+            p_of.alignment = WD_ALIGN_PARAGRAPH.LEFT
+            p_of.runs[0].font.size = Pt(8)
+            
+            p_of_line = c_of.add_paragraph()
+            p_of_line.alignment = WD_ALIGN_PARAGRAPH.CENTER
+            p_of_line.paragraph_format.space_before = Pt(25)
+            p_of_line.add_run("_________").font.size = Pt(8)
+            p_of_line.add_run("\nOf Dia").font.size = Pt(9)
+            p_of_line.runs[1].bold = True
+            p_of_line.runs[1].underline = True
+
+            # --- SEÇÃO DE ALTERAÇÃO FINAL (Linha 2 da tabela) ---
+            c_alt2 = table_sig.cell(1, 0)
+            c_alt2.merge(table_sig.cell(1, 1)).merge(table_sig.cell(1, 2))
+            
+            p_alt2 = c_alt2.paragraphs[0]
+            p_alt2.alignment = WD_ALIGN_PARAGRAPH.LEFT
+            run_alt2 = p_alt2.add_run("Alteração: Com alteração (      ) Sem alteração (      )")
+            run_alt2.bold = True
+            run_alt2.font.size = Pt(9)
+            p_alt2.paragraph_format.line_spacing = Pt(12)
+            
+            for _ in range(4):
+                # Usar Tab Stop com preenchimento de linha para garantir largura total perfeita
+                p_l = c_alt2.add_paragraph()
+                p_l.paragraph_format.line_spacing = Pt(12)
+                p_l.paragraph_format.space_before = Pt(0)
+                p_l.paragraph_format.space_after = Pt(0)
+                p_l.paragraph_format.tab_stops.add_tab_stop(Inches(6.6), WD_TAB_ALIGNMENT.RIGHT, WD_TAB_LEADER.LINES)
+                p_l.add_run("\t")
+                for r in p_l.runs: r.font.size = Pt(9)
+            
+            try:
+                document.save(docx_file)
+                os.startfile(docx_file)
+            except Exception as e:
+                messagebox.showerror("Erro de Arquivo", f"Não foi possível salvar o documento.\nCertifique-se de que o Word não está aberto com um arquivo de mesmo nome.\n\nErro: {e}")
             
         except ImportError:
             messagebox.showerror("Erro", "A biblioteca python-docx não está instalada.")
