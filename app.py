@@ -4,7 +4,7 @@ import datetime
 import json
 import os
 import sv_ttk
-from scheduler import generate_daily_schedule, parse_dt
+from scheduler import generate_daily_schedule, parse_dt, calculate_points
 
 class App:
     def __init__(self, root):
@@ -15,21 +15,24 @@ class App:
         self.dispensas = {} # {pessoa_id: [(start_date, end_date)]}
         self.schedule_result = None
         
-        self.state_file = "state.json"
+        import sys
+        if getattr(sys, 'frozen', False):
+            base_dir = os.path.dirname(sys.executable)
+        else:
+            base_dir = os.path.dirname(os.path.abspath(__file__))
+            
+        self.state_file = os.path.join(base_dir, "state.json")
         self.current_state = self.load_state()
         self.preview_state = None
         
         self.dispensas = self._parse_dispensas_from_state()
-        
-        self.guarda_compartilhada_file = "guarda_compartilhada.json"
-        self.guarda_compartilhada = self.load_guarda_compartilhada()
-        self.new_guarda_compartilhada_to_save = False
         
         self.setup_ui()
         self.atualizar_lista_pessoas()
         self.atualizar_lista_dispensas()
         self.atualizar_data_alvo()
         self.atualizar_lista_historico()
+        self.atualizar_ranking()
         
     def load_state(self):
         default_state = {'pessoas': {}, 'historico_escalas': [], 'dispensas': {}}
@@ -59,31 +62,7 @@ class App:
         except Exception as e:
             messagebox.showerror("Erro", f"Erro ao salvar histórico:\n{e}")
 
-    def load_guarda_compartilhada(self):
-        default_state = {
-            "filas": {
-                "of_dia": [], "adj_of_dia": [], "cb_dia_bia_c": [], 
-                "mot_dia": [], "padioleiro": [], "sombra": [], "mot_vila": [], "gda_vila": []
-            },
-            "historico_guarda": {}
-        }
-        if os.path.exists(self.guarda_compartilhada_file):
-            try:
-                with open(self.guarda_compartilhada_file, 'r', encoding='utf-8') as f:
-                    state = json.load(f)
-                    if "filas" not in state: state["filas"] = default_state["filas"]
-                    if "historico_guarda" not in state: state["historico_guarda"] = default_state["historico_guarda"]
-                    return state
-            except Exception as e:
-                print("Erro ao carregar guarda_compartilhada.json:", e)
-        return default_state
-        
-    def save_guarda_compartilhada(self, state):
-        try:
-            with open(self.guarda_compartilhada_file, 'w', encoding='utf-8') as f:
-                json.dump(state, f, ensure_ascii=False, indent=4)
-        except Exception as e:
-            messagebox.showerror("Erro", f"Erro ao salvar guarda compartilhada:\n{e}")
+
 
     def get_next_date(self):
         historico = self.current_state.get('historico_escalas', [])
@@ -109,14 +88,20 @@ class App:
         self.tab_efetivo = ttk.Frame(self.notebook, padding=10)
         self.tab_gerador = ttk.Frame(self.notebook, padding=10)
         self.tab_historico = ttk.Frame(self.notebook, padding=10)
+        self.tab_ranking = ttk.Frame(self.notebook, padding=10)
+        self.tab_config = ttk.Frame(self.notebook, padding=10)
         
         self.notebook.add(self.tab_gerador, text="1. Gerar Escala Diária")
         self.notebook.add(self.tab_historico, text="2. Histórico")
         self.notebook.add(self.tab_efetivo, text="3. Efetivo e Dispensas")
+        self.notebook.add(self.tab_ranking, text="4. Rank de Cansaço")
+        self.notebook.add(self.tab_config, text="5. Configurações")
         
         self.setup_tab_efetivo()
         self.setup_tab_gerador()
         self.setup_tab_historico()
+        self.setup_tab_ranking()
+        self.setup_tab_config()
 
     def setup_tab_efetivo(self):
         paned = ttk.PanedWindow(self.tab_efetivo, orient=tk.HORIZONTAL)
@@ -140,6 +125,11 @@ class App:
         btn_frame.pack(fill=tk.X)
         ttk.Button(btn_frame, text="Alternar Ativo/Inativo (Rota)", command=self.alternar_status_pessoa).pack(side=tk.LEFT, fill=tk.X, expand=True, padx=2)
         ttk.Button(btn_frame, text="Excluir", command=self.excluir_pessoa).pack(side=tk.LEFT, fill=tk.X, expand=True, padx=2)
+
+        btn_frame_2 = ttk.Frame(cadastro_frame)
+        btn_frame_2.pack(fill=tk.X, pady=2)
+        ttk.Button(btn_frame_2, text="Alternar PO", command=self.alternar_po_pessoa).pack(side=tk.LEFT, fill=tk.X, expand=True, padx=2)
+        ttk.Button(btn_frame_2, text="Alternar SGT", command=self.alternar_sargentiacao_pessoa).pack(side=tk.LEFT, fill=tk.X, expand=True, padx=2)
 
         # Dispensas
         dispensas_frame = ttk.LabelFrame(paned, text="Dispensas Médicas / Férias", padding="10")
@@ -184,20 +174,37 @@ class App:
         self.manual_gc_frame.pack(fill=tk.X, pady=10)
         
         self.manual_entries = {}
-        funcoes_list = [
+        self.manual_categories = {}
+        self.funcoes_list = [
             ("OF DIA", "of_dia"), ("ADJ OF DIA", "adj_of_dia"), 
             ("SGT DIA BIA C", "sgt_dia_bia_c"), ("CB DIA BIA C", "cb_dia_bia_c"), 
             ("MOT DIA", "mot_dia"), ("PADIOLEIRO", "padioleiro"), 
-            ("SOMBRA", "sombra"), ("MOT VILA", "mot_vila"), ("GDA VILA", "gda_vila")
+            ("SOMBRA", "sombra"), ("MOT VILA", "mot_vila"), ("GDA VILA", "gda_vila"),
+            ("CMT GDA", "cmt_gda"), ("CMT GDA VILA", "cmt_gda_vila"), ("SGT DIA BIA O", "sgt_dia_bia_o"),
+            ("CB GDA QTEL", "cb_gda_qtel"), ("CB GDA VILA", "cb_gda_vila"), ("CB DIA BIA O", "cb_dia_bia_o"),
+            ("MOT SUP DIA", "mot_sup_dia"), ("GDA QTEL EP", "gda_qtel_ep"), ("REFORÇO EP", "reforco_ep"),
+            ("PERM. HT", "permanencia_ht"), ("REFORÇO EV", "reforco_ev")
         ]
         
-        for i, (label, key) in enumerate(funcoes_list):
-            row = i // 3
-            col = (i % 3) * 2
-            ttk.Label(self.manual_gc_frame, text=label+":").grid(row=row, column=col, padx=5, pady=5, sticky=tk.W)
-            entry = ttk.Entry(self.manual_gc_frame, width=20)
-            entry.grid(row=row, column=col+1, padx=5, pady=5, sticky=tk.W)
+        has_cat = ["mot_dia", "padioleiro", "mot_vila"]
+        
+        for i, (label, key) in enumerate(self.funcoes_list):
+            row = i // 4
+            col = (i % 4) * 2
+            
+            f_frame = ttk.Frame(self.manual_gc_frame)
+            f_frame.grid(row=row, column=col, columnspan=2, padx=2, pady=5, sticky=tk.W)
+            
+            ttk.Label(f_frame, text=label+":").pack(side=tk.LEFT)
+            entry = ttk.Entry(f_frame, width=12)
+            entry.pack(side=tk.LEFT, padx=2)
             self.manual_entries[key] = entry
+            
+            if key in has_cat:
+                cat_var = tk.StringVar(value="SD EP")
+                cb = ttk.Combobox(f_frame, textvariable=cat_var, values=["CB", "SD EP", "SD EV"], width=6, state="readonly")
+                cb.pack(side=tk.LEFT)
+                self.manual_categories[key] = cb
 
         actions_frame = ttk.Frame(gerador_frame)
         actions_frame.pack(fill=tk.X, pady=10)
@@ -227,13 +234,76 @@ class App:
         
         btn_frame = ttk.Frame(list_frame)
         btn_frame.pack(fill=tk.X)
-        ttk.Button(btn_frame, text="Excluir Escala Selecionada", command=self.excluir_historico).pack(fill=tk.X)
+        ttk.Button(btn_frame, text="Excluir Escala Selecionada", command=self.excluir_historico).pack(side=tk.LEFT, fill=tk.X, expand=True, padx=2)
+        ttk.Button(btn_frame, text="Imprimir Selecionada", command=self.imprimir_historico).pack(side=tk.LEFT, fill=tk.X, expand=True, padx=2)
         
         view_frame = ttk.LabelFrame(paned, text="Detalhes da Escala", padding="10")
         paned.add(view_frame, weight=2)
         
         self.text_hist_details = tk.Text(view_frame, wrap=tk.WORD, font=("Consolas", 14))
         self.text_hist_details.pack(fill=tk.BOTH, expand=True)
+
+    def setup_tab_ranking(self):
+        ranking_frame = ttk.Frame(self.tab_ranking, padding="10")
+        ranking_frame.pack(fill=tk.BOTH, expand=True)
+        
+        ttk.Label(ranking_frame, text="Ranking de Cansaço (Pontuação Acumulada)", font=("Segoe UI", 16, "bold")).pack(pady=(0, 10))
+        
+        cols = ("Soldado", "Pontos Preta", "Pontos Vermelha", "Total")
+        self.tree_ranking = ttk.Treeview(ranking_frame, columns=cols, show='headings')
+        
+        for col in cols:
+            self.tree_ranking.heading(col, text=col)
+            self.tree_ranking.column(col, width=150, anchor=tk.CENTER)
+            
+        self.tree_ranking.pack(fill=tk.BOTH, expand=True)
+        
+        ttk.Button(ranking_frame, text="Atualizar Ranking", command=self.atualizar_ranking).pack(pady=10)
+
+    def atualizar_ranking(self):
+        for item in self.tree_ranking.get_children():
+            self.tree_ranking.delete(item)
+            
+        pessoas_db = self.current_state.get('pessoas', {})
+        historico = self.current_state.get('historico_escalas', [])
+        
+        # Calcula pontos dinamicamente do histórico
+        p_preta, p_vermelha, _, _, _ = calculate_points(historico, list(pessoas_db.keys()))
+        
+        ranking_list = []
+        for p in pessoas_db:
+            preta = p_preta.get(p, 0)
+            vermelha = p_vermelha.get(p, 0)
+            total = preta + vermelha
+            ranking_list.append((p, preta, vermelha, total))
+            
+        # Ordena pelo total (mais cansados primeiro)
+        ranking_list.sort(key=lambda x: x[3], reverse=True)
+        
+        for entry in ranking_list:
+            self.tree_ranking.insert('', tk.END, values=entry)
+
+    def setup_tab_config(self):
+        config_frame = ttk.LabelFrame(self.tab_config, text="Configurações da Unidade", padding="20")
+        config_frame.pack(fill=tk.X, pady=10)
+        
+        ttk.Label(config_frame, text="Nome do Comandante (Capitão):", font=("Segoe UI", 12)).pack(anchor=tk.W, pady=(0, 5))
+        self.entry_cmt = ttk.Entry(config_frame, font=("Segoe UI", 12))
+        self.entry_cmt.pack(fill=tk.X, pady=(0, 15))
+        self.entry_cmt.insert(0, self.current_state.get('nome_cmt', "RENAN LOUREIRO LENTZ - Cap"))
+        
+        ttk.Label(config_frame, text="Nome do Sargenteante:", font=("Segoe UI", 12)).pack(anchor=tk.W, pady=(0, 5))
+        self.entry_sgte = ttk.Entry(config_frame, font=("Segoe UI", 12))
+        self.entry_sgte.pack(fill=tk.X, pady=(0, 15))
+        self.entry_sgte.insert(0, self.current_state.get('nome_sgte', "HEBERT CARLOS VIANA - 2° Sgt"))
+        
+        ttk.Button(config_frame, text="Salvar Configurações", command=self.salvar_config, style="Accent.TButton").pack(fill=tk.X, pady=10)
+
+    def salvar_config(self):
+        self.current_state['nome_cmt'] = self.entry_cmt.get().strip()
+        self.current_state['nome_sgte'] = self.entry_sgte.get().strip()
+        self.save_state(self.current_state)
+        messagebox.showinfo("Sucesso", "Configurações salvas com sucesso!")
 
     def parse_dt_local(self, date_str):
         try: return datetime.datetime.strptime(date_str, "%d/%m/%Y").date()
@@ -269,7 +339,15 @@ class App:
         for k in sorted_keys:
             ativo = pessoas_db[k].get('ativo', True)
             status = "ATIVO" if ativo else "INATIVO (ROTA)"
-            self.listbox_pessoas.insert(tk.END, f"{k} - {status}")
+            
+            tags = []
+            if pessoas_db[k].get('is_po', False):
+                tags.append("[PO]")
+            if pessoas_db[k].get('is_sargentiacao', False):
+                tags.append("[SGT]")
+            
+            tag_str = (" " + " ".join(tags)) if tags else ""
+            self.listbox_pessoas.insert(tk.END, f"{k} - {status}{tag_str}")
 
     def cadastrar_pessoa(self):
         p = self.entry_add_pessoa.get().strip()
@@ -290,6 +368,26 @@ class App:
         pessoas_db = self.current_state.get('pessoas', {})
         if p in pessoas_db:
             pessoas_db[p]['ativo'] = not pessoas_db[p].get('ativo', True)
+            self.save_state(self.current_state)
+            self.atualizar_lista_pessoas()
+
+    def alternar_po_pessoa(self):
+        selection = self.listbox_pessoas.curselection()
+        if not selection: return
+        p = self.listbox_pessoas.get(selection[0]).split(" - ")[0]
+        pessoas_db = self.current_state.get('pessoas', {})
+        if p in pessoas_db:
+            pessoas_db[p]['is_po'] = not pessoas_db[p].get('is_po', False)
+            self.save_state(self.current_state)
+            self.atualizar_lista_pessoas()
+
+    def alternar_sargentiacao_pessoa(self):
+        selection = self.listbox_pessoas.curselection()
+        if not selection: return
+        p = self.listbox_pessoas.get(selection[0]).split(" - ")[0]
+        pessoas_db = self.current_state.get('pessoas', {})
+        if p in pessoas_db:
+            pessoas_db[p]['is_sargentiacao'] = not pessoas_db[p].get('is_sargentiacao', False)
             self.save_state(self.current_state)
             self.atualizar_lista_pessoas()
 
@@ -365,13 +463,8 @@ class App:
         self.var_apoio.set(False)
         
         if hasattr(self, 'manual_entries'):
-            target_str = prox_dia.strftime("%Y-%m-%d")
-            self.guarda_compartilhada = self.load_guarda_compartilhada()
-            hist = self.guarda_compartilhada.get('historico_guarda', {}).get(target_str, {})
             for key, entry in self.manual_entries.items():
                 entry.delete(0, tk.END)
-                if key != "sgt_dia_bia_c" and key in hist:
-                    entry.insert(0, hist[key])
 
     def gerar_escala(self):
         target_date = self.get_next_date()
@@ -383,27 +476,23 @@ class App:
             return messagebox.showerror("Erro", "Selecione pelo menos uma função.")
 
         try:
-            self.guarda_compartilhada = self.load_guarda_compartilhada()
             target_str = target_date.strftime("%Y-%m-%d")
             
-            guarda_comp_hoje = None
-            self.new_guarda_compartilhada_to_save = False
+            guarda_comp_hoje = {}
+            for k, entry in self.manual_entries.items():
+                guarda_comp_hoje[k] = entry.get().strip() or "-"
             
-            if has_g:
-                guarda_comp_hoje = {}
-                for key, entry in self.manual_entries.items():
-                    val = entry.get().strip()
-                    guarda_comp_hoje[key] = val if val else "-"
-                self.new_guarda_compartilhada_to_save = True
+            # Categorias
+            for k, cb in self.manual_categories.items():
+                guarda_comp_hoje[k + "_cat"] = cb.get()
 
             result, new_state = generate_daily_schedule(
                 target_date, has_g, has_p, has_a, self.dispensas, self.current_state
             )
             
-            if guarda_comp_hoje:
-                result['guarda_comp'] = guarda_comp_hoje
-                if new_state.get('historico_escalas'):
-                    new_state['historico_escalas'][-1]['guarda_comp'] = guarda_comp_hoje
+            result['guarda_comp'] = guarda_comp_hoje
+            if new_state.get('historico_escalas'):
+                new_state['historico_escalas'][-1]['guarda_comp'] = guarda_comp_hoje
             
             self.schedule_result = result
             self.preview_state = new_state
@@ -411,18 +500,13 @@ class App:
             self.text_details.delete("1.0", tk.END)
             self.text_details.insert(tk.END, f"--- ESCALA PRÉVIA: {target_date.strftime('%d/%m/%Y')} ---\n\n")
             
+            self.text_details.insert(tk.END, "--- PREENCHIMENTO MANUAL ---\n")
+            for label, key in self.funcoes_list:
+                val = guarda_comp_hoje.get(key, "-")
+                self.text_details.insert(tk.END, f"{label}: {val}\n")
+            self.text_details.insert(tk.END, "\n")
+            
             if has_g:
-                if guarda_comp_hoje:
-                    self.text_details.insert(tk.END, "--- GUARNIÇÃO COMPARTILHADA ---\n")
-                    self.text_details.insert(tk.END, f"OF DIA (1° TEN): {guarda_comp_hoje.get('of_dia')}\n")
-                    self.text_details.insert(tk.END, f"ADJ OF DIA (2° SGT): {guarda_comp_hoje.get('adj_of_dia')}\n")
-                    self.text_details.insert(tk.END, f"SGT DIA BIA C (3° SGT): {guarda_comp_hoje.get('sgt_dia_bia_c')}\n")
-                    self.text_details.insert(tk.END, f"CB DIA BIA C: {guarda_comp_hoje.get('cb_dia_bia_c')}\n")
-                    self.text_details.insert(tk.END, f"MOT DIA: {guarda_comp_hoje.get('mot_dia')}\n")
-                    self.text_details.insert(tk.END, f"PADIOLEIRO: {guarda_comp_hoje.get('padioleiro')}\n")
-                    self.text_details.insert(tk.END, f"SOMBRA: {guarda_comp_hoje.get('sombra')}\n")
-                    self.text_details.insert(tk.END, f"MOT VILA: {guarda_comp_hoje.get('mot_vila')}\n")
-                    self.text_details.insert(tk.END, f"GDA VILA: {guarda_comp_hoje.get('gda_vila')}\n\n")
                 self.text_details.insert(tk.END, f"GUARDA ({len(result['guarda'])}): {', '.join(result['guarda'])}\n\n")
                 
             if has_p: self.text_details.insert(tk.END, f"PLANTÃO ({len(result['plantao'])}): {', '.join(result['plantao'])}\n\n")
@@ -437,23 +521,13 @@ class App:
     def confirmar_escala(self):
         if not self.preview_state: return
         if messagebox.askyesno("Confirmar", "Confirmar esta escala e avançar o dia?"):
-            if self.schedule_result and 'guarda_comp' in self.schedule_result:
-                if self.new_guarda_compartilhada_to_save:
-                    self.guarda_compartilhada = self.load_guarda_compartilhada()
-                    target_str = self.schedule_result['data']
-                    
-                    gc_to_save = self.schedule_result['guarda_comp'].copy()
-                    if 'sgt_dia_bia_c' in gc_to_save:
-                        del gc_to_save['sgt_dia_bia_c']
-                    self.guarda_compartilhada['historico_guarda'][target_str] = gc_to_save
-                    self.save_guarda_compartilhada(self.guarda_compartilhada)
-
             self.current_state = self.preview_state
             self.save_state(self.current_state)
             self.btn_confirm.config(state=tk.DISABLED)
             self.btn_print.config(state=tk.NORMAL)
             self.atualizar_data_alvo()
             self.atualizar_lista_historico()
+            self.atualizar_ranking()
             if messagebox.askyesno("Imprimir", "Deseja imprimir agora?"):
                 self.imprimir_escala(self.schedule_result)
 
@@ -508,6 +582,25 @@ class App:
             plantao_str = " - ".join(item.get('plantao', [])) if item.get('plantao') else "-"
             apoio_str = " - ".join(item.get('apoio', [])) if item.get('apoio') else "-"
 
+            import os, sys
+            def resource_path(relative_path):
+                try:
+                    base_path = sys._MEIPASS
+                except Exception:
+                    base_path = os.path.abspath(".")
+                return os.path.join(base_path, relative_path)
+
+            brasao_path = resource_path("brasao.png")
+            if os.path.exists(brasao_path):
+                p_img = document.add_paragraph()
+                p_img.alignment = WD_ALIGN_PARAGRAPH.CENTER
+                run_img = p_img.add_run()
+                run_img.add_picture(brasao_path, width=Inches(0.8))
+            
+            p_visto = document.add_paragraph()
+            p_visto.alignment = WD_ALIGN_PARAGRAPH.CENTER
+            p_visto.add_run("_________________\nVisto Sgte").bold = True
+
             p = document.add_paragraph()
             p.alignment = WD_ALIGN_PARAGRAPH.CENTER
             p.paragraph_format.line_spacing = Pt(14)
@@ -516,13 +609,9 @@ class App:
             run = p.add_run("MINISTÉRIO DA DEFESA\nEXÉRCITO BRASILEIRO\n17º GRUPO DE ARTILHARIA DE CAMPANHA\n(6º Regimento de Artilharia Montada/1915)\nGRUPO JERÔNIMO DE ALBUQUERQUE")
             run.bold = True
             
-            document.add_paragraph()
-
             p2 = document.add_paragraph()
             p2.alignment = WD_ALIGN_PARAGRAPH.CENTER
-            p2.add_run(f"Visto Sgte _________________\nQuartel em Natal-RN, {d_str}.\n({ds})")
-
-            document.add_paragraph()
+            p2.add_run(f"Quartel em Natal-RN, {d_str}.\n({ds})")
 
             p3 = document.add_paragraph()
             p3.alignment = WD_ALIGN_PARAGRAPH.CENTER
@@ -559,7 +648,9 @@ class App:
             for i, (f1, f2, f3) in enumerate(data_rows):
                 row = table.rows[i+1]
                 row.cells[0].text = f1; row.cells[0].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER; row.cells[0].paragraphs[0].runs[0].bold = True
+                set_cell_background(row.cells[0], "D9D9D9")
                 row.cells[1].text = f2; row.cells[1].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER; row.cells[1].paragraphs[0].runs[0].bold = True
+                set_cell_background(row.cells[1], "D9D9D9")
                 row.cells[2].text = f3; row.cells[2].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER
             
             row = table.rows[3]
@@ -586,7 +677,9 @@ class App:
             for i, (f1, f2, f3) in enumerate(data_rows_in):
                 row = table.rows[i+4]
                 row.cells[0].text = f1; row.cells[0].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER; row.cells[0].paragraphs[0].runs[0].bold = True
+                set_cell_background(row.cells[0], "D9D9D9")
                 row.cells[1].text = f2; row.cells[1].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER; row.cells[1].paragraphs[0].runs[0].bold = True
+                set_cell_background(row.cells[1], "D9D9D9")
                 row.cells[2].text = f3; row.cells[2].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER
 
             row = table.rows[14]
@@ -625,8 +718,152 @@ class App:
             
             p = document.add_paragraph()
             p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-            run = p.add_run("RENAN LOUREIRO LENTZ - Cap\nComandante da Bateria de Comando")
+            run = p.add_run(f"{self.current_state.get('nome_cmt', 'RENAN LOUREIRO LENTZ - Cap')}\nComandante da Bateria de Comando")
             run.bold = True
+            
+            document.add_page_break()
+
+            num_words = {
+                0: "ZERO", 1: "UM", 2: "DOIS", 3: "TRÊS", 4: "QUATRO", 5: "CINCO", 
+                6: "SEIS", 7: "SETE", 8: "OITO", 9: "NOVE", 10: "DEZ", 
+                11: "ONZE", 12: "DOZE", 13: "TREZE", 14: "QUATORZE", 15: "QUINZE", 
+                16: "DEZESSEIS", 17: "DEZESSETE", 18: "DEZOITO", 19: "DEZENOVE", 20: "VINTE",
+                21: "VINTE E UM", 22: "VINTE E DOIS", 23: "VINTE E TRÊS", 24: "VINTE E QUATRO", 25: "VINTE E CINCO",
+                26: "VINTE E SEIS", 27: "VINTE E SETE", 28: "VINTE E OITO", 29: "VINTE E NOVE", 30: "TRINTA",
+                31: "TRINTA E UM", 32: "TRINTA E DOIS", 33: "TRINTA E TRÊS", 34: "TRINTA E QUATRO", 35: "TRINTA E CINCO",
+                36: "TRINTA E SEIS", 37: "TRINTA E SETE", 38: "TRINTA E OITO", 39: "TRINTA E NOVE", 40: "QUARENTA",
+                41: "QUARENTA E UM", 42: "QUARENTA E DOIS", 43: "QUARENTA E TRÊS", 44: "QUARENTA E QUATRO", 45: "QUARENTA E CINCO",
+                46: "QUARENTA E SEIS", 47: "QUARENTA E SETE", 48: "QUARENTA E OITO", 49: "QUARENTA E NOVE", 50: "CINQUENTA"
+            }
+            
+            plantoes = item.get('plantao', [])
+            guardas = item.get('guarda', [])
+            apoios = item.get('apoio', [])
+            
+            of_dia = gc.get('of_dia', '')
+            sgt_dia_bc = gc.get('sgt_dia_bia_c', '')
+            cb_dia_bc = gc.get('cb_dia_bia_c', '')
+            adj_of_dia = gc.get('adj_of_dia', '')
+            mot_dia = gc.get('mot_dia', '')
+            padioleiro = gc.get('padioleiro', '')
+            sombra = gc.get('sombra', '')
+            mot_vila = gc.get('mot_vila', '')
+            gda_vila = gc.get('gda_vila', '')
+            
+            def count_p(val):
+                if not val or val == "-": return 0
+                return len([x for x in val.replace(' - ', '-').split('-') if x.strip()])
+
+            total_forma = len(plantoes)
+            total_forma += count_p(gc.get('of_dia'))
+            total_forma += count_p(gc.get('sgt_dia_bia_c'))
+            total_forma += count_p(gc.get('cb_dia_bia_c'))
+            
+            # Outros destinos: todos os campos manuais que não estão na "Forma"
+            total_outros = len(guardas) + len(apoios)
+            outros_keys = ["adj_of_dia", "mot_dia", "padioleiro", "sombra", "mot_vila", "gda_vila", 
+                           "cmt_gda", "cmt_gda_vila", "sgt_dia_bia_o", "cb_gda_qtel", "cb_gda_vila", 
+                           "cb_dia_bia_o", "mot_sup_dia", "gda_qtel_ep", "reforco_ep", "permanencia_ht", "reforco_ev"]
+            for k in outros_keys:
+                total_outros += count_p(gc.get(k))
+            
+            total_geral = total_forma + total_outros
+            
+            table_pernoite = document.add_table(rows=20, cols=4)
+            table_pernoite.style = 'Table Grid'
+            
+            def merge_and_set(r, c1, c2, text, bold=False, align=WD_ALIGN_PARAGRAPH.LEFT, bg=None):
+                cell = table_pernoite.cell(r, c1)
+                if c1 != c2:
+                    cell.merge(table_pernoite.cell(r, c2))
+                cell.text = text
+                p = cell.paragraphs[0]
+                p.alignment = align
+                if bold:
+                    for r_run in p.runs: r_run.bold = True
+                if bg:
+                    set_cell_background(cell, bg)
+                return cell
+                
+            c0 = table_pernoite.cell(0, 0)
+            c0.text = "Visto:\n\n\n\nCmt SU"
+            c0.paragraphs[0].runs[0].font.size = Pt(8)
+            
+            merge_and_set(0, 1, 3, "MINISTÉRIO DA DEFESA\nEXÉRCITO BRASILEIRO\n17º GRUPO DE ARTILHARIA DE CAMPANHA\nBateria de Comando", bold=True, align=WD_ALIGN_PARAGRAPH.CENTER)
+            merge_and_set(1, 0, 3, f"Controle de Efetivo para {ds}, {d_str}.", bold=True, align=WD_ALIGN_PARAGRAPH.CENTER, bg="D9D9D9")
+            merge_and_set(2, 0, 0, "GRAD", bold=True, align=WD_ALIGN_PARAGRAPH.CENTER, bg="D9D9D9")
+            merge_and_set(2, 1, 3, "EM FORMA", bold=True, align=WD_ALIGN_PARAGRAPH.CENTER, bg="D9D9D9")
+            merge_and_set(3, 0, 0, "TEN", bold=True, align=WD_ALIGN_PARAGRAPH.CENTER)
+            merge_and_set(3, 1, 3, f"OF DIA: {gc.get('of_dia','')}", bold=True)
+            merge_and_set(4, 0, 0, "SGT", bold=True, align=WD_ALIGN_PARAGRAPH.CENTER)
+            merge_and_set(4, 1, 3, f"SGT DIA BC: {gc.get('sgt_dia_bia_c','')}", bold=True)
+            merge_and_set(5, 0, 0, "SD EP", bold=True, align=WD_ALIGN_PARAGRAPH.CENTER)
+            merge_and_set(5, 1, 3, f"CB DIA BC: {gc.get('cb_dia_bia_c','')}", bold=True)
+            merge_and_set(6, 0, 0, "SD EV", bold=True, align=WD_ALIGN_PARAGRAPH.CENTER)
+            merge_and_set(6, 1, 3, f"PLANTÕES: {' - '.join(plantoes)}", bold=True)
+            merge_and_set(7, 0, 3, f"TOTAL EM FORMA: {num_words.get(total_forma, str(total_forma))}", bold=True)
+            merge_and_set(8, 0, 3, "PUNIDOS DISCIPLINARMENTE", bold=True, align=WD_ALIGN_PARAGRAPH.CENTER, bg="D9D9D9")
+            merge_and_set(9, 0, 0, "PROC.", bold=True, align=WD_ALIGN_PARAGRAPH.CENTER, bg="D9D9D9")
+            merge_and_set(9, 1, 1, "GRAD/NOME", bold=True, align=WD_ALIGN_PARAGRAPH.CENTER, bg="D9D9D9")
+            merge_and_set(9, 2, 2, "TIPO", bold=True, align=WD_ALIGN_PARAGRAPH.CENTER, bg="D9D9D9")
+            merge_and_set(9, 3, 3, "INÍCIO", bold=True, align=WD_ALIGN_PARAGRAPH.CENTER, bg="D9D9D9")
+            merge_and_set(10, 0, 0, "-", align=WD_ALIGN_PARAGRAPH.CENTER)
+            merge_and_set(10, 1, 1, "-", align=WD_ALIGN_PARAGRAPH.CENTER)
+            merge_and_set(10, 2, 2, "-", align=WD_ALIGN_PARAGRAPH.CENTER)
+            merge_and_set(10, 3, 3, "-", align=WD_ALIGN_PARAGRAPH.CENTER)
+            merge_and_set(11, 0, 3, "EM OUTROS DESTINOS", bold=True, align=WD_ALIGN_PARAGRAPH.CENTER, bg="D9D9D9")
+            
+            merge_and_set(12, 0, 0, "SGT", bold=True, align=WD_ALIGN_PARAGRAPH.CENTER)
+            merge_and_set(12, 1, 3, f"ADJ OF DIA: {gc.get('adj_of_dia','')}\nCMT GDA: {gc.get('cmt_gda','')}\nCMT GDA VILA: {gc.get('cmt_gda_vila','')}\nSGT DIA BIA O: {gc.get('sgt_dia_bia_o','')}", bold=True)
+            
+            # Lógica de categorias para Motoristas e Padioleiro
+            mot_dia = gc.get('mot_dia', '')
+            mot_vila = gc.get('mot_vila', '')
+            padioleiro = gc.get('padioleiro', '')
+            
+            mot_dia_cb = mot_dia if gc.get('mot_dia_cat') == 'CB' else ''
+            mot_vila_cb = mot_vila if gc.get('mot_vila_cat') == 'CB' else ''
+            padioleiro_cb = padioleiro if gc.get('padioleiro_cat') == 'CB' else ''
+            
+            mot_dia_ep = mot_dia if gc.get('mot_dia_cat') == 'SD EP' else ''
+            mot_vila_ep = mot_vila if gc.get('mot_vila_cat') == 'SD EP' else ''
+            padioleiro_ep = padioleiro if gc.get('padioleiro_cat') == 'SD EP' else ''
+            
+            mot_dia_ev = mot_dia if gc.get('mot_dia_cat') == 'SD EV' else ''
+            mot_vila_ev = mot_vila if gc.get('mot_vila_cat') == 'SD EV' else ''
+            padioleiro_ev = padioleiro if gc.get('padioleiro_cat') == 'SD EV' else ''
+
+            merge_and_set(13, 0, 0, "CB EP", bold=True, align=WD_ALIGN_PARAGRAPH.CENTER)
+            merge_and_set(13, 1, 3, f"CB GDA QTEL: {gc.get('cb_gda_qtel','')}\nCB GDA VILA: {gc.get('cb_gda_vila','')}\nCB DIA BIA O: {gc.get('cb_dia_bia_o','')}\nMOT DIA: {mot_dia_cb}\nMOT VILA: {mot_vila_cb}\nMOT SUP DIA: {gc.get('mot_sup_dia','')}\nPADIOLEIRO: {padioleiro_cb}", bold=True)
+            
+            merge_and_set(14, 0, 0, "SD EP", bold=True, align=WD_ALIGN_PARAGRAPH.CENTER)
+            merge_and_set(14, 1, 3, f"MOT VILA: {mot_vila_ep}\nMOT DIA: {mot_dia_ep}\nGDA QTEL: {gc.get('gda_qtel_ep','')}\nREFORÇO: {gc.get('reforco_ep','')}\nGDA VILA: {gc.get('gda_vila','')}\nPERMANÊNCIA HT: {gc.get('permanencia_ht','')}", bold=True)
+            
+            str_gda = " - ".join(guardas)
+            str_apoio = " - ".join(apoios)
+            merge_and_set(15, 0, 0, "SD EV", bold=True, align=WD_ALIGN_PARAGRAPH.CENTER)
+            merge_and_set(15, 1, 3, f"GDA QTEL: {str_gda}\nGDA VILA: {gc.get('gda_vila','')}\nPERMANÊNCIA HT/PRAIA: {str_apoio}\nPADIOLEIRO: {padioleiro_ev}\nREFORÇO: {gc.get('reforco_ev','')}\nMOT VILA: {mot_vila_ev}\nSOMBRA: {gc.get('sombra','')}", bold=True)
+            
+            merge_and_set(16, 0, 3, f"TOTAL EM OUTROS DESTINOS: {num_words.get(total_outros, str(total_outros))}", bold=True)
+            merge_and_set(17, 0, 3, f"TOTAL GERAL: {num_words.get(total_geral, str(total_geral))}", bold=True)
+            
+            c18_0 = merge_and_set(18, 0, 0, "Visto:\n\n\n_________\nSgt Dia")
+            c18_0.paragraphs[0].runs[0].font.size = Pt(8)
+            
+            nome_sgte = self.current_state.get('nome_sgte', 'HEBERT CARLOS VIANA - 2° Sgt')
+            merge_and_set(18, 1, 2, f"Quartel em Natal/RN, {d_str}.\n\n{nome_sgte}\nSargenteante da Bateria de Comando", bold=True, align=WD_ALIGN_PARAGRAPH.CENTER)
+            
+            c18_3 = merge_and_set(18, 3, 3, "Visto:\n\n\n_________\nOf Dia")
+            c18_3.paragraphs[0].runs[0].font.size = Pt(8)
+            
+            alteracao_text = "Alteração: Com alteração (  ) Sem alteração (  )\n" + ("_"*105 + "\n") * 4
+            merge_and_set(19, 0, 3, alteracao_text)
+            
+            widths = [Inches(1.0), Inches(3.5), Inches(1.5), Inches(1.5)]
+            for r_idx, row in enumerate(table_pernoite.rows):
+                for idx, width in enumerate(widths):
+                    try: row.cells[idx].width = width
+                    except: pass
             
             document.save(docx_file)
             os.startfile(docx_file)
@@ -657,19 +894,15 @@ class App:
         dt = parse_dt(item['data'])
         self.text_hist_details.insert(tk.END, f"--- HISTÓRICO: {dt.strftime('%d/%m/%Y')} ---\n\n")
         
+        if 'guarda_comp' in item:
+            gc = item['guarda_comp']
+            self.text_hist_details.insert(tk.END, "--- PREENCHIMENTO MANUAL ---\n")
+            for label, key in self.funcoes_list:
+                val = gc.get(key, "-")
+                self.text_hist_details.insert(tk.END, f"{label}: {val}\n")
+            self.text_hist_details.insert(tk.END, "\n")
+            
         if item.get('has_guarda'): 
-            if 'guarda_comp' in item:
-                gc = item['guarda_comp']
-                self.text_hist_details.insert(tk.END, "--- GUARNIÇÃO COMPARTILHADA ---\n")
-                self.text_hist_details.insert(tk.END, f"OF DIA (1° TEN): {gc.get('of_dia')}\n")
-                self.text_hist_details.insert(tk.END, f"ADJ OF DIA (2° SGT): {gc.get('adj_of_dia')}\n")
-                self.text_hist_details.insert(tk.END, f"SGT DIA BIA C (3° SGT): {gc.get('sgt_dia_bia_c')}\n")
-                self.text_hist_details.insert(tk.END, f"CB DIA BIA C: {gc.get('cb_dia_bia_c')}\n")
-                self.text_hist_details.insert(tk.END, f"MOT DIA: {gc.get('mot_dia')}\n")
-                self.text_hist_details.insert(tk.END, f"PADIOLEIRO: {gc.get('padioleiro')}\n")
-                self.text_hist_details.insert(tk.END, f"SOMBRA: {gc.get('sombra')}\n")
-                self.text_hist_details.insert(tk.END, f"MOT VILA: {gc.get('mot_vila')}\n")
-                self.text_hist_details.insert(tk.END, f"GDA VILA: {gc.get('gda_vila')}\n\n")
             self.text_hist_details.insert(tk.END, f"GUARDA ({len(item.get('guarda', []))}): {', '.join(item.get('guarda', []))}\n\n")
             
         if item.get('has_plantao'): self.text_hist_details.insert(tk.END, f"PLANTÃO ({len(item['plantao'])}): {', '.join(item['plantao'])}\n\n")
@@ -692,6 +925,18 @@ class App:
             self.atualizar_data_alvo()
             self.text_hist_details.delete("1.0", tk.END)
             messagebox.showinfo("Sucesso", "Escala excluída com sucesso! Os serviços das pessoas voltaram como se este dia nunca tivesse existido.")
+
+    def imprimir_historico(self):
+        selection = self.listbox_historico.curselection()
+        if not selection: 
+            return messagebox.showwarning("Aviso", "Selecione uma escala no histórico primeiro.")
+        
+        idx = int(self.listbox_historico.get(selection[0]).split(" - ")[0])
+        historico = self.current_state.get('historico_escalas', [])
+        
+        if idx >= len(historico): return
+        
+        self.imprimir_escala(historico[idx])
 
 if __name__ == "__main__":
     root = tk.Tk()

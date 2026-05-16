@@ -180,24 +180,88 @@
     },
     "historico_escalas": [
         {
-            "data": "2026-05-14",
-            "dia_semana": 3,
+            "data": "2026-05-17",
+            "dia_semana": 6,
             "guarda": [],
             "plantao": [
-                "330",
-                "340",
-                "324",
-                "311",
-                "335",
-                "336"
+                "314",
+                "326",
+                "304",
+                "333",
+                "313",
+                "355"
             ],
-            "apoio": [
-                "344",
-                "317"
-            ],
+            "apoio": [],
             "has_guarda": false,
             "has_plantao": true,
-            "has_apoio": true
+            "has_apoio": false,
+            "guarda_comp": {
+                "of_dia": "-",
+                "adj_of_dia": "-",
+                "sgt_dia_bia_c": "-",
+                "cb_dia_bia_c": "-",
+                "mot_dia": "-",
+                "padioleiro": "-",
+                "sombra": "-",
+                "mot_vila": "-",
+                "gda_vila": "-",
+                "cmt_gda": "-",
+                "cmt_gda_vila": "-",
+                "sgt_dia_bia_o": "-",
+                "cb_gda_qtel": "-",
+                "cb_gda_vila": "-",
+                "cb_dia_bia_o": "-",
+                "mot_sup_dia": "-",
+                "gda_qtel_ep": "-",
+                "reforco_ep": "-",
+                "permanencia_ht": "-",
+                "reforco_ev": "-",
+                "mot_dia_cat": "",
+                "padioleiro_cat": "",
+                "mot_vila_cat": ""
+            }
+        },
+        {
+            "data": "2026-05-18",
+            "dia_semana": 0,
+            "guarda": [],
+            "plantao": [
+                "309",
+                "305",
+                "318",
+                "335",
+                "356",
+                "344"
+            ],
+            "apoio": [],
+            "has_guarda": false,
+            "has_plantao": true,
+            "has_apoio": false,
+            "guarda_comp": {
+                "of_dia": "-",
+                "adj_of_dia": "-",
+                "sgt_dia_bia_c": "-",
+                "cb_dia_bia_c": "-",
+                "mot_dia": "-",
+                "padioleiro": "-",
+                "sombra": "-",
+                "mot_vila": "-",
+                "gda_vila": "-",
+                "cmt_gda": "-",
+                "cmt_gda_vila": "-",
+                "sgt_dia_bia_o": "-",
+                "cb_gda_qtel": "-",
+                "cb_gda_vila": "-",
+                "cb_dia_bia_o": "-",
+                "mot_sup_dia": "-",
+                "gda_qtel_ep": "-",
+                "reforco_ep": "-",
+                "permanencia_ht": "-",
+                "reforco_ev": "-",
+                "mot_dia_cat": "",
+                "padioleiro_cat": "",
+                "mot_vila_cat": ""
+            }
         }
     ],
     "dispensas": {}
