@@ -1,0 +1,241 @@
+{
+    "unidade": "2BO",
+    "pessoas": {
+        "501": {
+            "ativo": true
+        },
+        "502": {
+            "ativo": true
+        },
+        "503": {
+            "ativo": true
+        },
+        "504": {
+            "ativo": true
+        },
+        "505": {
+            "ativo": true
+        },
+        "506": {
+            "ativo": true
+        },
+        "507": {
+            "ativo": true
+        },
+        "508": {
+            "ativo": true
+        },
+        "509": {
+            "ativo": true
+        },
+        "510": {
+            "ativo": true
+        },
+        "511": {
+            "ativo": true
+        },
+        "512": {
+            "ativo": true
+        },
+        "513": {
+            "ativo": true
+        },
+        "514": {
+            "ativo": true
+        },
+        "515": {
+            "ativo": true
+        },
+        "516": {
+            "ativo": true
+        },
+        "517": {
+            "ativo": true
+        },
+        "518": {
+            "ativo": true
+        },
+        "519": {
+            "ativo": true
+        },
+        "520": {
+            "ativo": true
+        },
+        "521": {
+            "ativo": true
+        },
+        "522": {
+            "ativo": true
+        },
+        "523": {
+            "ativo": true
+        },
+        "524": {
+            "ativo": true
+        },
+        "525": {
+            "ativo": true
+        },
+        "526": {
+            "ativo": true
+        },
+        "527": {
+            "ativo": true
+        },
+        "528": {
+            "ativo": true
+        },
+        "529": {
+            "ativo": true
+        },
+        "530": {
+            "ativo": true
+        },
+        "531": {
+            "ativo": true
+        },
+        "532": {
+            "ativo": true
+        },
+        "533": {
+            "ativo": true
+        },
+        "534": {
+            "ativo": true
+        },
+        "535": {
+            "ativo": true
+        },
+        "536": {
+            "ativo": true
+        },
+        "537": {
+            "ativo": true
+        },
+        "538": {
+            "ativo": true
+        },
+        "539": {
+            "ativo": true
+        },
+        "540": {
+            "ativo": true
+        },
+        "541": {
+            "ativo": true
+        },
+        "542": {
+            "ativo": true
+        },
+        "543": {
+            "ativo": true
+        },
+        "544": {
+            "ativo": true
+        },
+        "545": {
+            "ativo": true
+        },
+        "546": {
+            "ativo": true
+        },
+        "547": {
+            "ativo": true
+        },
+        "548": {
+            "ativo": true
+        },
+        "549": {
+            "ativo": true
+        },
+        "550": {
+            "ativo": true
+        },
+        "551": {
+            "ativo": true
+        },
+        "552": {
+            "ativo": true
+        },
+        "553": {
+            "ativo": true
+        },
+        "554": {
+            "ativo": true
+        },
+        "555": {
+            "ativo": true
+        },
+        "556": {
+            "ativo": true
+        },
+        "557": {
+            "ativo": true
+        },
+        "558": {
+            "ativo": true
+        },
+        "559": {
+            "ativo": true
+        },
+        "560": {
+            "ativo": true
+        }
+    },
+    "historico_escalas": [
+        {
+            "data": "2026-05-17",
+            "dia_semana": 6,
+            "guarda": [],
+            "plantao": [
+                "536",
+                "510",
+                "522",
+                "545",
+                "551",
+                "555"
+            ],
+            "apoio": [],
+            "sobre_aviso": [],
+            "has_guarda": false,
+            "has_plantao": true,
+            "has_apoio": false,
+            "has_sobre_aviso": false,
+            "sem_expediente": true,
+            "guarda_comp": {
+                "of_dia": "-",
+                "adj_of_dia": "-",
+                "sgt_dia_bia_c": "-",
+                "cb_dia_bia_c": "-",
+                "mot_dia": "-",
+                "padioleiro": "-",
+                "sombra": "-",
+                "mot_vila": "-",
+                "gda_vila": "-",
+                "cmt_gda": "-",
+                "cmt_gda_vila": "-",
+                "cb_gda_qtel": "-",
+                "cb_gda_vila": "-",
+                "mot_sup_dia": "-",
+                "gda_qtel_ep": "-",
+                "reforco_ep": "-",
+                "permanencia_ht": "-",
+                "reforco_ev": "-",
+                "mot_dia_cat": "",
+                "padioleiro_cat": "",
+                "mot_vila_cat": ""
+            }
+        }
+    ],
+    "dispensas": {},
+    "nome_cmt": "RENAN LOUREIRO LENTZ - Cap",
+    "nome_sgte": "HEBERT CARLOS VIANA - 2° Sgt",
+    "req_counts": {
+        "guarda": 24,
+        "plantao": 6,
+        "apoio": 2,
+        "sobre_aviso": 2
+    },
+    "nr_aditamento": "1",
+    "nr_boletim": "1"
+}

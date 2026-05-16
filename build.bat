@@ -20,7 +20,7 @@ pip install pyinstaller
 
 echo.
 echo Compilando o aplicativo... isso pode demorar um pouco.
-pyinstaller --noconfirm --onedir --windowed --name "GeradorEscalas"  "app.py"
+pyinstaller --noconfirm GeradorEscalas.spec
 
 echo.
 echo =========================================

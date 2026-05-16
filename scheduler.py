@@ -27,6 +27,7 @@ def calculate_points(historico, pessoas_keys, target_date=None):
     peso_guarda = 3
     peso_plantao = 2
     peso_apoio = 1
+    peso_sobre_aviso = 0.5
     
     historico_ordenado = sorted(historico, key=lambda x: parse_dt(x['data']))
     for reg in historico_ordenado:
@@ -57,6 +58,7 @@ def calculate_points(historico, pessoas_keys, target_date=None):
         process_duty(reg.get('guarda', []), peso_guarda)
         process_duty(reg.get('plantao', []), peso_plantao)
         process_duty(reg.get('apoio', []), peso_apoio)
+        process_duty(reg.get('sobre_aviso', []), peso_sobre_aviso)
 
     avg_preta = 0
     avg_vermelha = 0
@@ -75,7 +77,7 @@ def calculate_points(historico, pessoas_keys, target_date=None):
             
     return pontos_preta, pontos_vermelha, recent_duties_count, last_weekend_worked, last_worked_date
 
-def generate_daily_schedule(target_date, has_guarda, has_plantao, has_apoio, dispensas, current_state):
+def generate_daily_schedule(target_date, has_guarda, has_plantao, has_apoio, has_sobre_aviso, dispensas, current_state, req_counts={}):
     pessoas_db = copy.deepcopy(current_state.get('pessoas', {}))
     historico = current_state.get('historico_escalas', [])
     
@@ -134,10 +136,11 @@ def generate_daily_schedule(target_date, has_guarda, has_plantao, has_apoio, dis
             valid.append(p)
         return valid
 
-    req_guarda = 24 if has_guarda else 0
-    req_plantao = 6 if has_plantao else 0
-    req_apoio = 2 if has_apoio else 0
-    total_req = req_guarda + req_plantao + req_apoio
+    req_guarda = req_counts.get('guarda', 24) if has_guarda else 0
+    req_plantao = req_counts.get('plantao', 6) if has_plantao else 0
+    req_apoio = req_counts.get('apoio', 2) if has_apoio else 0
+    req_sobre_aviso = req_counts.get('sobre_aviso', 2) if has_sobre_aviso else 0
+    total_req = req_guarda + req_plantao + req_apoio + req_sobre_aviso
     
     # Estratégia de Relaxamento de Regras
     candidates = filter_candidates(available, block_consec_days=True, block_consec_weekends=True)
@@ -154,6 +157,7 @@ def generate_daily_schedule(target_date, has_guarda, has_plantao, has_apoio, dis
     selected_guarda = []
     selected_plantao = []
     selected_apoio = []
+    selected_sobre_aviso = []
     
     remaining_candidates = list(candidates)
     
@@ -176,15 +180,22 @@ def generate_daily_schedule(target_date, has_guarda, has_plantao, has_apoio, dis
         selected_apoio.append(p)
         remaining_candidates.remove(p)
 
+    for p in list(remaining_candidates):
+        if len(selected_sobre_aviso) >= req_sobre_aviso: break
+        selected_sobre_aviso.append(p)
+        remaining_candidates.remove(p)
+
     result_data = {
         'data': target_date.strftime("%Y-%m-%d"),
         'dia_semana': weekday,
         'guarda': selected_guarda,
         'plantao': selected_plantao,
         'apoio': selected_apoio,
+        'sobre_aviso': selected_sobre_aviso,
         'has_guarda': has_guarda,
         'has_plantao': has_plantao,
-        'has_apoio': has_apoio
+        'has_apoio': has_apoio,
+        'has_sobre_aviso': has_sobre_aviso
     }
         
     new_state = copy.deepcopy(current_state)
