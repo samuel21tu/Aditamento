@@ -11,7 +11,7 @@ from doc_generator import DocumentGenerator
 class App:
     def __init__(self, root):
         self.root = root
-        self.root.title("Gestor Contínuo de Escalas v1.2")
+        self.root.title("Gestor Contínuo de Escalas")
         self.root.geometry("1100x800")
         
         self.dispensas = {} # {pessoa_id: [(start_date, end_date)]}
@@ -190,7 +190,7 @@ class App:
         btn_frame_2 = ttk.Frame(cadastro_frame)
         btn_frame_2.pack(fill=tk.X, pady=2)
         ttk.Button(btn_frame_2, text="Alternar PO", command=self.alternar_po_pessoa).pack(side=tk.LEFT, fill=tk.X, expand=True, padx=2)
-        ttk.Button(btn_frame_2, text="Alternar SGT", command=self.alternar_sargentiacao_pessoa).pack(side=tk.LEFT, fill=tk.X, expand=True, padx=2)
+        ttk.Button(btn_frame_2, text="Alternar Sgte", command=self.alternar_sargentiacao_pessoa).pack(side=tk.LEFT, fill=tk.X, expand=True, padx=2)
 
         # Dispensas
         dispensas_frame = ttk.LabelFrame(paned, text="Dispensas Médicas / Férias", padding="10")
@@ -234,11 +234,17 @@ class App:
         self.var_sobre_aviso = tk.BooleanVar(value=False)
         self.var_sem_expediente = tk.BooleanVar(value=False)
         
-        ttk.Checkbutton(opts_frame, text="Incluir GUARDA (24)", variable=self.var_guarda).pack(side=tk.LEFT, padx=10)
-        ttk.Checkbutton(opts_frame, text="Incluir PLANTÃO (6)", variable=self.var_plantao).pack(side=tk.LEFT, padx=10)
-        ttk.Checkbutton(opts_frame, text="Incluir APOIO (2)", variable=self.var_apoio).pack(side=tk.LEFT, padx=10)
-        ttk.Checkbutton(opts_frame, text="Incluir SOBRE AVISO (2)", variable=self.var_sobre_aviso).pack(side=tk.LEFT, padx=10)
+        self.chk_guarda = ttk.Checkbutton(opts_frame, text="Incluir GUARDA", variable=self.var_guarda)
+        self.chk_guarda.pack(side=tk.LEFT, padx=10)
+        self.chk_plantao = ttk.Checkbutton(opts_frame, text="Incluir PLANTÃO", variable=self.var_plantao)
+        self.chk_plantao.pack(side=tk.LEFT, padx=10)
+        self.chk_apoio = ttk.Checkbutton(opts_frame, text="Incluir APOIO", variable=self.var_apoio)
+        self.chk_apoio.pack(side=tk.LEFT, padx=10)
+        self.chk_sobre_aviso = ttk.Checkbutton(opts_frame, text="Incluir SOBRE AVISO", variable=self.var_sobre_aviso)
+        self.chk_sobre_aviso.pack(side=tk.LEFT, padx=10)
         ttk.Checkbutton(opts_frame, text="SEM EXPEDIENTE", variable=self.var_sem_expediente).pack(side=tk.LEFT, padx=10)
+        
+        self.atualizar_labels_quantitativos()
         
         self.manual_gc_frame = ttk.LabelFrame(gerador_frame, text="Preenchimento Manual de Funções (Guarnição)", padding="10")
         self.manual_gc_frame.pack(fill=tk.X, pady=10)
@@ -429,7 +435,19 @@ class App:
             messagebox.showwarning("Aviso", "Valores de quantitativos inválidos. Usando padrões.")
             
         self.save_state(self.current_state)
+        self.atualizar_labels_quantitativos()
         messagebox.showinfo("Sucesso", "Configurações salvas com sucesso!")
+
+    def atualizar_labels_quantitativos(self):
+        req = self.current_state.get('req_counts', {})
+        if hasattr(self, 'chk_guarda'):
+            self.chk_guarda.config(text=f"Incluir GUARDA ({req.get('guarda', 24)})")
+        if hasattr(self, 'chk_plantao'):
+            self.chk_plantao.config(text=f"Incluir PLANTÃO ({req.get('plantao', 6)})")
+        if hasattr(self, 'chk_apoio'):
+            self.chk_apoio.config(text=f"Incluir APOIO ({req.get('apoio', 2)})")
+        if hasattr(self, 'chk_sobre_aviso'):
+            self.chk_sobre_aviso.config(text=f"Incluir SOBRE AVISO ({req.get('sobre_aviso', 2)})")
 
 
     def parse_dt_local(self, date_str):
@@ -472,7 +490,7 @@ class App:
             if pessoas_db[k].get('is_po', False):
                 tags.append("[PO]")
             if pessoas_db[k].get('is_sargentiacao', False):
-                tags.append("[SGT]")
+                tags.append("[SGTE]")
             
             tag_str = (" " + " ".join(tags)) if tags else ""
             self.listbox_pessoas.insert(tk.END, f"{k} - {status}{tag_str}")

@@ -29,7 +29,7 @@ exe = EXE(
     a.binaries,
     a.datas,
     [],
-    name='GeradorEscalas_v1.2',
+    name='GeradorEscalas',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
