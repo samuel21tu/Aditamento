@@ -166,40 +166,42 @@ class DocumentGenerator:
         document.add_paragraph()
 
         # --- TABELA DE SERVIÇOS ---
-        table = document.add_table(rows=16, cols=3)
+        table = document.add_table(rows=0, cols=3)
         table.alignment = WD_TABLE_ALIGNMENT.CENTER
         table.style = 'Table Grid'
         table.autofit = False
         widths_main = [Inches(1.5), Inches(0.9), Inches(4.5)]
         
-        row_ext = table.rows[0]
-        c_ext = row_ext.cells[0]
-        c_ext.merge(row_ext.cells[1]).merge(row_ext.cells[2])
         ds_cap = ds.replace("feira", "Feira")
-        c_ext.text = f"Servico Externo para {ds_cap}, {d_str}."
-        c_ext.paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER
-        c_ext.paragraphs[0].runs[0].bold = True
-        self.set_cell_background(c_ext, "D9D9D9")
         
-        data_rows = [
+        # Filtro de serviços externos
+        external_filled = []
+        raw_external_rows = [
             ("MOT VILA", "SD EP", gc.get('mot_vila', '-')),
             ("GDA VILA", "SD EP", gc.get('gda_vila', '-'))
         ]
-        for i, (f1, f2, f3) in enumerate(data_rows):
-            row = table.rows[i+1]
-            row.cells[0].text = f1; self.set_cell_background(row.cells[0], "D9D9D9")
-            row.cells[1].text = f2; self.set_cell_background(row.cells[1], "D9D9D9")
-            row.cells[2].text = f3
-        
-        row_int = table.rows[3]
-        c_int = row_int.cells[0]
-        c_int.merge(row_int.cells[1]).merge(row_int.cells[2])
-        c_int.text = f"Serviço Interno para {ds_cap}, {d_str}."
-        c_int.paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER
-        c_int.paragraphs[0].runs[0].bold = True
-        self.set_cell_background(c_int, "D9D9D9")
-        
-        data_rows_in = [
+        for f1, f2, f3 in raw_external_rows:
+            if f3 and f3.strip() not in ("", "-"):
+                external_filled.append((f1, f2, f3))
+                
+        if external_filled:
+            row_ext = table.add_row()
+            c_ext = row_ext.cells[0]
+            c_ext.merge(row_ext.cells[1]).merge(row_ext.cells[2])
+            c_ext.text = f"Servico Externo para {ds_cap}, {d_str}."
+            c_ext.paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER
+            c_ext.paragraphs[0].runs[0].bold = True
+            self.set_cell_background(c_ext, "D9D9D9")
+            
+            for f1, f2, f3 in external_filled:
+                row = table.add_row()
+                row.cells[0].text = f1; self.set_cell_background(row.cells[0], "D9D9D9")
+                row.cells[1].text = f2; self.set_cell_background(row.cells[1], "D9D9D9")
+                row.cells[2].text = f3
+                
+        # Filtro de serviços internos
+        internal_filled = []
+        raw_internal_rows = [
             ("OF DIA", "1º TEN", gc.get('of_dia', '-')),
             ("ADJ OF DIA", "2º SGT", gc.get('adj_of_dia', '-')),
             (f"SGT DIA {u_sigla}", "3º SGT", gc.get('sgt_dia_bia_c', '-')),
@@ -212,13 +214,27 @@ class DocumentGenerator:
             ("APOIO PRAIA/HT", "SD EV", apoio_str),
             ("SOBRE AVISO", "SD EV", sobre_aviso_str)
         ]
-        for i, (f1, f2, f3) in enumerate(data_rows_in):
-            row = table.rows[i+4]
-            row.cells[0].text = f1; self.set_cell_background(row.cells[0], "D9D9D9")
-            row.cells[1].text = f2; self.set_cell_background(row.cells[1], "D9D9D9")
-            row.cells[2].text = f3
+        for f1, f2, f3 in raw_internal_rows:
+            if f3 and f3.strip() not in ("", "-"):
+                internal_filled.append((f1, f2, f3))
+                
+        if internal_filled:
+            row_int = table.add_row()
+            c_int = row_int.cells[0]
+            c_int.merge(row_int.cells[1]).merge(row_int.cells[2])
+            c_int.text = f"Serviço Interno para {ds_cap}, {d_str}."
+            c_int.paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER
+            c_int.paragraphs[0].runs[0].bold = True
+            self.set_cell_background(c_int, "D9D9D9")
+            
+            for f1, f2, f3 in internal_filled:
+                row = table.add_row()
+                row.cells[0].text = f1; self.set_cell_background(row.cells[0], "D9D9D9")
+                row.cells[1].text = f2; self.set_cell_background(row.cells[1], "D9D9D9")
+                row.cells[2].text = f3
 
-        row_parada = table.rows[15]
+        # Parada Diária
+        row_parada = table.add_row()
         row_parada.cells[0].text = "PARADA DIÁRIA"; self.set_cell_background(row_parada.cells[0], "D9D9D9")
         row_parada.cells[1].text = "-"; self.set_cell_background(row_parada.cells[1], "D9D9D9")
         row_parada.cells[2].text = parada_hora
@@ -273,6 +289,12 @@ class DocumentGenerator:
         apoios = item.get('apoio', [])
         sobre_avisos = item.get('sobre_aviso', [])
 
+        # Para o Pernoite (Controle de Efetivo / Arranchamento), a data deve ser hoje (ontem em relação à data alvo do aditamento)
+        d_dt_yesterday = d_dt - datetime.timedelta(days=1)
+        ds_yesterday = ["Segunda – feira", "Terça – feira", "Quarta – feira", "Quinta – feira", "Sexta – feira", "Sábado", "Domingo"][d_dt_yesterday.weekday()]
+        d_str_yesterday = f"{d_dt_yesterday.day} de {meses[d_dt_yesterday.month]} de {d_dt_yesterday.year}"
+        d_str_2_yesterday = f"{d_dt_yesterday.day:02d} de {meses[d_dt_yesterday.month]} de {d_dt_yesterday.year}"
+
         table_pernoite = document.add_table(rows=18, cols=5)
         table_pernoite.alignment = WD_TABLE_ALIGNMENT.CENTER
         table_pernoite.style = 'Table Grid'
@@ -290,8 +312,7 @@ class DocumentGenerator:
         
         self.merge_and_set(table_pernoite, 0, 1, 4, f"MINISTÉRIO DA DEFESA\nEXÉRCITO BRASILEIRO\n17º GRUPO DE ARTILHARIA DE CAMPANHA\n{u_nome.title()}", bold=True, align=WD_ALIGN_PARAGRAPH.CENTER)
         
-        d_str_2 = f"{d_dt.day:02d} de {meses[d_dt.month]} de {d_dt.year}"
-        self.merge_and_set(table_pernoite, 1, 0, 4, f"Controle de Efetivo para {ds}, {d_str_2}.", bold=True, align=WD_ALIGN_PARAGRAPH.CENTER, bg="D9D9D9")
+        self.merge_and_set(table_pernoite, 1, 0, 4, f"Controle de Efetivo para {ds_yesterday}, {d_str_2_yesterday}.", bold=True, align=WD_ALIGN_PARAGRAPH.CENTER, bg="D9D9D9")
         
         self.merge_and_set(table_pernoite, 2, 0, 0, "GRAD", bold=True, align=WD_ALIGN_PARAGRAPH.CENTER, bg="D9D9D9")
         self.merge_and_set(table_pernoite, 2, 1, 3, "EM FORMA", bold=True, align=WD_ALIGN_PARAGRAPH.CENTER, bg="D9D9D9")
@@ -399,7 +420,7 @@ class DocumentGenerator:
         nome_sgte = self.current_state.get('nome_sgte', 'HEBERT CARLOS VIANA - 2° Sgt')
         p_date = c_mid_sig.paragraphs[0]
         p_date.alignment = WD_ALIGN_PARAGRAPH.CENTER
-        r_date = p_date.add_run(f"Quartel em Natal/RN, {d_str}.")
+        r_date = p_date.add_run(f"Quartel em Natal/RN, {d_str_yesterday}.")
         r_date.bold = True; r_date.font.size = Pt(10)
         p_name = c_mid_sig.add_paragraph()
         p_name.alignment = WD_ALIGN_PARAGRAPH.CENTER

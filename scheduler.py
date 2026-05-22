@@ -117,7 +117,15 @@ def generate_daily_schedule(target_date, has_guarda, has_plantao, has_apoio, has
         consec_penalty = 0
         if last_worked_date.get(p) == target_date - delta:
             consec_penalty = 50
-        scores[p] = base_score + recent_penalty + consec_penalty
+            
+        score_val = base_score + recent_penalty + consec_penalty
+        
+        # Prioridade de serviço absoluta para quem estiver marcado como Escala Vermelha (is_po) E Apenas Plantão (is_sargentiacao)
+        p_data = pessoas_db.get(p, {})
+        if p_data.get('is_po', False) and p_data.get('is_sargentiacao', False):
+            score_val -= 10000
+            
+        scores[p] = score_val
     
     def filter_candidates(cands, block_consec_days, block_consec_weekends):
         valid = []

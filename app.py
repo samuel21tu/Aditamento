@@ -189,8 +189,8 @@ class App:
 
         btn_frame_2 = ttk.Frame(cadastro_frame)
         btn_frame_2.pack(fill=tk.X, pady=2)
-        ttk.Button(btn_frame_2, text="Alternar PO", command=self.alternar_po_pessoa).pack(side=tk.LEFT, fill=tk.X, expand=True, padx=2)
-        ttk.Button(btn_frame_2, text="Alternar Sgte", command=self.alternar_sargentiacao_pessoa).pack(side=tk.LEFT, fill=tk.X, expand=True, padx=2)
+        ttk.Button(btn_frame_2, text="Apenas Escala Vermelha", command=self.alternar_po_pessoa).pack(side=tk.LEFT, fill=tk.X, expand=True, padx=2)
+        ttk.Button(btn_frame_2, text="Apenas Plantão", command=self.alternar_sargentiacao_pessoa).pack(side=tk.LEFT, fill=tk.X, expand=True, padx=2)
 
         # Dispensas
         dispensas_frame = ttk.LabelFrame(paned, text="Dispensas Médicas / Férias", padding="10")
@@ -346,8 +346,8 @@ class App:
             total = preta + vermelha
             ranking_list.append((p, preta, vermelha, total))
             
-        # Ordena pelo total (mais cansados primeiro)
-        ranking_list.sort(key=lambda x: x[3], reverse=True)
+        # Ordena pelo total (menos cansados primeiro)
+        ranking_list.sort(key=lambda x: x[3], reverse=False)
         
         for entry in ranking_list:
             self.tree_ranking.insert('', tk.END, values=entry)
@@ -488,9 +488,9 @@ class App:
             
             tags = []
             if pessoas_db[k].get('is_po', False):
-                tags.append("[PO]")
+                tags.append("[Escala Vermelha]")
             if pessoas_db[k].get('is_sargentiacao', False):
-                tags.append("[SGTE]")
+                tags.append("[Apenas Plantão]")
             
             tag_str = (" " + " ".join(tags)) if tags else ""
             self.listbox_pessoas.insert(tk.END, f"{k} - {status}{tag_str}")
