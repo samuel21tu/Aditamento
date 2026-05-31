@@ -105,8 +105,9 @@ class App:
             'nome_cmt': DEFAULT_CMT,
             'nome_sgte': DEFAULT_SGTE,
             'req_counts': {
-                'guarda': 24,
-                'plantao': 6,
+                'guarda': 8,
+                'plantao_ep': 3,
+                'plantao_ev': 3,
                 'apoio': 2,
                 'sobre_aviso': 2
             }
@@ -229,15 +230,18 @@ class App:
         opts_frame.pack(pady=10)
         
         self.var_guarda = tk.BooleanVar(value=False)
-        self.var_plantao = tk.BooleanVar(value=True)
+        self.var_plantao_ep = tk.BooleanVar(value=True)
+        self.var_plantao_ev = tk.BooleanVar(value=True)
         self.var_apoio = tk.BooleanVar(value=False)
         self.var_sobre_aviso = tk.BooleanVar(value=False)
         self.var_sem_expediente = tk.BooleanVar(value=False)
         
         self.chk_guarda = ttk.Checkbutton(opts_frame, text="Incluir GUARDA", variable=self.var_guarda)
-        self.chk_guarda.pack(side=tk.LEFT, padx=10)
-        self.chk_plantao = ttk.Checkbutton(opts_frame, text="Incluir PLANTÃO", variable=self.var_plantao)
-        self.chk_plantao.pack(side=tk.LEFT, padx=10)
+        self.chk_guarda.pack(side=tk.LEFT, padx=5)
+        self.chk_plantao_ep = ttk.Checkbutton(opts_frame, text="Incluir PLANTÃO EP", variable=self.var_plantao_ep)
+        self.chk_plantao_ep.pack(side=tk.LEFT, padx=5)
+        self.chk_plantao_ev = ttk.Checkbutton(opts_frame, text="Incluir PLANTÃO EV", variable=self.var_plantao_ev)
+        self.chk_plantao_ev.pack(side=tk.LEFT, padx=5)
         self.chk_apoio = ttk.Checkbutton(opts_frame, text="Incluir APOIO", variable=self.var_apoio)
         self.chk_apoio.pack(side=tk.LEFT, padx=10)
         self.chk_sobre_aviso = ttk.Checkbutton(opts_frame, text="Incluir SOBRE AVISO", variable=self.var_sobre_aviso)
@@ -303,8 +307,9 @@ class App:
         
         btn_frame = ttk.Frame(list_frame)
         btn_frame.pack(fill=tk.X)
-        ttk.Button(btn_frame, text="Excluir Escala Selecionada", command=self.excluir_historico).pack(side=tk.LEFT, fill=tk.X, expand=True, padx=2)
-        ttk.Button(btn_frame, text="Imprimir Selecionada", command=self.imprimir_historico).pack(side=tk.LEFT, fill=tk.X, expand=True, padx=2)
+        ttk.Button(btn_frame, text="Excluir Escala", command=self.excluir_historico).pack(side=tk.LEFT, fill=tk.X, expand=True, padx=2)
+        ttk.Button(btn_frame, text="Imprimir", command=self.imprimir_historico).pack(side=tk.LEFT, fill=tk.X, expand=True, padx=2)
+        ttk.Button(btn_frame, text="Exportar Planilha", command=self.exportar_planilha).pack(side=tk.LEFT, fill=tk.X, expand=True, padx=2)
         
         view_frame = ttk.LabelFrame(paned, text="Detalhes da Escala", padding="10")
         paned.add(view_frame, weight=2)
@@ -397,12 +402,17 @@ class App:
         ttk.Label(q_grid, text="Guarda:").grid(row=0, column=0, sticky=tk.W, padx=5, pady=5)
         self.entry_req_guarda = ttk.Entry(q_grid, width=5)
         self.entry_req_guarda.grid(row=0, column=1, sticky=tk.W, padx=5)
-        self.entry_req_guarda.insert(0, str(req.get('guarda', 24)))
+        self.entry_req_guarda.insert(0, str(req.get('guarda', 8)))
         
-        ttk.Label(q_grid, text="Plantão:").grid(row=0, column=2, sticky=tk.W, padx=5, pady=5)
-        self.entry_req_plantao = ttk.Entry(q_grid, width=5)
-        self.entry_req_plantao.grid(row=0, column=3, sticky=tk.W, padx=5)
-        self.entry_req_plantao.insert(0, str(req.get('plantao', 6)))
+        ttk.Label(q_grid, text="Plantão EP:").grid(row=0, column=2, sticky=tk.W, padx=5, pady=5)
+        self.entry_req_plantao_ep = ttk.Entry(q_grid, width=5)
+        self.entry_req_plantao_ep.grid(row=0, column=3, sticky=tk.W, padx=5)
+        self.entry_req_plantao_ep.insert(0, str(req.get('plantao_ep', 3)))
+
+        ttk.Label(q_grid, text="Plantão EV:").grid(row=0, column=4, sticky=tk.W, padx=5, pady=5)
+        self.entry_req_plantao_ev = ttk.Entry(q_grid, width=5)
+        self.entry_req_plantao_ev.grid(row=0, column=5, sticky=tk.W, padx=5)
+        self.entry_req_plantao_ev.insert(0, str(req.get('plantao_ev', 3)))
         
         ttk.Label(q_grid, text="Apoio HT:").grid(row=1, column=0, sticky=tk.W, padx=5, pady=5)
         self.entry_req_apoio = ttk.Entry(q_grid, width=5)
@@ -427,7 +437,8 @@ class App:
         try:
             self.current_state['req_counts'] = {
                 'guarda': int(self.entry_req_guarda.get()),
-                'plantao': int(self.entry_req_plantao.get()),
+                'plantao_ep': int(self.entry_req_plantao_ep.get()),
+                'plantao_ev': int(self.entry_req_plantao_ev.get()),
                 'apoio': int(self.entry_req_apoio.get()),
                 'sobre_aviso': int(self.entry_req_sa.get())
             }
@@ -441,9 +452,11 @@ class App:
     def atualizar_labels_quantitativos(self):
         req = self.current_state.get('req_counts', {})
         if hasattr(self, 'chk_guarda'):
-            self.chk_guarda.config(text=f"Incluir GUARDA ({req.get('guarda', 24)})")
-        if hasattr(self, 'chk_plantao'):
-            self.chk_plantao.config(text=f"Incluir PLANTÃO ({req.get('plantao', 6)})")
+            self.chk_guarda.config(text=f"Incluir GUARDA ({req.get('guarda', 8)})")
+        if hasattr(self, 'chk_plantao_ep'):
+            self.chk_plantao_ep.config(text=f"Incluir PLANTÃO EP ({req.get('plantao_ep', 3)})")
+        if hasattr(self, 'chk_plantao_ev'):
+            self.chk_plantao_ev.config(text=f"Incluir PLANTÃO EV ({req.get('plantao_ev', 3)})")
         if hasattr(self, 'chk_apoio'):
             self.chk_apoio.config(text=f"Incluir APOIO ({req.get('apoio', 2)})")
         if hasattr(self, 'chk_sobre_aviso'):
@@ -558,7 +571,19 @@ class App:
         p_str = self.entry_disp_pessoa.get().strip()
         inicio = self.parse_dt_local(self.entry_disp_inicio.get().strip())
         fim = self.parse_dt_local(self.entry_disp_fim.get().strip())
-        if not p_str.isdigit() or not inicio or not fim or inicio > fim: return
+        
+        if not p_str.isdigit():
+            return messagebox.showerror("Erro", "Número do militar inválido.")
+            
+        if p_str not in self.current_state.get('pessoas', {}):
+            return messagebox.showerror("Erro", f"Militar {p_str} não cadastrado no Efetivo!")
+            
+        if not inicio or not fim:
+            return messagebox.showerror("Erro", "Formato de data inválido! Use DD/MM/AAAA (ex: 25/12/2026).")
+            
+        if inicio > fim:
+            return messagebox.showerror("Erro", "A data de início não pode ser maior que a data de fim.")
+            
         pessoa = int(p_str)
         if pessoa not in self.dispensas: self.dispensas[pessoa] = []
         self.dispensas[pessoa].append((inicio, fim))
@@ -605,7 +630,8 @@ class App:
         self.lbl_target_date.config(text=f"Data Alvo: {prox_dia.strftime('%d/%m/%Y')} ({nome_dia})")
         
         self.var_guarda.set(False)
-        self.var_plantao.set(True)
+        self.var_plantao_ep.set(True)
+        self.var_plantao_ev.set(True)
         self.var_apoio.set(False)
         self.var_sobre_aviso.set(False)
         self.var_sem_expediente.set(prox_dia.weekday() >= 5)
@@ -617,12 +643,13 @@ class App:
     def gerar_escala(self):
         target_date = self.get_next_date()
         has_g = self.var_guarda.get()
-        has_p = self.var_plantao.get()
+        has_p_ep = self.var_plantao_ep.get()
+        has_p_ev = self.var_plantao_ev.get()
         has_a = self.var_apoio.get()
         has_sa = self.var_sobre_aviso.get()
         sem_exp = self.var_sem_expediente.get()
         
-        if not has_g and not has_p and not has_a and not has_sa:
+        if not has_g and not has_p_ep and not has_p_ev and not has_a and not has_sa:
             return messagebox.showerror("Erro", "Selecione pelo menos uma função.")
 
         try:
@@ -637,7 +664,7 @@ class App:
                 guarda_comp_hoje[k + "_cat"] = cb.get()
 
             result, new_state = generate_daily_schedule(
-                target_date, has_g, has_p, has_a, has_sa, self.dispensas, self.current_state, 
+                target_date, has_g, has_p_ep, has_p_ev, has_a, has_sa, self.dispensas, self.current_state, 
                 req_counts=self.current_state.get('req_counts', {})
             )
             
@@ -664,7 +691,10 @@ class App:
             if has_g:
                 self.text_details.insert(tk.END, f"GUARDA ({len(result['guarda'])}): {', '.join(result['guarda'])}\n\n")
                 
-            if has_p: self.text_details.insert(tk.END, f"PLANTÃO ({len(result['plantao'])}): {', '.join(result['plantao'])}\n\n")
+            if has_p_ep:
+                self.text_details.insert(tk.END, f"PLANTÃO ALOJ EP ({len(result['plantao_ep'])}): {', '.join(result['plantao_ep'])}\n\n")
+            if has_p_ev:
+                self.text_details.insert(tk.END, f"PLANTÃO ALOJ EV ({len(result['plantao_ev'])}): {', '.join(result['plantao_ev'])}\n\n")
             if has_a: self.text_details.insert(tk.END, f"APOIO HT/PARIA ({len(result['apoio'])}): {', '.join(result['apoio'])}\n\n")
             if has_sa: self.text_details.insert(tk.END, f"SOBRE AVISO ({len(result['sobre_aviso'])}): {', '.join(result['sobre_aviso'])}\n\n")
             
@@ -755,7 +785,12 @@ class App:
         if item.get('has_guarda'): 
             self.text_hist_details.insert(tk.END, f"GUARDA ({len(item.get('guarda', []))}): {', '.join(item.get('guarda', []))}\n\n")
             
-        if item.get('has_plantao'): self.text_hist_details.insert(tk.END, f"PLANTÃO ({len(item['plantao'])}): {', '.join(item['plantao'])}\n\n")
+        if item.get('plantao_ep'):
+            self.text_hist_details.insert(tk.END, f"PLANTÃO ALOJ EP ({len(item['plantao_ep'])}): {', '.join(item['plantao_ep'])}\n\n")
+        if item.get('plantao_ev'):
+            self.text_hist_details.insert(tk.END, f"PLANTÃO ALOJ EV ({len(item['plantao_ev'])}): {', '.join(item['plantao_ev'])}\n\n")
+        elif item.get('has_plantao') and item.get('plantao'):
+            self.text_hist_details.insert(tk.END, f"PLANTÃO ({len(item['plantao'])}): {', '.join(item['plantao'])}\n\n")
         if item.get('has_apoio'): self.text_hist_details.insert(tk.END, f"APOIO HT/PARIA ({len(item['apoio'])}): {', '.join(item['apoio'])}\n\n")
         if item.get('has_sobre_aviso'): self.text_hist_details.insert(tk.END, f"SOBRE AVISO ({len(item.get('sobre_aviso', []))}): {', '.join(item.get('sobre_aviso', []))}\n\n")
 
@@ -788,6 +823,62 @@ class App:
         if idx >= len(historico): return
         
         self.imprimir_escala(historico[idx])
+
+    def exportar_planilha(self):
+        import csv
+        from tkinter import filedialog
+        from scheduler import calculate_points
+        import datetime
+        
+        pessoas_db = self.current_state.get('pessoas', {})
+        historico = self.current_state.get('historico_escalas', [])
+        
+        p_preta, p_vermelha, recents, last_we, last_date = calculate_points(historico, list(pessoas_db.keys()))
+        
+        filepath = filedialog.asksaveasfilename(
+            defaultextension=".csv",
+            filetypes=[("Planilha CSV", "*.csv"), ("Todos os Arquivos", "*.*")],
+            title="Salvar Planilha de Efetivo",
+            initialfile=f"Efetivo_{datetime.datetime.now().strftime('%d_%m_%Y')}.csv"
+        )
+        
+        if not filepath:
+            return
+            
+        try:
+            with open(filepath, mode='w', newline='', encoding='utf-8-sig') as f:
+                writer = csv.writer(f, delimiter=';')
+                writer.writerow([
+                    "Militar", "Ativo?", "Escala Vermelha?", "Apenas Plantao?",
+                    "Ultimo Servico", "Servicos Recentes", 
+                    "Pontos Escala Preta", "Pontos Escala Vermelha", "Total Pontos"
+                ])
+                
+                sorted_p = sorted(
+                    pessoas_db.keys(),
+                    key=lambda p: p_preta.get(p, 0) + p_vermelha.get(p, 0)
+                )
+                
+                for p in sorted_p:
+                    p_data = pessoas_db[p]
+                    ld = last_date.get(p)
+                    ld_str = ld.strftime('%d/%m/%Y') if ld else "Nunca"
+                    
+                    writer.writerow([
+                        p,
+                        "Sim" if p_data.get('ativo', True) else "Nao",
+                        "Sim" if p_data.get('is_po', False) else "Nao",
+                        "Sim" if p_data.get('is_sargentiacao', False) else "Nao",
+                        ld_str,
+                        recents.get(p, 0),
+                        p_preta.get(p, 0),
+                        p_vermelha.get(p, 0),
+                        p_preta.get(p, 0) + p_vermelha.get(p, 0)
+                    ])
+                    
+            messagebox.showinfo("Sucesso", f"Planilha gerada com sucesso em:\n{filepath}\n\nVocê pode abrir este arquivo diretamente no Excel!")
+        except Exception as e:
+            messagebox.showerror("Erro", f"Ocorreu um erro ao gerar a planilha:\n{str(e)}")
 
 if __name__ == "__main__":
     root = tk.Tk()

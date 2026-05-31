@@ -78,7 +78,15 @@ class DocumentGenerator:
         gc = item.get('guarda_comp', {})
         
         gda_str = " - ".join(item.get('guarda', [])) if item.get('guarda') else "-"
-        plantao_str = " - ".join(item.get('plantao', [])) if item.get('plantao') else "-"
+        
+        plantoes_ep_lst = item.get('plantao_ep', [])
+        plantoes_ev_lst = item.get('plantao_ev', [])
+        if not plantoes_ep_lst and not plantoes_ev_lst and item.get('plantao'):
+            plantoes_ep_lst = item.get('plantao', [])
+            
+        plantao_ep_str = " - ".join(plantoes_ep_lst) if plantoes_ep_lst else "-"
+        plantao_ev_str = " - ".join(plantoes_ev_lst) if plantoes_ev_lst else "-"
+        
         apoio_str = " - ".join(item.get('apoio', [])) if item.get('apoio') else "-"
         sobre_aviso_str = " - ".join(item.get('sobre_aviso', [])) if item.get('sobre_aviso') else "-"
 
@@ -210,7 +218,8 @@ class DocumentGenerator:
             ("PADIOLEIRO", "SD EP", gc.get('padioleiro', '-')),
             ("SOMBRA", "SD EP", gc.get('sombra', '-')),
             ("GDA QTEL", "SD EV", gda_str),
-            ("PLANTÕES", "SD EV", plantao_str),
+            ("PLANTÃO ALOJ EP", "SD EV", plantao_ep_str),
+            ("PLANTÃO ALOJ EV", "SD EV", plantao_ev_str),
             ("APOIO PRAIA/HT", "SD EV", apoio_str),
             ("SOBRE AVISO", "SD EV", sobre_aviso_str)
         ]
@@ -284,7 +293,7 @@ class DocumentGenerator:
         document.add_page_break()
 
         # --- PAGO PERNOITE (Controle de Efetivo) ---
-        plantoes = item.get('plantao', [])
+        plantoes = item.get('plantao', []) + item.get('plantao_ep', []) + item.get('plantao_ev', [])
         guardas = item.get('guarda', [])
         apoios = item.get('apoio', [])
         sobre_avisos = item.get('sobre_aviso', [])
