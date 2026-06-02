@@ -311,6 +311,10 @@ class App:
         ttk.Button(btn_frame, text="Imprimir", command=self.imprimir_historico).pack(side=tk.LEFT, fill=tk.X, expand=True, padx=2)
         ttk.Button(btn_frame, text="Exportar Planilha", command=self.exportar_planilha).pack(side=tk.LEFT, fill=tk.X, expand=True, padx=2)
         
+        btn_frame2 = ttk.Frame(list_frame)
+        btn_frame2.pack(fill=tk.X, pady=2)
+        ttk.Button(btn_frame2, text="Trocar Pontos (Sobre Aviso)", command=self.substituir_sobre_aviso).pack(side=tk.LEFT, fill=tk.X, expand=True, padx=2)
+        
         view_frame = ttk.LabelFrame(paned, text="Detalhes da Escala", padding="10")
         paned.add(view_frame, weight=2)
         
@@ -762,7 +766,7 @@ class App:
             dt_str = dt.strftime("%d/%m/%Y")
             self.listbox_historico.insert(tk.END, f"{i} - Escala do dia {dt_str}")
 
-    def on_historico_select(self, event):
+    def on_historico_select(self, event=None):
         selection = self.listbox_historico.curselection()
         if not selection: return
         idx = int(self.listbox_historico.get(selection[0]).split(" - ")[0])
@@ -811,6 +815,74 @@ class App:
             self.atualizar_data_alvo()
             self.text_hist_details.delete("1.0", tk.END)
             messagebox.showinfo("Sucesso", "Escala excluída com sucesso! Os serviços das pessoas voltaram como se este dia nunca tivesse existido.")
+
+    def substituir_sobre_aviso(self):
+        selection = self.listbox_historico.curselection()
+        if not selection: 
+            return messagebox.showwarning("Aviso", "Selecione uma escala no histórico primeiro.")
+        
+        idx = int(self.listbox_historico.get(selection[0]).split(" - ")[0])
+        historico = self.current_state.get('historico_escalas', [])
+        
+        if idx >= len(historico): return
+        
+        item = historico[idx]
+        sobre_avisos = item.get('sobre_aviso', [])
+        
+        if not sobre_avisos:
+            return messagebox.showwarning("Aviso", "Não há militares de sobre aviso registrados nesta escala.")
+            
+        outros_servicos = {}
+        for key in ['guarda', 'plantao_ep', 'plantao_ev', 'apoio', 'plantao']:
+            for p in item.get(key, []):
+                outros_servicos[p] = key
+                
+        if not outros_servicos:
+            return messagebox.showwarning("Aviso", "Não há outros militares com serviço nesta escala para serem substituídos.")
+            
+        win = tk.Toplevel(self.root)
+        win.title("Substituição por Sobre Aviso")
+        win.geometry("450x250")
+        win.transient(self.root)
+        win.grab_set()
+        
+        ttk.Label(win, text="Quem do Sobre Aviso assumiu o serviço?", font=("Segoe UI", 11)).pack(pady=(15, 5))
+        var_sa = tk.StringVar()
+        cb_sa = ttk.Combobox(win, textvariable=var_sa, values=sobre_avisos, state="readonly", font=("Segoe UI", 11))
+        cb_sa.pack(pady=5)
+        if sobre_avisos: cb_sa.current(0)
+        
+        ttk.Label(win, text="Quem foi substituído (não tirou o serviço)?", font=("Segoe UI", 11)).pack(pady=(15, 5))
+        var_sub = tk.StringVar()
+        lista_outros = list(outros_servicos.keys())
+        cb_sub = ttk.Combobox(win, textvariable=var_sub, values=lista_outros, state="readonly", font=("Segoe UI", 11))
+        cb_sub.pack(pady=5)
+        if lista_outros: cb_sub.current(0)
+        
+        def confirmar():
+            sa = var_sa.get()
+            sub = var_sub.get()
+            if not sa or not sub:
+                return messagebox.showwarning("Aviso", "Selecione ambos os militares.")
+                
+            lista_sub = outros_servicos[sub]
+            
+            if sa in item.get('sobre_aviso', []):
+                item['sobre_aviso'].remove(sa)
+                item['sobre_aviso'].append(sub)
+                
+            if sub in item.get(lista_sub, []):
+                item[lista_sub].remove(sub)
+                item[lista_sub].append(sa)
+                
+            self.save_state(self.current_state)
+            self.atualizar_ranking()
+            self.on_historico_select(None)
+            
+            messagebox.showinfo("Sucesso", f"Substituição realizada!\n\n{sa} assumiu como {lista_sub.upper()}.\n{sub} passou para SOBRE AVISO.")
+            win.destroy()
+            
+        ttk.Button(win, text="Confirmar Troca", command=confirmar, style="Accent.TButton").pack(pady=20)
 
     def imprimir_historico(self):
         selection = self.listbox_historico.curselection()
