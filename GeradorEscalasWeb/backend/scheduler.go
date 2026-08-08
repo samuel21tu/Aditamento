@@ -142,6 +142,23 @@ type GenerateOpts struct {
 	EnabledRoles []string
 }
 
+func isMilitarEV(name string, p Pessoa) bool {
+	if p.PostoGrad == "Soldado EV" {
+		return true
+	}
+	if len(name) >= 3 && (name[0] == '3' || name[0] == '4' || name[0] == '5') {
+		return true
+	}
+	return !p.IsEP && p.PostoGrad != "Cabo" && p.PostoGrad != "Soldado EP" && !strings.HasPrefix(p.PostoGrad, "1º") && !strings.HasPrefix(p.PostoGrad, "2º") && !strings.HasPrefix(p.PostoGrad, "3º") && !strings.HasPrefix(p.PostoGrad, "Sub") && !strings.HasPrefix(p.PostoGrad, "Cap") && !strings.HasPrefix(p.PostoGrad, "Ten")
+}
+
+func isMilitarEP(name string, p Pessoa) bool {
+	if p.PostoGrad == "Soldado EP" || p.PostoGrad == "Cabo" || p.PostoGrad == "Cabo/Soldado EP" || p.IsEP {
+		return true
+	}
+	return false
+}
+
 func GenerateDailySchedule(opts GenerateOpts, currentState AppState) (HistoricoEscala, error) {
 	targetDate, err := parseDt(opts.TargetDate)
 	if err != nil {
@@ -165,7 +182,7 @@ func GenerateDailySchedule(opts GenerateOpts, currentState AppState) (HistoricoE
 		if !pData.Ativo {
 			continue
 		}
-		if pData.PostoGrad != "Soldado EP" && pData.PostoGrad != "Soldado EV" {
+		if !isMilitarEV(pStr, pData) && !isMilitarEP(pStr, pData) {
 			continue
 		}
 		if pData.ApenasFimDeSemana && isMeioSemana {
@@ -283,11 +300,24 @@ func GenerateDailySchedule(opts GenerateOpts, currentState AppState) (HistoricoE
 	remainingCandidates := append([]string{}, candidates...)
 
 	for _, roleName := range rolesToAssign {
-		req := currentState.RoleConfigs[roleName].Required
-		aptosList := currentState.RoleConfigs[roleName].Aptos
+		cfg := currentState.RoleConfigs[roleName]
+		req := cfg.Required
+		aptosList := cfg.Aptos
 		aptosMap := make(map[string]bool)
 		for _, a := range aptosList {
 			aptosMap[a] = true
+		}
+
+		destinadoA := strings.ToUpper(strings.TrimSpace(cfg.DestinadoA))
+		if destinadoA == "" {
+			upperRole := strings.ToUpper(roleName)
+			if strings.Contains(upperRole, "EP") {
+				destinadoA = "EP"
+			} else if strings.Contains(upperRole, "EV") {
+				destinadoA = "EV"
+			} else {
+				destinadoA = "AMBOS"
+			}
 		}
 
 		var selected []string
@@ -299,13 +329,18 @@ func GenerateDailySchedule(opts GenerateOpts, currentState AppState) (HistoricoE
 			}
 			pData := currentState.Pessoas[p]
 
-			// Role Aptitude Filtering
-			if len(aptosList) == 0 {
-				// According to new rules, if empty, NO ONE is apt
+			// Category Filtering (EV vs EP vs AMBOS)
+			if destinadoA == "EV" && !isMilitarEV(p, pData) {
 				i++
 				continue
 			}
-			if !aptosMap[p] {
+			if destinadoA == "EP" && !isMilitarEP(p, pData) {
+				i++
+				continue
+			}
+
+			// Specific Aptos List Filtering (only if user explicitly set an aptitude list)
+			if len(aptosList) > 0 && !aptosMap[p] {
 				i++
 				continue
 			}
@@ -322,7 +357,13 @@ func GenerateDailySchedule(opts GenerateOpts, currentState AppState) (HistoricoE
 		}
 
 		if len(selected) < req {
-			return HistoricoEscala{}, fmt.Errorf("Não há militares aptos suficientes para a função '%s'. Requisitado: %d, Alocados: %d. Por favor, adicione mais militares aptos na aba Configurações.", roleName, req, len(selected))
+			catName := "Efetivo Geral"
+			if destinadoA == "EV" {
+				catName = "Soldados EV"
+			} else if destinadoA == "EP" {
+				catName = "Cabos / Soldados EP"
+			}
+			return HistoricoEscala{}, fmt.Errorf("Não há militares aptos suficientes para a função '%s' (%s). Requisitado: %d, Alocados: %d. Por favor, adicione mais militares aptos na aba Configurações.", roleName, catName, req, len(selected))
 		}
 
 		escaladosMap[roleName] = selected

@@ -20,10 +20,11 @@ type Pessoa struct {
 }
 
 type RoleConfig struct {
-	Name        string  `json:"name"`
-	Weight      float64 `json:"weight"`
+	Name        string   `json:"name"`
+	Weight      float64  `json:"weight"`
 	Required    int      `json:"required"`
 	ServiceType string   `json:"service_type,omitempty"` // "Interno" ou "Externo"
+	DestinadoA  string   `json:"destinado_a,omitempty"`  // "EV", "EP", "AMBOS"
 	Aptos       []string `json:"aptos,omitempty"`        // Lista de militares aptos para essa função
 }
 
@@ -162,15 +163,15 @@ func GetDefaultState(unidade string) AppState {
 	}
 
 	roles := map[string]RoleConfig{
-		"MOT VILA":         {Name: "MOT VILA", Weight: 2.0, Required: 1},
-		"GDA VILA":         {Name: "GDA VILA", Weight: 3.0, Required: 1},
-		"PADIOLEIRO":       {Name: "PADIOLEIRO", Weight: 1.0, Required: 1},
-		"SOMBRA":           {Name: "SOMBRA", Weight: 1.0, Required: 1},
-		"GDA QTEL":         {Name: "GDA QTEL", Weight: 3.0, Required: 7},
-		"PLANTÃO ALOJ EP":  {Name: "PLANTÃO ALOJ EP", Weight: 2.0, Required: 3},
-		"PLANTÃO ALOJ EV":  {Name: "PLANTÃO ALOJ EV", Weight: 2.0, Required: 3},
-		"APOIO PRAIA/HT":   {Name: "APOIO PRAIA/HT", Weight: 1.0, Required: 2},
-		"SOBRE AVISO":      {Name: "SOBRE AVISO", Weight: 0.5, Required: 2},
+		"MOT VILA":         {Name: "MOT VILA", Weight: 2.0, Required: 1, ServiceType: "Externo", DestinadoA: "EP"},
+		"GDA VILA":         {Name: "GDA VILA", Weight: 3.0, Required: 1, ServiceType: "Externo", DestinadoA: "EV"},
+		"PADIOLEIRO":       {Name: "PADIOLEIRO", Weight: 1.0, Required: 1, ServiceType: "Interno", DestinadoA: "EV"},
+		"SOMBRA":           {Name: "SOMBRA", Weight: 1.0, Required: 1, ServiceType: "Interno", DestinadoA: "EV"},
+		"GDA QTEL":         {Name: "GDA QTEL", Weight: 3.0, Required: 7, ServiceType: "Interno", DestinadoA: "EV"},
+		"PLANTÃO ALOJ EP":  {Name: "PLANTÃO ALOJ EP", Weight: 2.0, Required: 3, ServiceType: "Interno", DestinadoA: "EP"},
+		"PLANTÃO ALOJ EV":  {Name: "PLANTÃO ALOJ EV", Weight: 2.0, Required: 3, ServiceType: "Interno", DestinadoA: "EV"},
+		"APOIO PRAIA/HT":   {Name: "APOIO PRAIA/HT", Weight: 1.0, Required: 2, ServiceType: "Interno", DestinadoA: "EP"},
+		"SOBRE AVISO":      {Name: "SOBRE AVISO", Weight: 0.5, Required: 2, ServiceType: "Interno", DestinadoA: "AMBOS"},
 	}
 
 	return AppState{
@@ -207,6 +208,25 @@ func LoadState(filepath string) (AppState, error) {
 	}
 	if state.Dispensas == nil {
 		state.Dispensas = make(map[string][]Dispensa)
+	}
+
+	// Migrate RoleConfigs DestinadoA
+	for rName, rc := range state.RoleConfigs {
+		if rc.DestinadoA == "" {
+			upperName := strings.ToUpper(rName)
+			if strings.Contains(upperName, "EP") {
+				rc.DestinadoA = "EP"
+			} else if strings.Contains(upperName, "EV") {
+				rc.DestinadoA = "EV"
+			} else if rName == "GDA VILA" || rName == "GDA QTEL" || rName == "PADIOLEIRO" || rName == "SOMBRA" {
+				rc.DestinadoA = "EV"
+			} else if rName == "MOT VILA" || rName == "MOT DIA" || rName == "APOIO PRAIA/HT" {
+				rc.DestinadoA = "EP"
+			} else {
+				rc.DestinadoA = "AMBOS"
+			}
+			state.RoleConfigs[rName] = rc
+		}
 	}
 
 	// Migrate Pessoa Legacy flags

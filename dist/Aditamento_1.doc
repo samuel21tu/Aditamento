@@ -1,0 +1,521 @@
+﻿
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+	body { font-family: "Times New Roman", Times, serif; font-size: 14px; margin: 40px; }
+	table.data-table { width: 100%; border-collapse: collapse; margin-top: 10px; margin-bottom: 20px; }
+	table.data-table th, table.data-table td { border: 1px solid black; padding: 5px; text-align: center; vertical-align: middle; }
+	
+	table.pernoite-table { width: 100%; border-collapse: collapse; margin-top: 10px; margin-bottom: 20px; font-size: 11px; font-weight: bold; }
+	table.pernoite-table th, table.pernoite-table td { border: 1px solid black; padding: 4px; text-align: center; vertical-align: middle; }
+
+	table.header-table { width: 100%; border: none; margin-bottom: 20px; border-collapse: collapse; }
+	table.header-table td { border: none; padding: 0; vertical-align: top; }
+	
+	.text-center { text-align: center; }
+	body { font-family: 'Times New Roman', Times, serif; }
+	.bold { font-weight: bold; }
+	.underline { text-decoration: underline; }
+	
+	.right-box { width: 100px; height: 70px; border: 1px solid black; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; padding-bottom: 5px; float: right; margin-top: 15px; }
+	.center-header { text-align: center; font-weight: bold; font-size: 14px; line-height: 1.1; }
+	.brasao, svg { width: 60px; height: auto; display: block; margin: 0 auto 2px auto; background-color: white; }
+	.bg-gray { background-color: #d9d9d9 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+	.parte-title { font-weight: bold; text-align: center; margin-top: 30px; margin-bottom: 15px;}
+	.text-left { text-align: left; }
+</style>
+</head>
+<body>
+	<table class="header-table" style="width: 100%;">
+		<tr>
+			<td style="width: 120px; vertical-align: top;"></td>
+			<td class="center-header" style="vertical-align: top;">
+				<img src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/bf/Coat_of_arms_of_Brazil.svg/200px-Coat_of_arms_of_Brazil.svg.png" style="width:60px;height:auto;display:block;margin:0 auto 5px auto;" />
+				MINISTÉRIO DA DEFESA<br>
+				EXÉRCITO BRASILEIRO<br>
+				17º GRUPO DE ARTILHARIA DE CAMPANHA<br>
+				(6º Regimento de Artilharia Montada/1915)<br>
+				GRUPO JERÔNIMO DE ALBUQUERQUE
+			</td>
+			<td style="width: 120px; vertical-align: top;">
+				<div class="right-box">
+					<span style="font-size: 10px;">_______________</span>
+					<span style="font-size: 12px; margin-top: 2px;" class="bold underline">Visto Sgte</span>
+				</div>
+			</td>
+		</tr>
+	</table>
+	
+	<div class="text-center" style="margin-bottom: 20px;">
+		Quartel em Natal /RN, 9 de agosto de 2026.<br>
+		(Domingo)
+	</div>
+
+	<div class="text-center bold" style="margin-bottom: 20px; padding: 0 10px;">
+		ADITAMENTO AO BOLETIM INTERNO DA BATERIA DE COMANDO Nr 1/2026, referente ao BOLETIM INTERNO Nr 0/2026, do 17º GAC.
+	</div>
+
+	<div class="text-center" style="margin-bottom: 20px;">
+		Para conhecimento desta Subunidade e devida execução, publico o seguinte:
+	</div>
+
+	<div class="parte-title" style="margin-top: 10px;">
+		1ª Parte:<br>
+		SERVIÇOS DIÁRIOS
+	</div>
+
+	
+	<table class="data-table">
+		
+		<tr><td colspan="3" class="bg-gray bold text-center">Serviço Externo para Domingo, 9 de agosto de 2026.</td></tr>
+		
+		<tr>
+			<td style="width: 25%;" class="bg-gray text-center">MOT VILA</td>
+			<td style="width: 15%;" class="bg-gray text-center">SD EP</td>
+			<td class="text-center">SD EP COSTA</td>
+		</tr>
+		
+		<tr>
+			<td style="width: 25%;" class="bg-gray text-center">GDA VILA</td>
+			<td style="width: 15%;" class="bg-gray text-center">SD EV</td>
+			<td class="text-center">322</td>
+		</tr>
+		
+		
+
+		
+		<tr><td colspan="3" class="bg-gray bold text-center">Serviço Interno para Domingo, 9 de agosto de 2026.</td></tr>
+		
+		<tr>
+			<td style="width: 25%;" class="bg-gray text-center">PADIOLEIRO</td>
+			<td style="width: 15%;" class="bg-gray text-center">SD EV</td>
+			<td class="text-center">336</td>
+		</tr>
+		
+		<tr>
+			<td style="width: 25%;" class="bg-gray text-center">PLANTÃO ALOJ EP</td>
+			<td style="width: 15%;" class="bg-gray text-center">SD EV</td>
+			<td class="text-center">310 - 337 - 317</td>
+		</tr>
+		
+		<tr>
+			<td style="width: 25%;" class="bg-gray text-center">PLANTÃO ALOJ EV</td>
+			<td style="width: 15%;" class="bg-gray text-center">SD EV</td>
+			<td class="text-center">354 - 325 - 303</td>
+		</tr>
+		
+		<tr>
+			<td style="width: 25%;" class="bg-gray text-center">APOIO PRAIA/HT</td>
+			<td style="width: 15%;" class="bg-gray text-center">SD EP</td>
+			<td class="text-center">Cb EP MATOS - SD EP FILHO</td>
+		</tr>
+		
+		<tr>
+			<td style="width: 25%;" class="bg-gray text-center">SOBRE AVISO</td>
+			<td style="width: 15%;" class="bg-gray text-center">SD EP</td>
+			<td class="text-center">SD EP GOMES - Cb CET VITOR</td>
+		</tr>
+		
+		<tr>
+			<td style="width: 25%;" class="bg-gray text-center">GDA QTEL</td>
+			<td style="width: 15%;" class="bg-gray text-center">SD EV</td>
+			<td class="text-center">314 - 3º Sgt JOELITO - 355 - 316 - 334 - 324 - 3º Sgt GABRIEL NETO</td>
+		</tr>
+		
+		<tr>
+			<td style="width: 25%;" class="bg-gray text-center">SOMBRA</td>
+			<td style="width: 15%;" class="bg-gray text-center">SD EV</td>
+			<td class="text-center">309</td>
+		</tr>
+		
+		
+		<tr>
+			<td style="width: 25%;" class="bg-gray text-center">PARADA DIÁRIA</td>
+			<td style="width: 15%;" class="bg-gray text-center">-</td>
+			<td class="text-center">09h30min</td>
+		</tr>
+	</table>
+	
+	<table class="data-table">
+		
+		<tr><td colspan="3" class="bg-gray bold text-center">Serviço Externo para Segunda - Feira, 10 de agosto de 2026.</td></tr>
+		
+		<tr>
+			<td style="width: 25%;" class="bg-gray text-center">MOT VILA</td>
+			<td style="width: 15%;" class="bg-gray text-center">SD EP</td>
+			<td class="text-center">SD EP AMORIM</td>
+		</tr>
+		
+		<tr>
+			<td style="width: 25%;" class="bg-gray text-center">GDA VILA</td>
+			<td style="width: 15%;" class="bg-gray text-center">SD EV</td>
+			<td class="text-center">307</td>
+		</tr>
+		
+		
+
+		
+		<tr><td colspan="3" class="bg-gray bold text-center">Serviço Interno para Segunda - Feira, 10 de agosto de 2026.</td></tr>
+		
+		<tr>
+			<td style="width: 25%;" class="bg-gray text-center">PADIOLEIRO</td>
+			<td style="width: 15%;" class="bg-gray text-center">SD EV</td>
+			<td class="text-center">348</td>
+		</tr>
+		
+		<tr>
+			<td style="width: 25%;" class="bg-gray text-center">PLANTÃO ALOJ EP</td>
+			<td style="width: 15%;" class="bg-gray text-center">SD EV</td>
+			<td class="text-center">359 - 346 - 3º Sgt SAVIO</td>
+		</tr>
+		
+		<tr>
+			<td style="width: 25%;" class="bg-gray text-center">PLANTÃO ALOJ EV</td>
+			<td style="width: 15%;" class="bg-gray text-center">SD EV</td>
+			<td class="text-center">3º Sgt FEITOSA - 320 - 352</td>
+		</tr>
+		
+		<tr>
+			<td style="width: 25%;" class="bg-gray text-center">APOIO PRAIA/HT</td>
+			<td style="width: 15%;" class="bg-gray text-center">SD EP</td>
+			<td class="text-center">Cb EP PAULO - 1º Ten GUSTAVO BUARQUE</td>
+		</tr>
+		
+		<tr>
+			<td style="width: 25%;" class="bg-gray text-center">SOBRE AVISO</td>
+			<td style="width: 15%;" class="bg-gray text-center">SD EP</td>
+			<td class="text-center">SD EP HIGINO - Cb EP JOALISON</td>
+		</tr>
+		
+		<tr>
+			<td style="width: 25%;" class="bg-gray text-center">GDA QTEL</td>
+			<td style="width: 15%;" class="bg-gray text-center">SD EV</td>
+			<td class="text-center">319 - 3º Sgt NETO - 350 - 306 - 351 - 323 - 328</td>
+		</tr>
+		
+		<tr>
+			<td style="width: 25%;" class="bg-gray text-center">SOMBRA</td>
+			<td style="width: 15%;" class="bg-gray text-center">SD EV</td>
+			<td class="text-center">340</td>
+		</tr>
+		
+		
+		<tr>
+			<td style="width: 25%;" class="bg-gray text-center">PARADA DIÁRIA</td>
+			<td style="width: 15%;" class="bg-gray text-center">-</td>
+			<td class="text-center">09h30min</td>
+		</tr>
+	</table>
+	
+
+	<div class="parte-title" style="margin-top: 30px;">
+		2ª Parte<br>
+		INSTRUÇÃO
+	</div>
+	
+	<div class="text-left" style="margin-bottom: 10px;">- Sem Alteração.</div>
+	
+
+	<div class="parte-title">
+		3ª Parte<br>
+		ASSUNTOS GERAIS E ADMINISTRATIVOS
+	</div>
+	
+	<div class="text-left bold">1. ASSUNTOS GERAIS</div>
+	
+	<div class="text-left" style="margin-bottom: 15px;">- Sem Alteração.</div>
+	
+	
+	<div class="text-left bold">2. ASSUNTOS ADMINISTRATIVOS</div>
+	
+	<div class="text-left" style="margin-bottom: 10px;">- Sem Alteração.</div>
+	
+	
+	
+	
+	<div class="text-left" style="margin-bottom: 10px; font-weight: bold; margin-top: 10px;">- INÍCIO DO EXPEDIENTE PARA DOMINGO, 9 DE AGOSTO DE 2026</div>
+	<div class="text-left" style="font-size: 12px; margin-bottom: 20px;">
+		a. Atividade: TFM<br>
+		
+		- Início do Expediente para OF/ST/SGT: 07h30min pronto no Campo de Futebol; Unif 14º.<br>
+		- Início do Expediente para CB/SD EP: 07h30min pronto no Campo de Futebol; Unif 14º.<br>
+		- Início do Expediente para SD EV: 06h45min pronto na SU; Unif 14º.
+		
+	</div>
+	
+	
+	
+	<div class="text-left" style="margin-bottom: 10px; font-weight: bold; margin-top: 10px;">- INÍCIO DO EXPEDIENTE PARA SEGUNDA - FEIRA, 10 DE AGOSTO DE 2026</div>
+	<div class="text-left" style="font-size: 12px; margin-bottom: 20px;">
+		a. Atividade: TFM<br>
+		
+		- Início do Expediente para OF/ST/SGT: 07h30min pronto no Campo de Futebol; Unif 14º.<br>
+		- Início do Expediente para CB/SD EP: 07h30min pronto no Campo de Futebol; Unif 14º.<br>
+		- Início do Expediente para SD EV: 06h45min pronto na SU; Unif 14º.
+		
+	</div>
+	
+	
+
+	<div class="parte-title">
+		4ª Parte<br>
+		JUSTIÇA E DISCIPLINA
+	</div>
+	
+	<div class="text-left">- Sem Alteração.</div>
+	
+
+	<br><br><br><br>
+	<div class="text-center">
+		<p class="bold" style="margin-bottom: 0;">RENAN LOUREIRO LENTZ - Cap</p>
+		<p class="bold underline" style="margin-top: 0;">Comandante da Bateria De Comando</p>
+	</div>
+
+	
+	<div style="page-break-before: always;"></div>
+	<table style="width: 100%; border-collapse: collapse; text-align: center; font-weight: bold; font-size: 11px; border: 1px solid black;">
+		
+		<tr>
+			<td style="width: 15%; border-right: 1px solid black; vertical-align: top; padding: 5px;">
+				<div style="text-decoration: underline; text-align: left;">Visto:</div>
+				<br><br><br>
+				<div>Cmt SU</div>
+			</td>
+			<td colspan="4" style="width: 85%; padding: 5px;">
+				MINISTÉRIO DA DEFESA<br>
+				EXÉRCITO BRASILEIRO<br>
+				17º GRUPO DE ARTILHARIA DE CAMPANHA<br>
+				Bateria De Comando
+			</td>
+		</tr>
+		<tr>
+			<td colspan="5" class="bg-gray" style="border-top: 1px solid black; padding: 5px;">
+				Controle de Efetivo para Domingo, 9 de agosto de 2026.
+			</td>
+		</tr>
+
+		
+		<tr>
+			<td style="width: 15%; border: 1px solid black; padding: 4px;" class="bg-gray">GRAD</td>
+			<td colspan="3" style="width: 70%; border: 1px solid black; padding: 4px;" class="bg-gray">EM FORMA</td>
+			<td style="width: 15%; border: 1px solid black; padding: 4px;" class="bg-gray">SOMA</td>
+		</tr>
+		
+		<tr>
+			<td style="border: 1px solid black; padding: 4px;">SD EV</td>
+			<td colspan="3" class="text-left" style="border: 1px solid black; padding: 4px 4px 4px 10px;">PLANTÃO ALOJ EP: 310 - 337 - 317<br>PLANTÃO ALOJ EV: 354 - 325 - 303</td>
+			<td style="border: 1px solid black; padding: 4px;">06</td>
+		</tr>
+		
+		<tr>
+			<td colspan="4" class="text-left" style="border: 1px solid black; padding: 4px 4px 4px 10px;">TOTAL EM FORMA: SEIS</td>
+			<td style="border: 1px solid black; padding: 4px;">06</td>
+		</tr>
+
+		
+		<tr>
+			<td colspan="5" class="bg-gray" style="border: 1px solid black; padding: 4px;">PUNIDOS DISCIPLINARMENTE</td>
+		</tr>
+		<tr>
+			<td style="width: 15%; border: 1px solid black; padding: 4px;" class="bg-gray">PROC.</td>
+			<td style="width: 40%; border: 1px solid black; padding: 4px;" class="bg-gray">GRAD/NOME</td>
+			<td style="width: 15%; border: 1px solid black; padding: 4px;" class="bg-gray">TIPO</td>
+			<td style="width: 15%; border: 1px solid black; padding: 4px;" class="bg-gray">INÍCIO</td>
+			<td style="width: 15%; border: 1px solid black; padding: 4px;" class="bg-gray">TÉRMINO</td>
+		</tr>
+		<tr>
+			<td style="border: 1px solid black; padding: 4px;">-</td>
+			<td style="border: 1px solid black; padding: 4px;">-</td>
+			<td style="border: 1px solid black; padding: 4px;">-</td>
+			<td style="border: 1px solid black; padding: 4px;">-</td>
+			<td style="border: 1px solid black; padding: 4px;">-</td>
+		</tr>
+
+		
+		<tr>
+			<td colspan="4" class="bg-gray" style="border: 1px solid black; padding: 4px;">EM OUTROS DESTINOS</td>
+			<td style="border: 1px solid black; padding: 4px;" class="bg-gray">SOMA</td>
+		</tr>
+		
+		<tr>
+			<td style="border: 1px solid black; padding: 4px;">SD EP</td>
+			<td colspan="3" class="text-left" style="border: 1px solid black; padding: 4px 4px 4px 10px;">APOIO PRAIA/HT: Cb EP MATOS - SD EP FILHO<br>SOBRE AVISO: SD EP GOMES - Cb CET VITOR<br>MOT VILA: SD EP COSTA</td>
+			<td style="border: 1px solid black; padding: 4px;">05</td>
+		</tr>
+		
+		<tr>
+			<td style="border: 1px solid black; padding: 4px;">SD EV</td>
+			<td colspan="3" class="text-left" style="border: 1px solid black; padding: 4px 4px 4px 10px;">PADIOLEIRO: 336<br>GDA QTEL: 314 - 3º Sgt JOELITO - 355 - 316 - 334 - 324 - 3º Sgt GABRIEL NETO<br>SOMBRA: 309<br>GDA VILA: 322</td>
+			<td style="border: 1px solid black; padding: 4px;">10</td>
+		</tr>
+		
+		<tr>
+			<td colspan="4" class="text-left" style="border: 1px solid black; padding: 4px 4px 4px 10px;">TOTAL EM OUTROS DESTINOS: QUINZE</td>
+			<td style="border: 1px solid black; padding: 4px;">15</td>
+		</tr>
+		<tr>
+			<td colspan="4" class="text-left" style="border: 1px solid black; padding: 4px 4px 4px 10px;">TOTAL GERAL: VINTE E UM</td>
+			<td style="border: 1px solid black; padding: 4px;">21</td>
+		</tr>
+
+		
+		<tr>
+			<td colspan="5" style="border: 1px solid black; padding: 0;">
+				<table style="width: 100%; border-collapse: collapse; text-align: center; font-weight: bold; font-size: 11px;">
+					<tr>
+						<td style="width: 25%; border-right: 1px solid black; vertical-align: top; padding: 5px; height: 80px;">
+							<div style="text-align: left; text-decoration: underline;">Visto:</div>
+							<br><br><br>
+							<div style="text-decoration: underline;">Sgt Dia</div>
+						</td>
+						<td style="width: 50%; vertical-align: top; padding: 5px;">
+							Quartel em Natal/RN, 9 de agosto de 2026.<br><br>
+							<span style="font-size: 13px;">HEBERT CARLOS VIANA - 2º Sgt</span><br>
+							<span style="text-decoration: underline; font-weight: normal;">Sargenteante da Bateria De Comando</span>
+						</td>
+						<td style="width: 25%; border-left: 1px solid black; vertical-align: top; padding: 5px;">
+							<div style="text-align: left; text-decoration: underline;">Visto:</div>
+							<br><br><br>
+							<div style="text-decoration: underline;">Of Dia</div>
+						</td>
+					</tr>
+					<tr>
+						<td colspan="3" style="border-top: 1px solid black; padding: 5px 5px 15px 5px; text-align: left; font-weight: normal; line-height: 1.5;">
+							Alteração: Com alteração ( &nbsp;&nbsp; ) Sem alteração ( &nbsp;&nbsp; )
+							<br>
+							__________________________________________________________________________________________________________________________________<br>
+							__________________________________________________________________________________________________________________________________<br>
+							__________________________________________________________________________________________________________________________________<br>
+						</td>
+					</tr>
+				</table>
+			</td>
+		</tr>
+	</table>
+	
+	<div style="page-break-before: always;"></div>
+	<table style="width: 100%; border-collapse: collapse; text-align: center; font-weight: bold; font-size: 11px; border: 1px solid black;">
+		
+		<tr>
+			<td style="width: 15%; border-right: 1px solid black; vertical-align: top; padding: 5px;">
+				<div style="text-decoration: underline; text-align: left;">Visto:</div>
+				<br><br><br>
+				<div>Cmt SU</div>
+			</td>
+			<td colspan="4" style="width: 85%; padding: 5px;">
+				MINISTÉRIO DA DEFESA<br>
+				EXÉRCITO BRASILEIRO<br>
+				17º GRUPO DE ARTILHARIA DE CAMPANHA<br>
+				Bateria De Comando
+			</td>
+		</tr>
+		<tr>
+			<td colspan="5" class="bg-gray" style="border-top: 1px solid black; padding: 5px;">
+				Controle de Efetivo para Segunda - Feira, 10 de agosto de 2026.
+			</td>
+		</tr>
+
+		
+		<tr>
+			<td style="width: 15%; border: 1px solid black; padding: 4px;" class="bg-gray">GRAD</td>
+			<td colspan="3" style="width: 70%; border: 1px solid black; padding: 4px;" class="bg-gray">EM FORMA</td>
+			<td style="width: 15%; border: 1px solid black; padding: 4px;" class="bg-gray">SOMA</td>
+		</tr>
+		
+		<tr>
+			<td style="border: 1px solid black; padding: 4px;">SD EV</td>
+			<td colspan="3" class="text-left" style="border: 1px solid black; padding: 4px 4px 4px 10px;">PLANTÃO ALOJ EP: 359 - 346 - 3º Sgt SAVIO<br>PLANTÃO ALOJ EV: 3º Sgt FEITOSA - 320 - 352</td>
+			<td style="border: 1px solid black; padding: 4px;">06</td>
+		</tr>
+		
+		<tr>
+			<td colspan="4" class="text-left" style="border: 1px solid black; padding: 4px 4px 4px 10px;">TOTAL EM FORMA: SEIS</td>
+			<td style="border: 1px solid black; padding: 4px;">06</td>
+		</tr>
+
+		
+		<tr>
+			<td colspan="5" class="bg-gray" style="border: 1px solid black; padding: 4px;">PUNIDOS DISCIPLINARMENTE</td>
+		</tr>
+		<tr>
+			<td style="width: 15%; border: 1px solid black; padding: 4px;" class="bg-gray">PROC.</td>
+			<td style="width: 40%; border: 1px solid black; padding: 4px;" class="bg-gray">GRAD/NOME</td>
+			<td style="width: 15%; border: 1px solid black; padding: 4px;" class="bg-gray">TIPO</td>
+			<td style="width: 15%; border: 1px solid black; padding: 4px;" class="bg-gray">INÍCIO</td>
+			<td style="width: 15%; border: 1px solid black; padding: 4px;" class="bg-gray">TÉRMINO</td>
+		</tr>
+		<tr>
+			<td style="border: 1px solid black; padding: 4px;">-</td>
+			<td style="border: 1px solid black; padding: 4px;">-</td>
+			<td style="border: 1px solid black; padding: 4px;">-</td>
+			<td style="border: 1px solid black; padding: 4px;">-</td>
+			<td style="border: 1px solid black; padding: 4px;">-</td>
+		</tr>
+
+		
+		<tr>
+			<td colspan="4" class="bg-gray" style="border: 1px solid black; padding: 4px;">EM OUTROS DESTINOS</td>
+			<td style="border: 1px solid black; padding: 4px;" class="bg-gray">SOMA</td>
+		</tr>
+		
+		<tr>
+			<td style="border: 1px solid black; padding: 4px;">SD EP</td>
+			<td colspan="3" class="text-left" style="border: 1px solid black; padding: 4px 4px 4px 10px;">APOIO PRAIA/HT: Cb EP PAULO - 1º Ten GUSTAVO BUARQUE<br>SOBRE AVISO: SD EP HIGINO - Cb EP JOALISON<br>MOT VILA: SD EP AMORIM</td>
+			<td style="border: 1px solid black; padding: 4px;">05</td>
+		</tr>
+		
+		<tr>
+			<td style="border: 1px solid black; padding: 4px;">SD EV</td>
+			<td colspan="3" class="text-left" style="border: 1px solid black; padding: 4px 4px 4px 10px;">PADIOLEIRO: 348<br>GDA QTEL: 319 - 3º Sgt NETO - 350 - 306 - 351 - 323 - 328<br>SOMBRA: 340<br>GDA VILA: 307</td>
+			<td style="border: 1px solid black; padding: 4px;">10</td>
+		</tr>
+		
+		<tr>
+			<td colspan="4" class="text-left" style="border: 1px solid black; padding: 4px 4px 4px 10px;">TOTAL EM OUTROS DESTINOS: QUINZE</td>
+			<td style="border: 1px solid black; padding: 4px;">15</td>
+		</tr>
+		<tr>
+			<td colspan="4" class="text-left" style="border: 1px solid black; padding: 4px 4px 4px 10px;">TOTAL GERAL: VINTE E UM</td>
+			<td style="border: 1px solid black; padding: 4px;">21</td>
+		</tr>
+
+		
+		<tr>
+			<td colspan="5" style="border: 1px solid black; padding: 0;">
+				<table style="width: 100%; border-collapse: collapse; text-align: center; font-weight: bold; font-size: 11px;">
+					<tr>
+						<td style="width: 25%; border-right: 1px solid black; vertical-align: top; padding: 5px; height: 80px;">
+							<div style="text-align: left; text-decoration: underline;">Visto:</div>
+							<br><br><br>
+							<div style="text-decoration: underline;">Sgt Dia</div>
+						</td>
+						<td style="width: 50%; vertical-align: top; padding: 5px;">
+							Quartel em Natal/RN, 10 de agosto de 2026.<br><br>
+							<span style="font-size: 13px;">HEBERT CARLOS VIANA - 2º Sgt</span><br>
+							<span style="text-decoration: underline; font-weight: normal;">Sargenteante da Bateria De Comando</span>
+						</td>
+						<td style="width: 25%; border-left: 1px solid black; vertical-align: top; padding: 5px;">
+							<div style="text-align: left; text-decoration: underline;">Visto:</div>
+							<br><br><br>
+							<div style="text-decoration: underline;">Of Dia</div>
+						</td>
+					</tr>
+					<tr>
+						<td colspan="3" style="border-top: 1px solid black; padding: 5px 5px 15px 5px; text-align: left; font-weight: normal; line-height: 1.5;">
+							Alteração: Com alteração ( &nbsp;&nbsp; ) Sem alteração ( &nbsp;&nbsp; )
+							<br>
+							__________________________________________________________________________________________________________________________________<br>
+							__________________________________________________________________________________________________________________________________<br>
+							__________________________________________________________________________________________________________________________________<br>
+						</td>
+					</tr>
+				</table>
+			</td>
+		</tr>
+	</table>
+	
+
+</body>
+</html>

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Calendar, Users, ClipboardList, Settings, Trophy, FileText, CheckCircle2, Plus, Trash2, Edit2, Check, Download, Printer } from 'lucide-react';
+import { Calendar, Users, ClipboardList, Settings, Trophy, FileText, CheckCircle2, Plus, Trash2, Edit2, Check, Download, Printer, Upload } from 'lucide-react';
 import './App.css';
 import { GenerateSchedule, GenerateDocumentHTML, GetState, SaveState } from '../wailsjs/go/main/App';
 // @ts-ignore
@@ -48,6 +48,8 @@ function App() {
     const [formaturaModalOpen, setFormaturaModalOpen] = useState(false);
     const [formaturaTexto, setFormaturaTexto] = useState('- QUADRO HORÁRIO - TREINAMENTO FORMATURA\n0630H - PRONTO NO PÁTIO\n0700H - INÍCIO DO TREINAMENTO\n\nOBS:\n0630H - MOTORISTAS NO PÁTIO');
 
+    const [trocarBateriaModalOpen, setTrocarBateriaModalOpen] = useState(false);
+
     // Custom Dialog
     const [dialogOpen, setDialogOpen] = useState(false);
     const [dialogMessage, setDialogMessage] = useState('');
@@ -83,6 +85,7 @@ function App() {
     const [newRoleWeight, setNewRoleWeight] = useState(1.0);
     const [newRoleReq, setNewRoleReq] = useState(2);
     const [newRoleServiceType, setNewRoleServiceType] = useState('Interno'); // 'Interno' ou 'Externo'
+    const [newRoleDestinadoA, setNewRoleDestinadoA] = useState('AMBOS'); // 'AMBOS', 'EV', 'EP'
 
     // Edit Role
     const [editRoleModalOpen, setEditRoleModalOpen] = useState(false);
@@ -90,6 +93,7 @@ function App() {
     const [editRoleWeight, setEditRoleWeight] = useState<number>(1);
     const [editRoleReq, setEditRoleReq] = useState<number>(1);
     const [editRoleServiceType, setEditRoleServiceType] = useState<string>("Interno");
+    const [editRoleDestinadoA, setEditRoleDestinadoA] = useState<string>("AMBOS");
 
     const [aptidaoModalOpen, setAptidaoModalOpen] = useState(false);
     const [aptidaoRoleName, setAptidaoRoleName] = useState("");
@@ -166,6 +170,18 @@ function App() {
         } catch (err) {
             console.error(err);
         }
+    };
+
+    const trocarBateria = (novaUnidade: string) => {
+        if (novaUnidade === state?.unidade) {
+            setTrocarBateriaModalOpen(false);
+            return;
+        }
+        showConfirm(`Deseja alterar a Bateria para ${novaUnidade}? Isso carregará o efetivo e configurações da nova bateria.`, async () => {
+            setTrocarBateriaModalOpen(false);
+            await handleInitialize(novaUnidade);
+            showAlert(`Bateria alterada para ${novaUnidade} com sucesso!`);
+        });
     };
 
     const handleSave = async (newState: any) => {
@@ -404,6 +420,7 @@ function App() {
             weight: Number(newRoleWeight),
             required: Number(newRoleReq),
             service_type: newRoleServiceType,
+            destinado_a: newRoleDestinadoA,
             aptos: []
         };
         await handleSave(newState);
@@ -411,6 +428,7 @@ function App() {
         setNewRoleWeight(1.0);
         setNewRoleReq(2);
         setNewRoleServiceType('Interno');
+        setNewRoleDestinadoA('AMBOS');
         showAlert("Função adicionada com sucesso!");
     };
 
@@ -420,6 +438,7 @@ function App() {
         setEditRoleWeight(roleData.weight);
         setEditRoleReq(roleData.required);
         setEditRoleServiceType(roleData.service_type || "Interno");
+        setEditRoleDestinadoA(roleData.destinado_a || (rName.includes('EP') ? 'EP' : rName.includes('EV') ? 'EV' : 'AMBOS'));
         setEditRoleModalOpen(true);
     };
 
@@ -431,6 +450,7 @@ function App() {
             weight: Number(editRoleWeight),
             required: Number(editRoleReq),
             service_type: editRoleServiceType,
+            destinado_a: editRoleDestinadoA,
             aptos: state.role_configs[editRoleName]?.aptos || []
         };
         await handleSave(newState);
@@ -682,6 +702,34 @@ function App() {
         });
     };
 
+    const toggleArranchadoAll = (nome: string, checked?: boolean) => {
+        setArranchados(prev => {
+            const current = prev[nome] || { c: false, a: false, j: false };
+            const isAll = current.c && current.a && current.j;
+            const targetVal = checked !== undefined ? checked : !isAll;
+            return {
+                ...prev,
+                [nome]: { c: targetVal, a: targetVal, j: targetVal }
+            };
+        });
+    };
+
+    const toggleArrancharTodos = (checked?: boolean) => {
+        if (!state) return;
+        const keys = Object.keys(state.pessoas);
+        const isAllSelected = keys.length > 0 && keys.every(id => {
+            const r = arranchados[id];
+            return r && r.c && r.a && r.j;
+        });
+        const targetVal = checked !== undefined ? checked : !isAllSelected;
+        
+        const newMap: Record<string, { c: boolean, a: boolean, j: boolean }> = {};
+        keys.forEach(id => {
+            newMap[id] = { c: targetVal, a: targetVal, j: targetVal };
+        });
+        setArranchados(newMap);
+    };
+
     const salvarArranchamento = async () => {
         if (!state) return;
         const newState = { ...state };
@@ -732,6 +780,73 @@ function App() {
         } catch (err) {
             showAlert("Erro ao baixar documento: " + err);
         }
+    };
+
+    const exportarBackup = async () => {
+        try {
+            // @ts-ignore
+            if (window.go?.main?.App?.ExportBackup) {
+                // @ts-ignore
+                await window.go.main.App.ExportBackup();
+                showAlert("Backup exportado com sucesso!");
+            } else {
+                const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state, null, 4));
+                const downloadAnchor = document.createElement('a');
+                downloadAnchor.setAttribute("href", dataStr);
+                downloadAnchor.setAttribute("download", `Backup_Escalas_${new Date().toISOString().slice(0, 10)}.json`);
+                document.body.appendChild(downloadAnchor);
+                downloadAnchor.click();
+                downloadAnchor.remove();
+                showAlert("Backup baixado com sucesso!");
+            }
+        } catch (err) {
+            showAlert("Erro ao exportar backup: " + err);
+        }
+    };
+
+    const importarBackup = async () => {
+        try {
+            // @ts-ignore
+            if (window.go?.main?.App?.ImportBackup) {
+                // @ts-ignore
+                const newState = await window.go.main.App.ImportBackup();
+                if (newState && newState.pessoas) {
+                    setState(newState);
+                    showAlert("Backup importado com sucesso! Dados restaurados.");
+                }
+            } else {
+                const fileInput = document.getElementById('backup-file-input') as HTMLInputElement;
+                if (fileInput) fileInput.click();
+            }
+        } catch (err) {
+            showAlert("Erro ao importar backup: " + err);
+        }
+    };
+
+    const handleFileInputBackup = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = async (event) => {
+            try {
+                const text = event.target?.result as string;
+                // @ts-ignore
+                if (window.go?.main?.App?.ImportBackupJSON) {
+                    // @ts-ignore
+                    const newState = await window.go.main.App.ImportBackupJSON(text);
+                    setState(newState);
+                } else {
+                    const parsed = JSON.parse(text);
+                    if (!parsed.pessoas) throw new Error("Estrutura do backup inválida.");
+                    await handleSave(parsed);
+                }
+                showAlert("Backup importado com sucesso! Dados restaurados.");
+            } catch (err) {
+                showAlert("Erro ao ler arquivo de backup: " + err);
+            }
+        };
+        reader.readAsText(file);
+        e.target.value = '';
     };
 
     const renderEfetivoTable = (title: string, postoGrad: string) => {
@@ -839,7 +954,13 @@ function App() {
                 <div className="logo-area">
                     <img src={brasaoImg} alt="Brasão" className="logo-image" />
                     <h2>Gerador de Escalas</h2>
-                    <span className="badge">{state?.unidade || '14º RC Mec'}</span>
+                    <span 
+                        className="badge badge-clickable" 
+                        title="Clique para trocar de Bateria"
+                        onClick={() => setTrocarBateriaModalOpen(true)}
+                    >
+                        {state?.unidade || 'Bateria'} ▾
+                    </span>
                 </div>
                 
                 <ul className="nav-links">
@@ -1080,27 +1201,62 @@ function App() {
                                     <input type="date" value={targetDate} onChange={(e) => setTargetDate(e.target.value)} className="input-modern" />
                                 </div>
                                 
-                                <div style={{maxHeight: '400px', overflowY: 'auto', background: 'rgba(0,0,0,0.2)', padding: '15px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)', marginTop: '20px'}}>
-                                    <h4 style={{marginTop: 0, color: 'var(--primary-color)'}}>Efetivo</h4>
-                                    <div className="checkbox-group" style={{display: 'flex', flexDirection: 'column', gap: '5px', marginTop: '10px'}}>
-                                        {Object.keys(state.pessoas).sort().map(id => {
-                                            const r = arranchados[id] || { c: false, a: false, j: false };
-                                            return (
-                                                <div key={id} style={{display: 'flex', alignItems: 'center', background: 'rgba(255,255,255,0.05)', padding: '5px 10px', borderRadius: '4px'}}>
-                                                    <div style={{flex: 1, fontWeight: 'bold'}}>{id}</div>
-                                                    <label style={{marginRight: '15px', display: 'flex', alignItems: 'center', gap: '5px'}}>
-                                                        <input type="checkbox" checked={r.c} onChange={() => toggleArranchadoMeal(id, 'c')} /> C
-                                                    </label>
-                                                    <label style={{marginRight: '15px', display: 'flex', alignItems: 'center', gap: '5px'}}>
-                                                        <input type="checkbox" checked={r.a} onChange={() => toggleArranchadoMeal(id, 'a')} /> A
-                                                    </label>
-                                                    <label style={{display: 'flex', alignItems: 'center', gap: '5px'}}>
-                                                        <input type="checkbox" checked={r.j} onChange={() => toggleArranchadoMeal(id, 'j')} /> J
-                                                    </label>
+                                <div style={{maxHeight: '450px', overflowY: 'auto', background: 'rgba(0,0,0,0.2)', padding: '15px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)', marginTop: '20px'}}>
+                                    {(() => {
+                                        const militarKeys = Object.keys(state.pessoas);
+                                        const todosArranchadosTudo = militarKeys.length > 0 && militarKeys.every(id => {
+                                            const r = arranchados[id];
+                                            return r && r.c && r.a && r.j;
+                                        });
+
+                                        return (
+                                            <>
+                                                <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', flexWrap: 'wrap', gap: '10px'}}>
+                                                    <h4 style={{margin: 0, color: 'var(--primary-color)'}}>Efetivo ({militarKeys.length} militares)</h4>
+                                                    <div style={{display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap'}}>
+                                                        <label style={{display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', fontWeight: 'bold', fontSize: '13px', background: 'rgba(255,255,255,0.08)', padding: '5px 10px', borderRadius: '4px'}}>
+                                                            <input 
+                                                                type="checkbox" 
+                                                                checked={todosArranchadosTudo} 
+                                                                onChange={(e) => toggleArrancharTodos(e.target.checked)} 
+                                                            />
+                                                            Selecionar Tudo (Todos)
+                                                        </label>
+                                                        <button type="button" className="btn-outline btn-sm" onClick={() => toggleArrancharTodos(true)}>Marcar Todos</button>
+                                                        <button type="button" className="btn-outline btn-sm" onClick={() => toggleArrancharTodos(false)}>Desmarcar Todos</button>
+                                                        <button type="button" className="btn-outline btn-sm" onClick={() => carregarArranchamentoData(targetDate)}>Apenas Escalados</button>
+                                                    </div>
                                                 </div>
-                                            );
-                                        })}
-                                    </div>
+                                                <div className="checkbox-group" style={{display: 'flex', flexDirection: 'column', gap: '5px', marginTop: '10px'}}>
+                                                    {militarKeys.sort().map(id => {
+                                                        const r = arranchados[id] || { c: false, a: false, j: false };
+                                                        const isAllPerson = r.c && r.a && r.j;
+                                                        return (
+                                                            <div key={id} style={{display: 'flex', alignItems: 'center', background: 'rgba(255,255,255,0.05)', padding: '6px 12px', borderRadius: '4px'}}>
+                                                                <div style={{flex: 1, fontWeight: 'bold'}}>{id}</div>
+                                                                <label style={{marginRight: '15px', display: 'flex', alignItems: 'center', gap: '5px', cursor: 'pointer', color: isAllPerson ? 'var(--primary-color)' : 'inherit', fontWeight: 'bold'}}>
+                                                                    <input 
+                                                                        type="checkbox" 
+                                                                        checked={isAllPerson} 
+                                                                        onChange={(e) => toggleArranchadoAll(id, e.target.checked)} 
+                                                                    /> Tudo
+                                                                </label>
+                                                                <label style={{marginRight: '15px', display: 'flex', alignItems: 'center', gap: '5px', cursor: 'pointer'}}>
+                                                                    <input type="checkbox" checked={r.c} onChange={() => toggleArranchadoMeal(id, 'c')} /> C
+                                                                </label>
+                                                                <label style={{marginRight: '15px', display: 'flex', alignItems: 'center', gap: '5px', cursor: 'pointer'}}>
+                                                                    <input type="checkbox" checked={r.a} onChange={() => toggleArranchadoMeal(id, 'a')} /> A
+                                                                </label>
+                                                                <label style={{display: 'flex', alignItems: 'center', gap: '5px', cursor: 'pointer'}}>
+                                                                    <input type="checkbox" checked={r.j} onChange={() => toggleArranchadoMeal(id, 'j')} /> J
+                                                                </label>
+                                                            </div>
+                                                        );
+                                                    })}
+                                                </div>
+                                            </>
+                                        );
+                                    })()}
                                 </div>
                                 
                                 <div className="actions row" style={{marginTop: '20px'}}>
@@ -1272,35 +1428,54 @@ function App() {
                                             <th>Nome da Função</th>
                                             <th>Peso</th>
                                             <th>Vagas</th>
+                                            <th>Destinado a</th>
                                             <th>Tipo de Serviço</th>
                                             <th>Aptidão</th>
                                             <th>Ações</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {state.role_configs && Object.keys(state.role_configs).sort().map(rName => (
-                                            <tr key={rName}>
-                                                <td><strong>{rName}</strong> {isProtegida(rName) && <span style={{fontSize:'10px', color:'var(--danger)'}}>(Fixa)</span>}</td>
-                                                <td>{state.role_configs[rName].weight.toFixed(1)}</td>
-                                                <td>{state.role_configs[rName].required}x</td>
-                                                <td>{state.role_configs[rName].service_type || 'Interno'}</td>
-                                                <td>
-                                                    <button className="btn-outline btn-sm" onClick={() => abrirAptidaoModal(rName)}>Gerenciar Aptidões ({state.role_configs[rName].aptos?.length || 0})</button>
-                                                </td>
-                                                <td>
-                                                    <div style={{display:'flex', gap:'10px'}}>
-                                                        <button onClick={() => abrirEdicaoFuncao(rName)} style={{background:'transparent', color:'var(--primary-color)', padding: 0}}>
-                                                            <Edit2 size={20} />
+                                        {state.role_configs && Object.keys(state.role_configs).sort().map(rName => {
+                                            const dest = state.role_configs[rName].destinado_a || (rName.includes('EP') ? 'EP' : rName.includes('EV') ? 'EV' : 'AMBOS');
+                                            return (
+                                                <tr key={rName}>
+                                                    <td><strong>{rName}</strong> {isProtegida(rName) && <span style={{fontSize:'10px', color:'var(--danger)'}}>(Fixa)</span>}</td>
+                                                    <td>{state.role_configs[rName].weight.toFixed(1)}</td>
+                                                    <td>{state.role_configs[rName].required}x</td>
+                                                    <td>
+                                                        <span style={{
+                                                            padding: '3px 8px', 
+                                                            borderRadius: '4px', 
+                                                            fontSize: '11px', 
+                                                            fontWeight: 'bold',
+                                                            background: dest === 'EP' ? 'rgba(75, 83, 32, 0.5)' : dest === 'EV' ? 'rgba(33, 150, 243, 0.3)' : 'rgba(255, 255, 255, 0.1)',
+                                                            color: dest === 'EP' ? '#aed581' : dest === 'EV' ? '#90caf9' : 'var(--text-light)',
+                                                            border: `1px solid ${dest === 'EP' ? 'rgba(174, 213, 129, 0.4)' : dest === 'EV' ? 'rgba(144, 202, 249, 0.4)' : 'rgba(255, 255, 255, 0.2)'}`
+                                                        }}>
+                                                            {dest === 'EP' ? 'Cabos/Sd EP' : dest === 'EV' ? 'Soldados EV' : 'Ambos (EP e EV)'}
+                                                        </span>
+                                                    </td>
+                                                    <td>{state.role_configs[rName].service_type || 'Interno'}</td>
+                                                    <td>
+                                                        <button className="btn-outline btn-sm" onClick={() => abrirAptidaoModal(rName)}>
+                                                            Gerenciar Aptidões ({state.role_configs[rName].aptos?.length ? state.role_configs[rName].aptos.length : 'Todos'})
                                                         </button>
-                                                        {!isProtegida(rName) && (
-                                                            <button onClick={() => removerFuncao(rName)} style={{background:'transparent', color:'var(--danger)', padding: 0}}>
-                                                                <Trash2 size={20} />
+                                                    </td>
+                                                    <td>
+                                                        <div style={{display:'flex', gap:'10px'}}>
+                                                            <button onClick={() => abrirEdicaoFuncao(rName)} style={{background:'transparent', color:'var(--primary-color)', padding: 0}} title="Editar Função">
+                                                                <Edit2 size={20} />
                                                             </button>
-                                                        )}
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        ))}
+                                                            {!isProtegida(rName) && (
+                                                                <button onClick={() => removerFuncao(rName)} style={{background:'transparent', color:'var(--danger)', padding: 0}} title="Excluir Função">
+                                                                    <Trash2 size={20} />
+                                                                </button>
+                                                            )}
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            );
+                                        })}
                                     </tbody>
                                 </table>
 
@@ -1310,15 +1485,23 @@ function App() {
                                         <label>Nome:</label>
                                         <input type="text" className="input-modern" value={newRoleName} onChange={e=>setNewRoleName(e.target.value)}/>
                                     </div>
-                                    <div className="form-group" style={{width: '100px'}}>
+                                    <div className="form-group" style={{width: '90px'}}>
                                         <label>Peso:</label>
                                         <input type="number" step="0.5" className="input-modern" value={newRoleWeight} onChange={e=>setNewRoleWeight(e.target.value as any)}/>
                                     </div>
-                                    <div className="form-group" style={{width: '100px'}}>
+                                    <div className="form-group" style={{width: '90px'}}>
                                         <label>Vagas:</label>
                                         <input type="number" className="input-modern" value={newRoleReq} onChange={e=>setNewRoleReq(e.target.value as any)}/>
                                     </div>
-                                    <div className="form-group" style={{width: '130px'}}>
+                                    <div className="form-group" style={{minWidth: '160px'}}>
+                                        <label>Destinado a:</label>
+                                        <select className="input-modern" value={newRoleDestinadoA} onChange={e=>setNewRoleDestinadoA(e.target.value)}>
+                                            <option value="AMBOS">Ambos (EP e EV)</option>
+                                            <option value="EV">Soldados EV</option>
+                                            <option value="EP">Cabos e Soldados EP</option>
+                                        </select>
+                                    </div>
+                                    <div className="form-group" style={{width: '120px'}}>
                                         <label>Serviço:</label>
                                         <select className="input-modern" value={newRoleServiceType} onChange={e=>setNewRoleServiceType(e.target.value)}>
                                             <option value="Interno">Interno</option>
@@ -1380,6 +1563,28 @@ function App() {
                                     />
                                 </div>
                             </div>
+
+                            <div className="card">
+                                <h3>Backup e Restauração de Dados</h3>
+                                <p style={{color: 'var(--text-light)', marginBottom: '15px'}}>
+                                    Exporte um arquivo de segurança com todas as escalas, histórico, arranchamentos e configurações para salvar em um pendrive ou computador. Você também pode importar um backup anterior para restaurar todos os dados.
+                                </p>
+                                <div style={{display: 'flex', gap: '15px', flexWrap: 'wrap', alignItems: 'center'}}>
+                                    <button type="button" className="btn-primary" onClick={exportarBackup} style={{display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 18px', fontWeight: 'bold'}}>
+                                        <Download size={18} /> Exportar Backup (.json)
+                                    </button>
+                                    <button type="button" className="btn-success" onClick={importarBackup} style={{display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 18px', fontWeight: 'bold'}}>
+                                        <Upload size={18} /> Importar Backup (.json)
+                                    </button>
+                                    <input 
+                                        type="file" 
+                                        id="backup-file-input" 
+                                        accept=".json" 
+                                        style={{display: 'none'}} 
+                                        onChange={handleFileInputBackup} 
+                                    />
+                                </div>
+                            </div>
                         </div>
                     )}
                 </div>
@@ -1434,7 +1639,7 @@ function App() {
 
                 {editRoleModalOpen && (
                     <div style={{position:'absolute', top:0, left:0, right:0, bottom:0, background:'rgba(0,0,0,0.7)', display:'flex', alignItems:'center', justifyContent:'center', zIndex: 1000}}>
-                        <div className="card modal-card" style={{width: '350px'}}>
+                        <div className="card modal-card" style={{width: '380px'}}>
                             <h3>Editar Função: {editRoleName}</h3>
                             <div className="form-group">
                                 <label>Peso (Cansaço):</label>
@@ -1443,6 +1648,14 @@ function App() {
                             <div className="form-group">
                                 <label>Qtd Vagas:</label>
                                 <input type="number" className="input-modern" value={editRoleReq} onChange={e=>setEditRoleReq(e.target.value as any)} />
+                            </div>
+                            <div className="form-group">
+                                <label>Destinado a (Efetivo):</label>
+                                <select className="input-modern" value={editRoleDestinadoA} onChange={e=>setEditRoleDestinadoA(e.target.value)}>
+                                    <option value="AMBOS">Ambos (EP e EV)</option>
+                                    <option value="EV">Soldados EV (Efetivo Variável)</option>
+                                    <option value="EP">Cabos e Soldados EP (Profissional)</option>
+                                </select>
                             </div>
                             <div className="form-group">
                                 <label>Serviço:</label>
@@ -1461,15 +1674,52 @@ function App() {
 
                 {aptidaoModalOpen && (
                     <div style={{position:'absolute', top:0, left:0, right:0, bottom:0, background:'rgba(0,0,0,0.7)', display:'flex', alignItems:'center', justifyContent:'center', zIndex: 1000}}>
-                        <div className="card modal-card" style={{width: '600px', maxHeight: '80vh', overflowY: 'auto', display: 'flex', flexDirection: 'column'}}>
+                        <div className="card modal-card" style={{width: '650px', maxHeight: '85vh', overflowY: 'auto', display: 'flex', flexDirection: 'column'}}>
                             <h3>Gerenciar Aptidões: {aptidaoRoleName}</h3>
-                            <p style={{color:'var(--text-light)', fontSize: '0.9em', marginBottom: '15px'}}>Selecione apenas os militares que estão aptos a cumprir esta função. O sistema irá sortear a escala APENAS entre os militares marcados nesta lista.</p>
+                            <p style={{color:'var(--text-light)', fontSize: '0.88em', marginBottom: '10px'}}>
+                                Destinado a: <strong>{state?.role_configs[aptidaoRoleName]?.destinado_a === 'EP' ? 'Cabos / Soldados EP' : state?.role_configs[aptidaoRoleName]?.destinado_a === 'EV' ? 'Soldados EV' : 'Ambos (EP e EV)'}</strong>
+                            </p>
+                            <p style={{color:'var(--text-light)', fontSize: '0.84em', marginBottom: '15px', background:'rgba(0,0,0,0.2)', padding:'8px 12px', borderRadius:'6px', border:'1px solid rgba(255,255,255,0.05)'}}>
+                                💡 <strong>Dica:</strong> Se nenhum militar for marcado individualmente, <u>todos</u> os militares da categoria selecionada são considerados aptos automaticamente.
+                            </p>
                             
-                            <div style={{display: 'flex', gap: '20px', flex: 1, overflowY: 'hidden'}}>
+                            {/* Quick selection bar */}
+                            <div style={{display:'flex', gap:'8px', marginBottom:'15px', flexWrap:'wrap'}}>
+                                <button 
+                                    type="button" 
+                                    className="btn-outline btn-sm" 
+                                    onClick={() => {
+                                        const epList = Object.keys(state?.pessoas || {}).filter(m => state?.pessoas[m].posto_grad === "Soldado EP" || state?.pessoas[m].posto_grad === "Cabo" || state?.pessoas[m].is_ep);
+                                        setAptidaoList(Array.from(new Set([...aptidaoList, ...epList])));
+                                    }}
+                                >
+                                    + Marcar Todos EP
+                                </button>
+                                <button 
+                                    type="button" 
+                                    className="btn-outline btn-sm" 
+                                    onClick={() => {
+                                        const evList = Object.keys(state?.pessoas || {}).filter(m => state?.pessoas[m].posto_grad === "Soldado EV" || (!state?.pessoas[m].is_ep && state?.pessoas[m].posto_grad !== "Cabo"));
+                                        setAptidaoList(Array.from(new Set([...aptidaoList, ...evList])));
+                                    }}
+                                >
+                                    + Marcar Todos EV
+                                </button>
+                                <button 
+                                    type="button" 
+                                    className="btn-outline btn-sm" 
+                                    onClick={() => setAptidaoList([])}
+                                    style={{color:'var(--warning)'}}
+                                >
+                                    Limpar (Usar Padrão: Todos Aptos)
+                                </button>
+                            </div>
+
+                            <div style={{display: 'flex', gap: '20px', flex: 1, minHeight:'250px', overflowY: 'hidden'}}>
                                 <div style={{flex: 1, border: '1px solid rgba(255,255,255,0.1)', padding: '10px', borderRadius: '8px', display: 'flex', flexDirection: 'column'}}>
-                                    <h4 style={{marginBottom: '10px', color: 'var(--primary-color)'}}>Soldados EP</h4>
+                                    <h4 style={{marginBottom: '10px', color: '#aed581'}}>Cabos / Soldados EP</h4>
                                     <div style={{overflowY: 'auto', flex: 1}}>
-                                        {Object.keys(state?.pessoas || {}).filter(m => state?.pessoas[m].posto_grad === "Soldado EP").map(m => (
+                                        {Object.keys(state?.pessoas || {}).filter(m => state?.pessoas[m].posto_grad === "Soldado EP" || state?.pessoas[m].posto_grad === "Cabo" || state?.pessoas[m].is_ep).map(m => (
                                             <label key={m} style={{display: 'block', padding: '5px 0', borderBottom: '1px solid rgba(255,255,255,0.05)', cursor: 'pointer'}}>
                                                 <input type="checkbox" checked={aptidaoList.includes(m)} onChange={() => toggleAptidao(m)} style={{marginRight: '10px'}} />
                                                 {m}
@@ -1478,9 +1728,9 @@ function App() {
                                     </div>
                                 </div>
                                 <div style={{flex: 1, border: '1px solid rgba(255,255,255,0.1)', padding: '10px', borderRadius: '8px', display: 'flex', flexDirection: 'column'}}>
-                                    <h4 style={{marginBottom: '10px', color: 'var(--primary-color)'}}>Soldados EV</h4>
+                                    <h4 style={{marginBottom: '10px', color: '#90caf9'}}>Soldados EV</h4>
                                     <div style={{overflowY: 'auto', flex: 1}}>
-                                        {Object.keys(state?.pessoas || {}).filter(m => state?.pessoas[m].posto_grad === "Soldado EV").map(m => (
+                                        {Object.keys(state?.pessoas || {}).filter(m => state?.pessoas[m].posto_grad === "Soldado EV" || (!state?.pessoas[m].is_ep && state?.pessoas[m].posto_grad !== "Cabo" && !state?.pessoas[m].posto_grad?.includes('Sgt'))).map(m => (
                                             <label key={m} style={{display: 'block', padding: '5px 0', borderBottom: '1px solid rgba(255,255,255,0.05)', cursor: 'pointer'}}>
                                                 <input type="checkbox" checked={aptidaoList.includes(m)} onChange={() => toggleAptidao(m)} style={{marginRight: '10px'}} />
                                                 {m}
@@ -1638,6 +1888,75 @@ function App() {
                             <div className="row" style={{marginTop: '20px'}}>
                                 <button className="btn-outline" onClick={()=>setFormaturaModalOpen(false)}>Cancelar</button>
                                 <button className="btn-success" onClick={gerarAvisoFormatura}>Adicionar Texto</button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {trocarBateriaModalOpen && (
+                    <div className="modal-overlay fade-in" style={{position:'absolute', top:0, left:0, right:0, bottom:0, background:'rgba(0,0,0,0.7)', display:'flex', alignItems:'center', justifyContent:'center', zIndex: 1000}}>
+                        <div className="card modal-card slide-up" style={{width: '450px', textAlign: 'center'}}>
+                            <h3>Trocar de Bateria</h3>
+                            <p style={{marginTop: '10px', color: 'var(--text-light)', fontSize: '13px'}}>
+                                Bateria atual: <strong>{state.unidade === 'BC' ? 'Bateria de Comando (BC)' : state.unidade === '1BO' ? '1ª Bateria de Obuses (1ª Bia O)' : state.unidade === '2BO' ? '2ª Bateria de Obuses (2ª Bia O)' : state.unidade}</strong>
+                            </p>
+                            <p style={{color: 'var(--text-light)', fontSize: '12px', marginBottom: '20px'}}>
+                                Selecione a Bateria para alternar o ambiente de trabalho:
+                            </p>
+                            
+                            <div style={{display: 'flex', flexDirection: 'column', gap: '12px'}}>
+                                <button 
+                                    type="button" 
+                                    className="btn" 
+                                    style={{
+                                        background: state.unidade === 'BC' ? '#4b5320' : 'rgba(75, 83, 32, 0.4)', 
+                                        color: '#fff', 
+                                        padding: '14px', 
+                                        fontSize: '1.05em',
+                                        border: state.unidade === 'BC' ? '2px solid #8bc34a' : '1px solid rgba(255,255,255,0.1)',
+                                        fontWeight: state.unidade === 'BC' ? 'bold' : 'normal',
+                                        cursor: 'pointer'
+                                    }} 
+                                    onClick={() => trocarBateria('BC')}
+                                >
+                                    Bateria de Comando (BC) {state.unidade === 'BC' && '✓ (Atual)'}
+                                </button>
+                                <button 
+                                    type="button" 
+                                    className="btn" 
+                                    style={{
+                                        background: state.unidade === '1BO' ? '#b71c1c' : 'rgba(183, 28, 28, 0.4)', 
+                                        color: '#fff', 
+                                        padding: '14px', 
+                                        fontSize: '1.05em',
+                                        border: state.unidade === '1BO' ? '2px solid #ff5252' : '1px solid rgba(255,255,255,0.1)',
+                                        fontWeight: state.unidade === '1BO' ? 'bold' : 'normal',
+                                        cursor: 'pointer'
+                                    }} 
+                                    onClick={() => trocarBateria('1BO')}
+                                >
+                                    1ª Bateria de Obuses (1ª Bia O) {state.unidade === '1BO' && '✓ (Atual)'}
+                                </button>
+                                <button 
+                                    type="button" 
+                                    className="btn" 
+                                    style={{
+                                        background: state.unidade === '2BO' ? '#37474f' : 'rgba(55, 71, 79, 0.4)', 
+                                        color: '#fff', 
+                                        padding: '14px', 
+                                        fontSize: '1.05em',
+                                        border: state.unidade === '2BO' ? '2px solid #90a4ae' : '1px solid rgba(255,255,255,0.1)',
+                                        fontWeight: state.unidade === '2BO' ? 'bold' : 'normal',
+                                        cursor: 'pointer'
+                                    }} 
+                                    onClick={() => trocarBateria('2BO')}
+                                >
+                                    2ª Bateria de Obuses (2ª Bia O) {state.unidade === '2BO' && '✓ (Atual)'}
+                                </button>
+                            </div>
+
+                            <div className="row" style={{marginTop: '20px', justifyContent: 'center'}}>
+                                <button type="button" className="btn-outline" onClick={() => setTrocarBateriaModalOpen(false)}>Cancelar</button>
                             </div>
                         </div>
                     </div>

@@ -39,7 +39,7 @@ fi
 
 cd "${FLATPAK_DIR}"
 echo "Construindo Flatpak via flatpak-builder..."
-flatpak-builder --force-clean --repo="${REPO_DIR}" "${BUILD_DIR}" org.aditamento.GeradorEscalasWeb.yml
+flatpak-builder --force-clean --user --install-deps-from=flathub --repo="${REPO_DIR}" "${BUILD_DIR}" org.aditamento.GeradorEscalasWeb.yml
 
 OUTPUT_BUNDLE="${OUTPUT_DIR}/GeradorEscalasWeb.flatpak"
 echo "Gerando Flatpak Bundle (.flatpak)..."

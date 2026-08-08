@@ -78,6 +78,19 @@ body {
   border: 1px solid rgba(255,255,255,0.1);
 }
 
+.badge-clickable {
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.badge-clickable:hover {
+  transform: translateY(-1px) scale(1.05);
+  background: #5b6528;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  border-color: rgba(255,255,255,0.3);
+}
+
 .nav-links {
   list-style: none;
   padding: 20px 10px;

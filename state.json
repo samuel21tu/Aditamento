@@ -640,12 +640,702 @@
         {
             "data": "2026-08-09",
             "refeicoes": {
+                "1º Sgt MONIQUE": {
+                    "c": true,
+                    "a": true,
+                    "j": true
+                },
+                "1º Sgt SILVANILDO": {
+                    "c": true,
+                    "a": true,
+                    "j": true
+                },
+                "1º Sgt SÉRGIO C.": {
+                    "c": true,
+                    "a": true,
+                    "j": true
+                },
+                "1º Ten GABRIEL MARQUES": {
+                    "c": true,
+                    "a": true,
+                    "j": true
+                },
+                "1º Ten GUSTAVO BUARQUE": {
+                    "c": true,
+                    "a": true,
+                    "j": true
+                },
+                "1º Ten RAUL": {
+                    "c": true,
+                    "a": true,
+                    "j": true
+                },
+                "1º Ten RENATO": {
+                    "c": true,
+                    "a": true,
+                    "j": true
+                },
+                "1º Ten RODRIGO VREA": {
+                    "c": true,
+                    "a": true,
+                    "j": true
+                },
+                "2º Sgt ANILDO": {
+                    "c": true,
+                    "a": true,
+                    "j": true
+                },
+                "2º Sgt AQUINO": {
+                    "c": true,
+                    "a": true,
+                    "j": true
+                },
+                "2º Sgt ARAUJO": {
+                    "c": true,
+                    "a": true,
+                    "j": true
+                },
+                "2º Sgt CABRAL": {
+                    "c": true,
+                    "a": true,
+                    "j": true
+                },
+                "2º Sgt HEBERT": {
+                    "c": true,
+                    "a": true,
+                    "j": true
+                },
+                "2º Sgt KENNEDY": {
+                    "c": true,
+                    "a": true,
+                    "j": true
+                },
+                "2º Sgt LANCASTER": {
+                    "c": true,
+                    "a": true,
+                    "j": true
+                },
+                "2º Sgt RAFAEL P.": {
+                    "c": true,
+                    "a": true,
+                    "j": true
+                },
+                "2º Ten CARVALHO": {
+                    "c": true,
+                    "a": true,
+                    "j": true
+                },
+                "2º Ten WOLNEY": {
+                    "c": true,
+                    "a": true,
+                    "j": true
+                },
+                "301 ADRIANO": {
+                    "c": true,
+                    "a": true,
+                    "j": true
+                },
+                "302 ROCHA": {
+                    "c": true,
+                    "a": true,
+                    "j": true
+                },
+                "303 ARNÓBIO": {
+                    "c": true,
+                    "a": true,
+                    "j": true
+                },
+                "304 RAMOS": {
+                    "c": true,
+                    "a": true,
+                    "j": true
+                },
+                "305 CAUÃ": {
+                    "c": true,
+                    "a": true,
+                    "j": true
+                },
+                "306 MIRANDA": {
+                    "c": true,
+                    "a": true,
+                    "j": true
+                },
+                "307 DE LIMA": {
+                    "c": true,
+                    "a": true,
+                    "j": true
+                },
+                "308 MATIAS": {
+                    "c": true,
+                    "a": true,
+                    "j": true
+                },
+                "309 DO NASCIMENTO": {
+                    "c": true,
+                    "a": true,
+                    "j": true
+                },
+                "310 NUNES": {
+                    "c": true,
+                    "a": true,
+                    "j": true
+                },
+                "311 RODRIGUES": {
+                    "c": true,
+                    "a": true,
+                    "j": true
+                },
+                "312 BANDEIRA": {
+                    "c": true,
+                    "a": true,
+                    "j": true
+                },
+                "313 EVANDRO": {
+                    "c": true,
+                    "a": true,
+                    "j": true
+                },
+                "314 WALLES": {
+                    "c": true,
+                    "a": true,
+                    "j": true
+                },
+                "315 BATISTA": {
+                    "c": true,
+                    "a": true,
+                    "j": true
+                },
+                "316 FREITAS": {
+                    "c": true,
+                    "a": true,
+                    "j": true
+                },
+                "317 R. SANTOS": {
+                    "c": true,
+                    "a": true,
+                    "j": true
+                },
+                "318 THIAGO": {
+                    "c": true,
+                    "a": true,
+                    "j": true
+                },
+                "319 ESTEVAM": {
+                    "c": true,
+                    "a": true,
+                    "j": true
+                },
+                "320 TOSCANO": {
+                    "c": true,
+                    "a": true,
+                    "j": true
+                },
+                "321 SALDANHA": {
+                    "c": true,
+                    "a": true,
+                    "j": true
+                },
+                "322 BEZERRA": {
+                    "c": true,
+                    "a": true,
+                    "j": true
+                },
+                "323 FERNANDO": {
+                    "c": true,
+                    "a": true,
+                    "j": true
+                },
+                "324 PEDRO SANTOS": {
+                    "c": true,
+                    "a": true,
+                    "j": true
+                },
+                "325 JOÃO GOMES": {
+                    "c": true,
+                    "a": true,
+                    "j": true
+                },
+                "326 MENDONÇA": {
+                    "c": true,
+                    "a": true,
+                    "j": true
+                },
+                "327 CÂMARA": {
+                    "c": true,
+                    "a": true,
+                    "j": true
+                },
+                "328 FAUSTO": {
+                    "c": true,
+                    "a": true,
+                    "j": true
+                },
+                "329 LINHARES": {
+                    "c": true,
+                    "a": true,
+                    "j": true
+                },
+                "330 JAIR": {
+                    "c": true,
+                    "a": true,
+                    "j": true
+                },
+                "331 KAUÃ": {
+                    "c": true,
+                    "a": true,
+                    "j": true
+                },
+                "332 BORBA": {
+                    "c": true,
+                    "a": true,
+                    "j": true
+                },
+                "333 XAVIER": {
+                    "c": true,
+                    "a": true,
+                    "j": true
+                },
+                "334 LEANDRO": {
+                    "c": true,
+                    "a": true,
+                    "j": true
+                },
+                "335": {
+                    "c": true,
+                    "a": true,
+                    "j": true
+                },
+                "336 RUFINO": {
+                    "c": true,
+                    "a": true,
+                    "j": true
+                },
+                "337 DE AQUINO": {
+                    "c": true,
+                    "a": true,
+                    "j": true
+                },
+                "338 F. SANTOS": {
+                    "c": true,
+                    "a": true,
+                    "j": true
+                },
+                "339 FLORÊNCION": {
+                    "c": true,
+                    "a": true,
+                    "j": true
+                },
+                "340 SANTOS": {
+                    "c": true,
+                    "a": true,
+                    "j": true
+                },
+                "341 EPIFANIO": {
+                    "c": true,
+                    "a": true,
+                    "j": true
+                },
+                "342 M. SOUZA": {
+                    "c": true,
+                    "a": true,
+                    "j": true
+                },
+                "343 DE FRANÇA": {
+                    "c": true,
+                    "a": true,
+                    "j": true
+                },
+                "344 MACHADO": {
+                    "c": true,
+                    "a": true,
+                    "j": true
+                },
+                "345": {
+                    "c": true,
+                    "a": true,
+                    "j": true
+                },
+                "346 NICÁSSIO": {
+                    "c": true,
+                    "a": true,
+                    "j": true
+                },
+                "347 MOURA": {
+                    "c": true,
+                    "a": true,
+                    "j": true
+                },
+                "348 KAIURY": {
+                    "c": true,
+                    "a": true,
+                    "j": true
+                },
+                "349 BRAZ": {
+                    "c": true,
+                    "a": true,
+                    "j": true
+                },
+                "350 VICTOR ALVES": {
+                    "c": true,
+                    "a": true,
+                    "j": true
+                },
+                "351 RAIKKONEN": {
+                    "c": true,
+                    "a": true,
+                    "j": true
+                },
+                "352 FERNANDES": {
+                    "c": true,
+                    "a": true,
+                    "j": true
+                },
+                "353 MANOEL": {
+                    "c": true,
+                    "a": true,
+                    "j": true
+                },
+                "354 GABRIEL": {
+                    "c": true,
+                    "a": true,
+                    "j": true
+                },
+                "355 V. SILVA": {
+                    "c": true,
+                    "a": true,
+                    "j": true
+                },
+                "356 LUCAS LIMA": {
+                    "c": true,
+                    "a": true,
+                    "j": true
+                },
+                "357 PONTES": {
+                    "c": true,
+                    "a": true,
+                    "j": true
+                },
+                "358 WILSON": {
+                    "c": true,
+                    "a": true,
+                    "j": true
+                },
+                "359 YAN": {
+                    "c": true,
+                    "a": true,
+                    "j": true
+                },
+                "3º Sgt ALAN ALVES": {
+                    "c": true,
+                    "a": true,
+                    "j": true
+                },
+                "3º Sgt CUNHA": {
+                    "c": true,
+                    "a": true,
+                    "j": true
+                },
+                "3º Sgt FEITOSA": {
+                    "c": true,
+                    "a": true,
+                    "j": true
+                },
+                "3º Sgt FIGUEIRA": {
+                    "c": true,
+                    "a": true,
+                    "j": true
+                },
+                "3º Sgt GABRIEL NETO": {
+                    "c": true,
+                    "a": true,
+                    "j": true
+                },
+                "3º Sgt HENRRY": {
+                    "c": true,
+                    "a": true,
+                    "j": true
+                },
+                "3º Sgt HIPOLITA": {
+                    "c": true,
+                    "a": true,
+                    "j": true
+                },
                 "3º Sgt JHONATAN": {
                     "c": true,
                     "a": true,
                     "j": true
                 },
                 "3º Sgt JOELITO": {
+                    "c": true,
+                    "a": true,
+                    "j": true
+                },
+                "3º Sgt NETO": {
+                    "c": true,
+                    "a": true,
+                    "j": true
+                },
+                "3º Sgt PESSOA": {
+                    "c": true,
+                    "a": true,
+                    "j": true
+                },
+                "3º Sgt SAVIO": {
+                    "c": true,
+                    "a": true,
+                    "j": true
+                },
+                "3º Sgt TEIXEIRA": {
+                    "c": true,
+                    "a": true,
+                    "j": true
+                },
+                "3º Sgt VARELA": {
+                    "c": true,
+                    "a": true,
+                    "j": true
+                },
+                "CB AYROM": {
+                    "c": true,
+                    "a": true,
+                    "j": true
+                },
+                "Cap CAMARA": {
+                    "c": true,
+                    "a": true,
+                    "j": true
+                },
+                "Cap LENTZ": {
+                    "c": true,
+                    "a": true,
+                    "j": true
+                },
+                "Cap THEOPHILO": {
+                    "c": true,
+                    "a": true,
+                    "j": true
+                },
+                "Cb CET FABIO HUDSON": {
+                    "c": true,
+                    "a": true,
+                    "j": true
+                },
+                "Cb CET GETÚLIO": {
+                    "c": true,
+                    "a": true,
+                    "j": true
+                },
+                "Cb CET VITOR": {
+                    "c": true,
+                    "a": true,
+                    "j": true
+                },
+                "Cb EP ALYSSON COSTA": {
+                    "c": true,
+                    "a": true,
+                    "j": true
+                },
+                "Cb EP BALBINO": {
+                    "c": true,
+                    "a": true,
+                    "j": true
+                },
+                "Cb EP DOUGLAS": {
+                    "c": true,
+                    "a": true,
+                    "j": true
+                },
+                "Cb EP HENRIQUE SOARES": {
+                    "c": true,
+                    "a": true,
+                    "j": true
+                },
+                "Cb EP JOALISON": {
+                    "c": true,
+                    "a": true,
+                    "j": true
+                },
+                "Cb EP MATOS": {
+                    "c": true,
+                    "a": true,
+                    "j": true
+                },
+                "Cb EP PAULO": {
+                    "c": true,
+                    "a": true,
+                    "j": true
+                },
+                "Cb EP ROQUE": {
+                    "c": true,
+                    "a": true,
+                    "j": true
+                },
+                "Cb EP SALES": {
+                    "c": true,
+                    "a": true,
+                    "j": true
+                },
+                "Cb EP SAMUEL": {
+                    "c": true,
+                    "a": true,
+                    "j": true
+                },
+                "Cb EP SILVA": {
+                    "c": true,
+                    "a": true,
+                    "j": true
+                },
+                "Cb EP VALMIR": {
+                    "c": true,
+                    "a": true,
+                    "j": true
+                },
+                "Cb EP WILLAME": {
+                    "c": true,
+                    "a": true,
+                    "j": true
+                },
+                "SD EP ALEXANDRE": {
+                    "c": true,
+                    "a": true,
+                    "j": true
+                },
+                "SD EP ALU ABDIAS": {
+                    "c": true,
+                    "a": true,
+                    "j": true
+                },
+                "SD EP ALU CRISTIAN": {
+                    "c": true,
+                    "a": true,
+                    "j": true
+                },
+                "SD EP ALU DE MELO": {
+                    "c": true,
+                    "a": true,
+                    "j": true
+                },
+                "SD EP ALU FONSECA": {
+                    "c": true,
+                    "a": true,
+                    "j": true
+                },
+                "SD EP ALU LIMA ALVES": {
+                    "c": true,
+                    "a": true,
+                    "j": true
+                },
+                "SD EP AMERICO": {
+                    "c": true,
+                    "a": true,
+                    "j": true
+                },
+                "SD EP AMORIM": {
+                    "c": true,
+                    "a": true,
+                    "j": true
+                },
+                "SD EP ANDREY": {
+                    "c": true,
+                    "a": true,
+                    "j": true
+                },
+                "SD EP ANTUNES": {
+                    "c": true,
+                    "a": true,
+                    "j": true
+                },
+                "SD EP ARTHUR": {
+                    "c": true,
+                    "a": true,
+                    "j": true
+                },
+                "SD EP COSTA": {
+                    "c": true,
+                    "a": true,
+                    "j": true
+                },
+                "SD EP DA CRUZ": {
+                    "c": true,
+                    "a": true,
+                    "j": true
+                },
+                "SD EP DOS SANTOS": {
+                    "c": true,
+                    "a": true,
+                    "j": true
+                },
+                "SD EP FILHO": {
+                    "c": true,
+                    "a": true,
+                    "j": true
+                },
+                "SD EP GOMES": {
+                    "c": true,
+                    "a": true,
+                    "j": true
+                },
+                "SD EP HIGINO": {
+                    "c": true,
+                    "a": true,
+                    "j": true
+                },
+                "SD EP IGOR": {
+                    "c": true,
+                    "a": true,
+                    "j": true
+                },
+                "SD EP IZAU": {
+                    "c": true,
+                    "a": true,
+                    "j": true
+                },
+                "SD EP LOAN": {
+                    "c": true,
+                    "a": true,
+                    "j": true
+                },
+                "SD EP MAEL": {
+                    "c": true,
+                    "a": true,
+                    "j": true
+                },
+                "SD EP PRAXEDES": {
+                    "c": true,
+                    "a": true,
+                    "j": true
+                },
+                "SD EP QUEIROZ": {
+                    "c": true,
+                    "a": true,
+                    "j": true
+                },
+                "SD EP VINICIUS": {
+                    "c": true,
+                    "a": true,
+                    "j": true
+                },
+                "ST FERREIRA": {
+                    "c": true,
+                    "a": true,
+                    "j": true
+                },
+                "ST GRACO": {
+                    "c": true,
+                    "a": true,
+                    "j": true
+                },
+                "ST SEVERO": {
+                    "c": true,
+                    "a": true,
+                    "j": true
+                },
+                "Tc DANTAS": {
+                    "c": true,
+                    "a": true,
+                    "j": true
+                },
+                "Tc SILVA SANTOS": {
                     "c": true,
                     "a": true,
                     "j": true

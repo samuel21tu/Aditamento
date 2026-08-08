@@ -5,6 +5,7 @@ export namespace backend {
 	    weight: number;
 	    required: number;
 	    service_type?: string;
+	    destinado_a?: string;
 	    aptos?: string[];
 	
 	    static createFrom(source: any = {}) {
@@ -17,6 +18,7 @@ export namespace backend {
 	        this.weight = source["weight"];
 	        this.required = source["required"];
 	        this.service_type = source["service_type"];
+	        this.destinado_a = source["destinado_a"];
 	        this.aptos = source["aptos"];
 	    }
 	}

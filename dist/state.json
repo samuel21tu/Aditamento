@@ -1,0 +1,812 @@
+{
+    "unidade": "BC",
+    "pessoas": {
+        "1º Sgt MONIQUE": {
+            "ativo": true,
+            "is_ep": true,
+            "posto_grad": "1º Sargento"
+        },
+        "1º Sgt SILVANILDO": {
+            "ativo": true,
+            "is_ep": true,
+            "posto_grad": "1º Sargento"
+        },
+        "1º Sgt SÉRGIO C.": {
+            "ativo": true,
+            "is_ep": true,
+            "posto_grad": "1º Sargento"
+        },
+        "1º Ten GABRIEL MARQUES": {
+            "ativo": true,
+            "is_ep": true,
+            "posto_grad": "1º Tenente"
+        },
+        "1º Ten GUSTAVO BUARQUE": {
+            "ativo": true,
+            "is_ep": true,
+            "posto_grad": "1º Tenente"
+        },
+        "1º Ten RAUL": {
+            "ativo": true,
+            "is_ep": true,
+            "posto_grad": "1º Tenente"
+        },
+        "1º Ten RENATO": {
+            "ativo": true,
+            "is_ep": true,
+            "posto_grad": "1º Tenente"
+        },
+        "1º Ten RODRIGO VREA": {
+            "ativo": true,
+            "is_ep": true,
+            "posto_grad": "1º Tenente"
+        },
+        "2º Sgt ANILDO": {
+            "ativo": true,
+            "is_ep": true,
+            "posto_grad": "2º Sargento"
+        },
+        "2º Sgt AQUINO": {
+            "ativo": true,
+            "is_ep": true,
+            "posto_grad": "2º Sargento"
+        },
+        "2º Sgt ARAUJO": {
+            "ativo": true,
+            "is_ep": true,
+            "posto_grad": "2º Sargento"
+        },
+        "2º Sgt CABRAL": {
+            "ativo": true,
+            "is_ep": true,
+            "posto_grad": "2º Sargento"
+        },
+        "2º Sgt HEBERT": {
+            "ativo": true,
+            "is_ep": true,
+            "posto_grad": "2º Sargento"
+        },
+        "2º Sgt KENNEDY": {
+            "ativo": true,
+            "is_ep": true,
+            "posto_grad": "2º Sargento"
+        },
+        "2º Sgt LANCASTER": {
+            "ativo": true,
+            "is_ep": true,
+            "posto_grad": "2º Sargento"
+        },
+        "2º Sgt RAFAEL P.": {
+            "ativo": true,
+            "is_ep": true,
+            "posto_grad": "2º Sargento"
+        },
+        "2º Ten CARVALHO": {
+            "ativo": true,
+            "is_ep": true,
+            "posto_grad": "2º Tenente"
+        },
+        "2º Ten WOLNEY": {
+            "ativo": true,
+            "is_ep": true,
+            "posto_grad": "2º Tenente"
+        },
+        "301 ADRIANO": {
+            "ativo": true,
+            "posto_grad": "Soldado EV"
+        },
+        "302 ROCHA": {
+            "ativo": true,
+            "posto_grad": "Soldado EV"
+        },
+        "303 ARNÓBIO": {
+            "ativo": true,
+            "posto_grad": "Soldado EV"
+        },
+        "304 RAMOS": {
+            "ativo": true,
+            "posto_grad": "Soldado EV"
+        },
+        "305 CAUÃ": {
+            "ativo": true,
+            "posto_grad": "Soldado EV"
+        },
+        "306 MIRANDA": {
+            "ativo": true,
+            "posto_grad": "Soldado EV"
+        },
+        "307 DE LIMA": {
+            "ativo": true,
+            "posto_grad": "Soldado EV"
+        },
+        "308 MATIAS": {
+            "ativo": true,
+            "posto_grad": "Soldado EV"
+        },
+        "309 DO NASCIMENTO": {
+            "ativo": true,
+            "posto_grad": "Soldado EV"
+        },
+        "310 NUNES": {
+            "ativo": true,
+            "posto_grad": "Soldado EV"
+        },
+        "311 RODRIGUES": {
+            "ativo": true,
+            "posto_grad": "Soldado EV"
+        },
+        "312 BANDEIRA": {
+            "ativo": true,
+            "posto_grad": "Soldado EV"
+        },
+        "313 EVANDRO": {
+            "ativo": true,
+            "posto_grad": "Soldado EV"
+        },
+        "314 WALLES": {
+            "ativo": true,
+            "posto_grad": "Soldado EV"
+        },
+        "315 BATISTA": {
+            "ativo": true,
+            "posto_grad": "Soldado EV"
+        },
+        "316 FREITAS": {
+            "ativo": true,
+            "posto_grad": "Soldado EV"
+        },
+        "317 R. SANTOS": {
+            "ativo": true,
+            "posto_grad": "Soldado EV"
+        },
+        "318 THIAGO": {
+            "ativo": true,
+            "posto_grad": "Soldado EV"
+        },
+        "319 ESTEVAM": {
+            "ativo": true,
+            "posto_grad": "Soldado EV"
+        },
+        "320 TOSCANO": {
+            "ativo": true,
+            "posto_grad": "Soldado EV"
+        },
+        "321 SALDANHA": {
+            "ativo": true,
+            "posto_grad": "Soldado EV"
+        },
+        "322 BEZERRA": {
+            "ativo": true,
+            "posto_grad": "Soldado EV"
+        },
+        "323 FERNANDO": {
+            "ativo": true,
+            "posto_grad": "Soldado EV"
+        },
+        "324 PEDRO SANTOS": {
+            "ativo": true,
+            "posto_grad": "Soldado EV"
+        },
+        "325 JOÃO GOMES": {
+            "ativo": true,
+            "posto_grad": "Soldado EV"
+        },
+        "326 MENDONÇA": {
+            "ativo": true,
+            "posto_grad": "Soldado EV"
+        },
+        "327 CÂMARA": {
+            "ativo": true,
+            "posto_grad": "Soldado EV"
+        },
+        "328 FAUSTO": {
+            "ativo": true,
+            "posto_grad": "Soldado EV"
+        },
+        "329 LINHARES": {
+            "ativo": true,
+            "posto_grad": "Soldado EV"
+        },
+        "330 JAIR": {
+            "ativo": true,
+            "posto_grad": "Soldado EV"
+        },
+        "331 KAUÃ": {
+            "ativo": true,
+            "posto_grad": "Soldado EV"
+        },
+        "332 BORBA": {
+            "ativo": true,
+            "posto_grad": "Soldado EV"
+        },
+        "333 XAVIER": {
+            "ativo": true,
+            "posto_grad": "Soldado EV"
+        },
+        "334 LEANDRO": {
+            "ativo": true,
+            "posto_grad": "Soldado EV"
+        },
+        "335": {
+            "ativo": true,
+            "posto_grad": "Soldado EV"
+        },
+        "336 RUFINO": {
+            "ativo": true,
+            "posto_grad": "Soldado EV"
+        },
+        "337 DE AQUINO": {
+            "ativo": true,
+            "posto_grad": "Soldado EV"
+        },
+        "338 F. SANTOS": {
+            "ativo": true,
+            "posto_grad": "Soldado EV"
+        },
+        "339 FLORÊNCION": {
+            "ativo": true,
+            "posto_grad": "Soldado EV"
+        },
+        "340 SANTOS": {
+            "ativo": true,
+            "posto_grad": "Soldado EV"
+        },
+        "341 EPIFANIO": {
+            "ativo": true,
+            "posto_grad": "Soldado EV"
+        },
+        "342 M. SOUZA": {
+            "ativo": true,
+            "posto_grad": "Soldado EV"
+        },
+        "343 DE FRANÇA": {
+            "ativo": true,
+            "posto_grad": "Soldado EV"
+        },
+        "344 MACHADO": {
+            "ativo": true,
+            "posto_grad": "Soldado EV"
+        },
+        "345": {
+            "ativo": true,
+            "posto_grad": "Soldado EV"
+        },
+        "346 NICÁSSIO": {
+            "ativo": true,
+            "posto_grad": "Soldado EV"
+        },
+        "347 MOURA": {
+            "ativo": true,
+            "posto_grad": "Soldado EV"
+        },
+        "348 KAIURY": {
+            "ativo": true,
+            "posto_grad": "Soldado EV"
+        },
+        "349 BRAZ": {
+            "ativo": true,
+            "posto_grad": "Soldado EV"
+        },
+        "350 VICTOR ALVES": {
+            "ativo": true,
+            "posto_grad": "Soldado EV"
+        },
+        "351 RAIKKONEN": {
+            "ativo": true,
+            "posto_grad": "Soldado EV"
+        },
+        "352 FERNANDES": {
+            "ativo": true,
+            "posto_grad": "Soldado EV"
+        },
+        "353 MANOEL": {
+            "ativo": true,
+            "posto_grad": "Soldado EV"
+        },
+        "354 GABRIEL": {
+            "ativo": true,
+            "posto_grad": "Soldado EV"
+        },
+        "355 V. SILVA": {
+            "ativo": true,
+            "posto_grad": "Soldado EV"
+        },
+        "356 LUCAS LIMA": {
+            "ativo": true,
+            "posto_grad": "Soldado EV"
+        },
+        "357 PONTES": {
+            "ativo": true,
+            "posto_grad": "Soldado EV"
+        },
+        "358 WILSON": {
+            "ativo": true,
+            "posto_grad": "Soldado EV"
+        },
+        "359 YAN": {
+            "ativo": true,
+            "posto_grad": "Soldado EV"
+        },
+        "3º Sgt ALAN ALVES": {
+            "ativo": true,
+            "posto_grad": "3º Sargento"
+        },
+        "3º Sgt CUNHA": {
+            "ativo": true,
+            "posto_grad": "3º Sargento"
+        },
+        "3º Sgt FEITOSA": {
+            "ativo": true,
+            "posto_grad": "3º Sargento"
+        },
+        "3º Sgt FIGUEIRA": {
+            "ativo": true,
+            "posto_grad": "3º Sargento"
+        },
+        "3º Sgt GABRIEL NETO": {
+            "ativo": true,
+            "posto_grad": "3º Sargento"
+        },
+        "3º Sgt HENRRY": {
+            "ativo": true,
+            "posto_grad": "3º Sargento"
+        },
+        "3º Sgt HIPOLITA": {
+            "ativo": true,
+            "posto_grad": "3º Sargento"
+        },
+        "3º Sgt JHONATAN": {
+            "ativo": true,
+            "posto_grad": "3º Sargento"
+        },
+        "3º Sgt JOELITO": {
+            "ativo": true,
+            "posto_grad": "3º Sargento"
+        },
+        "3º Sgt NETO": {
+            "ativo": true,
+            "posto_grad": "3º Sargento"
+        },
+        "3º Sgt PESSOA": {
+            "ativo": true,
+            "posto_grad": "3º Sargento"
+        },
+        "3º Sgt SAVIO": {
+            "ativo": true,
+            "posto_grad": "3º Sargento"
+        },
+        "3º Sgt TEIXEIRA": {
+            "ativo": true,
+            "posto_grad": "3º Sargento"
+        },
+        "3º Sgt VARELA": {
+            "ativo": true,
+            "posto_grad": "3º Sargento"
+        },
+        "CB AYROM": {
+            "ativo": true,
+            "is_ep": true,
+            "posto_grad": "Cabo"
+        },
+        "Cap CAMARA": {
+            "ativo": true,
+            "is_ep": true,
+            "posto_grad": "Capitão"
+        },
+        "Cap LENTZ": {
+            "ativo": true,
+            "is_ep": true,
+            "posto_grad": "Capitão"
+        },
+        "Cap THEOPHILO": {
+            "ativo": true,
+            "is_ep": true,
+            "posto_grad": "Capitão"
+        },
+        "Cb CET FABIO HUDSON": {
+            "ativo": true,
+            "is_ep": true,
+            "posto_grad": "Cabo"
+        },
+        "Cb CET GETÚLIO": {
+            "ativo": true,
+            "is_ep": true,
+            "posto_grad": "Cabo"
+        },
+        "Cb CET VITOR": {
+            "ativo": true,
+            "is_ep": true,
+            "posto_grad": "Cabo"
+        },
+        "Cb EP ALYSSON COSTA": {
+            "ativo": true,
+            "is_ep": true,
+            "posto_grad": "Cabo"
+        },
+        "Cb EP BALBINO": {
+            "ativo": true,
+            "is_ep": true,
+            "posto_grad": "Cabo"
+        },
+        "Cb EP DOUGLAS": {
+            "ativo": true,
+            "is_ep": true,
+            "posto_grad": "Cabo"
+        },
+        "Cb EP HENRIQUE SOARES": {
+            "ativo": true,
+            "is_ep": true,
+            "posto_grad": "Cabo"
+        },
+        "Cb EP JOALISON": {
+            "ativo": true,
+            "is_ep": true,
+            "posto_grad": "Cabo"
+        },
+        "Cb EP MATOS": {
+            "ativo": true,
+            "is_ep": true,
+            "posto_grad": "Cabo"
+        },
+        "Cb EP PAULO": {
+            "ativo": true,
+            "is_ep": true,
+            "posto_grad": "Cabo"
+        },
+        "Cb EP ROQUE": {
+            "ativo": true,
+            "is_ep": true,
+            "posto_grad": "Cabo"
+        },
+        "Cb EP SALES": {
+            "ativo": true,
+            "is_ep": true,
+            "posto_grad": "Cabo"
+        },
+        "Cb EP SAMUEL": {
+            "ativo": true,
+            "is_ep": true,
+            "posto_grad": "Cabo"
+        },
+        "Cb EP SILVA": {
+            "ativo": true,
+            "is_ep": true,
+            "posto_grad": "Cabo"
+        },
+        "Cb EP VALMIR": {
+            "ativo": true,
+            "is_ep": true,
+            "posto_grad": "Cabo"
+        },
+        "Cb EP WILLAME": {
+            "ativo": true,
+            "is_ep": true,
+            "posto_grad": "Cabo"
+        },
+        "SD EP ALEXANDRE": {
+            "ativo": true,
+            "is_ep": true,
+            "posto_grad": "Soldado EP"
+        },
+        "SD EP ALU ABDIAS": {
+            "ativo": false,
+            "is_ep": true,
+            "foi_de_rota": true,
+            "posto_grad": "Soldado EP"
+        },
+        "SD EP ALU CRISTIAN": {
+            "ativo": false,
+            "is_ep": true,
+            "foi_de_rota": true,
+            "posto_grad": "Soldado EP"
+        },
+        "SD EP ALU DE MELO": {
+            "ativo": false,
+            "is_ep": true,
+            "foi_de_rota": true,
+            "posto_grad": "Soldado EP"
+        },
+        "SD EP ALU FONSECA": {
+            "ativo": false,
+            "is_ep": true,
+            "foi_de_rota": true,
+            "posto_grad": "Soldado EP"
+        },
+        "SD EP ALU LIMA ALVES": {
+            "ativo": false,
+            "is_ep": true,
+            "foi_de_rota": true,
+            "posto_grad": "Soldado EP"
+        },
+        "SD EP AMERICO": {
+            "ativo": true,
+            "is_ep": true,
+            "posto_grad": "Soldado EP"
+        },
+        "SD EP AMORIM": {
+            "ativo": true,
+            "is_ep": true,
+            "posto_grad": "Soldado EP"
+        },
+        "SD EP ANDREY": {
+            "ativo": true,
+            "is_ep": true,
+            "posto_grad": "Soldado EP"
+        },
+        "SD EP ANTUNES": {
+            "ativo": true,
+            "is_ep": true,
+            "posto_grad": "Soldado EP"
+        },
+        "SD EP ARTHUR": {
+            "ativo": true,
+            "is_ep": true,
+            "posto_grad": "Soldado EP"
+        },
+        "SD EP COSTA": {
+            "ativo": true,
+            "is_ep": true,
+            "posto_grad": "Soldado EP"
+        },
+        "SD EP DA CRUZ": {
+            "ativo": true,
+            "is_ep": true,
+            "posto_grad": "Soldado EP"
+        },
+        "SD EP DOS SANTOS": {
+            "ativo": true,
+            "is_ep": true,
+            "posto_grad": "Soldado EP"
+        },
+        "SD EP FILHO": {
+            "ativo": true,
+            "is_ep": true,
+            "posto_grad": "Soldado EP"
+        },
+        "SD EP GOMES": {
+            "ativo": true,
+            "is_ep": true,
+            "posto_grad": "Soldado EP"
+        },
+        "SD EP HIGINO": {
+            "ativo": true,
+            "is_ep": true,
+            "posto_grad": "Soldado EP"
+        },
+        "SD EP IGOR": {
+            "ativo": true,
+            "is_ep": true,
+            "posto_grad": "Soldado EP"
+        },
+        "SD EP IZAU": {
+            "ativo": true,
+            "is_ep": true,
+            "posto_grad": "Soldado EP"
+        },
+        "SD EP LOAN": {
+            "ativo": true,
+            "is_ep": true,
+            "posto_grad": "Soldado EP"
+        },
+        "SD EP MAEL": {
+            "ativo": true,
+            "is_ep": true,
+            "posto_grad": "Soldado EP"
+        },
+        "SD EP PRAXEDES": {
+            "ativo": true,
+            "is_ep": true,
+            "posto_grad": "Soldado EP"
+        },
+        "SD EP QUEIROZ": {
+            "ativo": true,
+            "is_ep": true,
+            "posto_grad": "Soldado EP"
+        },
+        "SD EP VINICIUS": {
+            "ativo": true,
+            "is_ep": true,
+            "posto_grad": "Soldado EP"
+        },
+        "ST FERREIRA": {
+            "ativo": true,
+            "is_ep": true,
+            "posto_grad": "Subtenente"
+        },
+        "ST GRACO": {
+            "ativo": true,
+            "is_ep": true,
+            "posto_grad": "Subtenente"
+        },
+        "ST SEVERO": {
+            "ativo": true,
+            "is_ep": true,
+            "posto_grad": "Subtenente"
+        },
+        "Tc DANTAS": {
+            "ativo": true,
+            "is_ep": true,
+            "posto_grad": "Tenente Coronel"
+        },
+        "Tc SILVA SANTOS": {
+            "ativo": true,
+            "is_ep": true,
+            "posto_grad": "Tenente Coronel"
+        }
+    },
+    "historico_escalas": [
+        {
+            "data": "2026-08-09",
+            "dia_semana": 6,
+            "escalados": {
+                "APOIO PRAIA/HT": [
+                    "Cb EP MATOS",
+                    "SD EP FILHO"
+                ],
+                "GDA QTEL": [
+                    "314 WALLES",
+                    "3º Sgt JOELITO",
+                    "355 V. SILVA",
+                    "316 FREITAS",
+                    "334 LEANDRO",
+                    "324 PEDRO SANTOS",
+                    "3º Sgt GABRIEL NETO"
+                ],
+                "GDA VILA": [
+                    "322 BEZERRA"
+                ],
+                "MOT VILA": [
+                    "SD EP COSTA"
+                ],
+                "PADIOLEIRO": [
+                    "336 RUFINO"
+                ],
+                "PLANTÃO ALOJ EP": [
+                    "310 NUNES",
+                    "337 DE AQUINO",
+                    "317 R. SANTOS"
+                ],
+                "PLANTÃO ALOJ EV": [
+                    "354 GABRIEL",
+                    "325 JOÃO GOMES",
+                    "303 ARNÓBIO"
+                ],
+                "SOBRE AVISO": [
+                    "SD EP GOMES",
+                    "Cb CET VITOR"
+                ],
+                "SOMBRA": [
+                    "309 DO NASCIMENTO"
+                ]
+            },
+            "sem_expediente": true,
+            "manual_roles": {
+                "ADJ OF DIA": "",
+                "CB DIA Bia C": "",
+                "MOT DIA": "",
+                "OF DIA": "",
+                "SGT DIA Bia C": ""
+            },
+            "aditamento_nr": 1,
+            "atividade_tipo": "TFM",
+            "parada_diaria": "09h30"
+        },
+        {
+            "data": "2026-08-10",
+            "dia_semana": 0,
+            "escalados": {
+                "APOIO PRAIA/HT": [
+                    "Cb EP PAULO",
+                    "1º Ten GUSTAVO BUARQUE"
+                ],
+                "GDA QTEL": [
+                    "319 ESTEVAM",
+                    "3º Sgt NETO",
+                    "350 VICTOR ALVES",
+                    "306 MIRANDA",
+                    "351 RAIKKONEN",
+                    "323 FERNANDO",
+                    "328 FAUSTO"
+                ],
+                "GDA VILA": [
+                    "307 DE LIMA"
+                ],
+                "MOT VILA": [
+                    "SD EP AMORIM"
+                ],
+                "PADIOLEIRO": [
+                    "348 KAIURY"
+                ],
+                "PLANTÃO ALOJ EP": [
+                    "359 YAN",
+                    "346 NICÁSSIO",
+                    "3º Sgt SAVIO"
+                ],
+                "PLANTÃO ALOJ EV": [
+                    "3º Sgt FEITOSA",
+                    "320 TOSCANO",
+                    "352 FERNANDES"
+                ],
+                "SOBRE AVISO": [
+                    "SD EP HIGINO",
+                    "Cb EP JOALISON"
+                ],
+                "SOMBRA": [
+                    "340 SANTOS"
+                ]
+            },
+            "manual_roles": {
+                "ADJ OF DIA": "",
+                "CB DIA Bia C": "",
+                "MOT DIA": "",
+                "OF DIA": "",
+                "SGT DIA Bia C": ""
+            },
+            "aditamento_nr": 1,
+            "atividade_tipo": "TFM",
+            "parada_diaria": "09h30"
+        }
+    ],
+    "dispensas_v2": {},
+    "nome_cmt": "RENAN LOUREIRO LENTZ - Cap",
+    "nome_sgte": "HEBERT CARLOS VIANA - 2° Sgt",
+    "aditamento_nr": 1,
+    "boletim_interno_nr": 0,
+    "role_configs": {
+        "APOIO PRAIA/HT": {
+            "name": "APOIO PRAIA/HT",
+            "weight": 1,
+            "required": 2,
+            "destinado_a": "EP"
+        },
+        "GDA QTEL": {
+            "name": "GDA QTEL",
+            "weight": 3,
+            "required": 7,
+            "destinado_a": "EV"
+        },
+        "GDA VILA": {
+            "name": "GDA VILA",
+            "weight": 3,
+            "required": 1,
+            "destinado_a": "EV"
+        },
+        "MOT VILA": {
+            "name": "MOT VILA",
+            "weight": 2,
+            "required": 1,
+            "destinado_a": "EP"
+        },
+        "PADIOLEIRO": {
+            "name": "PADIOLEIRO",
+            "weight": 1,
+            "required": 1,
+            "destinado_a": "EV"
+        },
+        "PLANTÃO ALOJ EP": {
+            "name": "PLANTÃO ALOJ EP",
+            "weight": 2,
+            "required": 3,
+            "service_type": "Interno",
+            "destinado_a": "EV"
+        },
+        "PLANTÃO ALOJ EV": {
+            "name": "PLANTÃO ALOJ EV",
+            "weight": 2,
+            "required": 3,
+            "destinado_a": "EV"
+        },
+        "SOBRE AVISO": {
+            "name": "SOBRE AVISO",
+            "weight": 0.5,
+            "required": 2,
+            "destinado_a": "AMBOS"
+        },
+        "SOMBRA": {
+            "name": "SOMBRA",
+            "weight": 1,
+            "required": 1,
+            "destinado_a": "EV"
+        }
+    }
+}

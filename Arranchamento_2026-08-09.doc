@@ -6,66 +6,85 @@
 <style>
 	@page {
 		size: A4 portrait;
-		margin: 10mm;
+		margin: 8mm 10mm;
+	}
+	* {
+		box-sizing: border-box;
 	}
 	body {
 		font-family: Arial, sans-serif;
-		font-size: 10px;
+		font-size: 9px;
 		margin: 0;
 		padding: 0;
+		color: #000;
 	}
 	table {
 		width: 100%;
 		border-collapse: collapse;
-		margin-bottom: 5px;
+		margin-bottom: 4px;
+		page-break-inside: avoid;
+		break-inside: avoid;
 	}
 	th, td {
 		border: 1px solid black;
-		padding: 2px 4px;
+		padding: 2px 3px;
 		vertical-align: middle;
 	}
 	.header-title {
-		background-color: black;
-		color: white;
+		background-color: black !important;
+		color: white !important;
+		-webkit-print-color-adjust: exact;
+		print-color-adjust: exact;
 		text-align: center;
 		font-weight: bold;
-		font-size: 14px;
-		padding: 4px;
+		font-size: 13px;
+		padding: 3px;
 	}
 	.section-title {
-		background-color: black;
-		color: white;
+		background-color: black !important;
+		color: white !important;
+		-webkit-print-color-adjust: exact;
+		print-color-adjust: exact;
 		text-align: center;
 		font-weight: bold;
-		font-size: 12px;
+		font-size: 10.5px;
 		padding: 2px;
 	}
 	.col-name {
 		width: 25%;
-		font-size: 9px;
+		font-size: 8.5px;
 		white-space: nowrap;
 		overflow: hidden;
 		text-overflow: ellipsis;
 	}
 	.col-mark {
-		width: 3%;
+		width: 2.7%;
 		text-align: center;
 		font-weight: bold;
+		font-size: 8.5px;
 	}
 	.footer-table th, .footer-table td {
 		text-align: center;
-		font-size: 10px;
+		font-size: 8.5px;
+		padding: 2px;
+	}
+	.footer-table th {
+		background-color: #f0f0f0 !important;
+		-webkit-print-color-adjust: exact;
+		print-color-adjust: exact;
 	}
 	.signatures {
 		width: 100%;
-		margin-top: 20px;
+		margin-top: 15px;
 		text-align: center;
-		font-size: 10px;
+		font-size: 9px;
 		font-weight: bold;
+		page-break-inside: avoid;
+		break-inside: avoid;
 	}
 	.signatures td {
 		border: none;
-		padding-top: 20px;
+		padding-top: 15px;
 	}
 	.line {
 		border-top: 1px solid black;
@@ -74,20 +93,32 @@
 		margin-bottom: 2px;
 	}
 	.page-footer {
-		background-color: black;
-		color: white;
+		background-color: black !important;
+		color: white !important;
+		-webkit-print-color-adjust: exact;
+		print-color-adjust: exact;
 		text-align: right;
 		font-style: italic;
-		font-size: 9px;
+		font-size: 8.5px;
 		padding: 2px 10px;
-		margin-top: 10px;
+		margin-top: 8px;
+		page-break-inside: avoid;
+		break-inside: avoid;
+	}
+	@media print {
+		body {
+			-webkit-print-color-adjust: exact;
+			print-color-adjust: exact;
+		}
 	}
 </style>
 </head>
 <body>
-	<div class="header-title">Arranchamento – Bateria de Comando</div>
-	<div style="font-weight: bold; font-size: 12px; margin: 4px 0;">Data: 09/08/2026</div>
+	<div class="header-title">Arranchamento – BATERIA DE COMANDO</div>
+	<div style="font-weight: bold; font-size: 11px; margin: 3px 0;">Data: 09/08/2026</div>
 
+	
+	
 	
 	<table style="table-layout: fixed;">
 		<tr>
@@ -101,81 +132,83 @@
 		
 		<tr>
 			
-			<td class="col-name text-left" style="font-size: 8px;">Tc DANTAS</td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
+			<td class="col-name text-left">Tc DANTAS</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
 			
-			<td class="col-name text-left" style="font-size: 8px;">Tc SILVA SANTOS</td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
+			<td class="col-name text-left">Tc SILVA SANTOS</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
 			
-			<td class="col-name text-left" style="font-size: 8px;">Cap CAMARA</td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			
-		</tr>
-		
-		<tr>
-			
-			<td class="col-name text-left" style="font-size: 8px;">Cap THEOPHILO</td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			
-			<td class="col-name text-left" style="font-size: 8px;">Cap LENTZ</td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			
-			<td class="col-name text-left" style="font-size: 8px;">1º Ten RENATO</td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
+			<td class="col-name text-left">Cap CAMARA</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
 			
 		</tr>
 		
 		<tr>
 			
-			<td class="col-name text-left" style="font-size: 8px;">1º Ten RAUL</td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
+			<td class="col-name text-left">Cap THEOPHILO</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
 			
-			<td class="col-name text-left" style="font-size: 8px;">1º Ten GABRIEL MARQUES</td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
+			<td class="col-name text-left">Cap LENTZ</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
 			
-			<td class="col-name text-left" style="font-size: 8px;">1º Ten GUSTAVO BUARQUE</td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
+			<td class="col-name text-left">1º Ten RENATO</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
 			
 		</tr>
 		
 		<tr>
 			
-			<td class="col-name text-left" style="font-size: 8px;">1º Ten RODRIGO VREA</td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
+			<td class="col-name text-left">1º Ten RAUL</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
 			
-			<td class="col-name text-left" style="font-size: 8px;">2º Ten CARVALHO</td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
+			<td class="col-name text-left">1º Ten GABRIEL MARQUES</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
 			
-			<td class="col-name text-left" style="font-size: 8px;">2º Ten WOLNEY</td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
+			<td class="col-name text-left">1º Ten GUSTAVO BUARQUE</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			
+		</tr>
+		
+		<tr>
+			
+			<td class="col-name text-left">1º Ten RODRIGO VREA</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			
+			<td class="col-name text-left">2º Ten CARVALHO</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			
+			<td class="col-name text-left">2º Ten WOLNEY</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
 			
 		</tr>
 		
 	</table>
+	
+	
 	
 	<table style="table-layout: fixed;">
 		<tr>
@@ -189,188 +222,188 @@
 		
 		<tr>
 			
-			<td class="col-name text-left" style="font-size: 8px;">ST SEVERO</td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			
-			<td class="col-name text-left" style="font-size: 8px;">ST GRACO</td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			
-			<td class="col-name text-left" style="font-size: 8px;">ST FERREIRA</td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			
-		</tr>
-		
-		<tr>
-			
-			<td class="col-name text-left" style="font-size: 8px;">1º Sgt MONIQUE</td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			
-			<td class="col-name text-left" style="font-size: 8px;">1º Sgt SÉRGIO C.</td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			
-			<td class="col-name text-left" style="font-size: 8px;">1º Sgt SILVANILDO</td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			
-		</tr>
-		
-		<tr>
-			
-			<td class="col-name text-left" style="font-size: 8px;">2º Sgt CABRAL</td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			
-			<td class="col-name text-left" style="font-size: 8px;">2º Sgt RAFAEL P.</td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			
-			<td class="col-name text-left" style="font-size: 8px;">2º Sgt HEBERT</td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			
-		</tr>
-		
-		<tr>
-			
-			<td class="col-name text-left" style="font-size: 8px;">2º Sgt KENNEDY</td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			
-			<td class="col-name text-left" style="font-size: 8px;">2º Sgt LANCASTER</td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			
-			<td class="col-name text-left" style="font-size: 8px;">2º Sgt ANILDO</td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			
-		</tr>
-		
-		<tr>
-			
-			<td class="col-name text-left" style="font-size: 8px;">2º Sgt ARAUJO</td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			
-			<td class="col-name text-left" style="font-size: 8px;">2º Sgt AQUINO</td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			
-			<td class="col-name text-left" style="font-size: 8px;">3º Sgt PESSOA</td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			
-		</tr>
-		
-		<tr>
-			
-			<td class="col-name text-left" style="font-size: 8px;">3º Sgt ALAN ALVES</td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			
-			<td class="col-name text-left" style="font-size: 8px;">3º Sgt NETO</td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			
-			<td class="col-name text-left" style="font-size: 8px;">3º Sgt HENRRY</td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			
-		</tr>
-		
-		<tr>
-			
-			<td class="col-name text-left" style="font-size: 8px;">3º Sgt SAVIO</td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			
-			<td class="col-name text-left" style="font-size: 8px;">3º Sgt JHONATAN</td>
+			<td class="col-name text-left">ST SEVERO</td>
 			<td class="col-mark">X</td>
 			<td class="col-mark">X</td>
 			<td class="col-mark">X</td>
 			
-			<td class="col-name text-left" style="font-size: 8px;">3º Sgt GABRIEL NETO</td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
+			<td class="col-name text-left">ST GRACO</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			
+			<td class="col-name text-left">ST FERREIRA</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
 			
 		</tr>
 		
 		<tr>
 			
-			<td class="col-name text-left" style="font-size: 8px;">3º Sgt JOELITO</td>
+			<td class="col-name text-left">1º Sgt MONIQUE</td>
 			<td class="col-mark">X</td>
 			<td class="col-mark">X</td>
 			<td class="col-mark">X</td>
 			
-			<td class="col-name text-left" style="font-size: 8px;">3º Sgt FIGUEIRA</td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
+			<td class="col-name text-left">1º Sgt SÉRGIO C.</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
 			
-			<td class="col-name text-left" style="font-size: 8px;">3º Sgt FEITOSA</td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
+			<td class="col-name text-left">1º Sgt SILVANILDO</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
 			
 		</tr>
 		
 		<tr>
 			
-			<td class="col-name text-left" style="font-size: 8px;">3º Sgt VARELA</td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
+			<td class="col-name text-left">2º Sgt CABRAL</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
 			
-			<td class="col-name text-left" style="font-size: 8px;">3º Sgt CUNHA</td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
+			<td class="col-name text-left">2º Sgt RAFAEL P.</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
 			
-			<td class="col-name text-left" style="font-size: 8px;">3º Sgt HIPOLITA</td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
+			<td class="col-name text-left">2º Sgt HEBERT</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
 			
 		</tr>
 		
 		<tr>
 			
-			<td class="col-name text-left" style="font-size: 8px;">3º Sgt TEIXEIRA</td>
+			<td class="col-name text-left">2º Sgt KENNEDY</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			
+			<td class="col-name text-left">2º Sgt LANCASTER</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			
+			<td class="col-name text-left">2º Sgt ANILDO</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			
+		</tr>
+		
+		<tr>
+			
+			<td class="col-name text-left">2º Sgt ARAUJO</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			
+			<td class="col-name text-left">2º Sgt AQUINO</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			
+			<td class="col-name text-left">3º Sgt PESSOA</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			
+		</tr>
+		
+		<tr>
+			
+			<td class="col-name text-left">3º Sgt ALAN ALVES</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			
+			<td class="col-name text-left">3º Sgt NETO</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			
+			<td class="col-name text-left">3º Sgt HENRRY</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			
+		</tr>
+		
+		<tr>
+			
+			<td class="col-name text-left">3º Sgt SAVIO</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			
+			<td class="col-name text-left">3º Sgt JHONATAN</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			
+			<td class="col-name text-left">3º Sgt GABRIEL NETO</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			
+		</tr>
+		
+		<tr>
+			
+			<td class="col-name text-left">3º Sgt JOELITO</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			
+			<td class="col-name text-left">3º Sgt FIGUEIRA</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			
+			<td class="col-name text-left">3º Sgt FEITOSA</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			
+		</tr>
+		
+		<tr>
+			
+			<td class="col-name text-left">3º Sgt VARELA</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			
+			<td class="col-name text-left">3º Sgt CUNHA</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			
+			<td class="col-name text-left">3º Sgt HIPOLITA</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			
+		</tr>
+		
+		<tr>
+			
+			<td class="col-name text-left">3º Sgt TEIXEIRA</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			
+			<td class="col-name text-left"></td>
 			<td class="col-mark"></td>
 			<td class="col-mark"></td>
 			<td class="col-mark"></td>
 			
-			<td class="col-name text-left" style="font-size: 8px;"></td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			
-			<td class="col-name text-left" style="font-size: 8px;"></td>
+			<td class="col-name text-left"></td>
 			<td class="col-mark"></td>
 			<td class="col-mark"></td>
 			<td class="col-mark"></td>
@@ -379,9 +412,11 @@
 		
 	</table>
 	
+	
+	
 	<table style="table-layout: fixed;">
 		<tr>
-			<td colspan="12" class="section-title" style="border: none;">Cabos / Soldados EP/ Alunos</td>
+			<td colspan="12" class="section-title" style="border: none;">Cabos / Soldados EP / Alunos</td>
 		</tr>
 		<tr>
 			<th class="col-name text-left">Nome</th><th class="col-mark">C</th><th class="col-mark">A</th><th class="col-mark">J</th>
@@ -391,264 +426,264 @@
 		
 		<tr>
 			
-			<td class="col-name text-left" style="font-size: 8px;">Cb EP BALBINO</td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
+			<td class="col-name text-left">Cb EP BALBINO</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
 			
-			<td class="col-name text-left" style="font-size: 8px;">Cb EP VALMIR</td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
+			<td class="col-name text-left">Cb EP VALMIR</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
 			
-			<td class="col-name text-left" style="font-size: 8px;">Cb EP SAMUEL</td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			
-		</tr>
-		
-		<tr>
-			
-			<td class="col-name text-left" style="font-size: 8px;">Cb CET FABIO HUDSON</td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			
-			<td class="col-name text-left" style="font-size: 8px;">Cb EP HENRIQUE SOARES</td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			
-			<td class="col-name text-left" style="font-size: 8px;">Cb EP SALES</td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
+			<td class="col-name text-left">Cb EP SAMUEL</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
 			
 		</tr>
 		
 		<tr>
 			
-			<td class="col-name text-left" style="font-size: 8px;">Cb EP ALYSSON COSTA</td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
+			<td class="col-name text-left">Cb CET FABIO HUDSON</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
 			
-			<td class="col-name text-left" style="font-size: 8px;">Cb EP MATOS</td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
+			<td class="col-name text-left">Cb EP HENRIQUE SOARES</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
 			
-			<td class="col-name text-left" style="font-size: 8px;">Cb EP WILLAME</td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			
-		</tr>
-		
-		<tr>
-			
-			<td class="col-name text-left" style="font-size: 8px;">Cb EP SILVA</td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			
-			<td class="col-name text-left" style="font-size: 8px;">Cb EP ROQUE</td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			
-			<td class="col-name text-left" style="font-size: 8px;">Cb CET GETÚLIO</td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
+			<td class="col-name text-left">Cb EP SALES</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
 			
 		</tr>
 		
 		<tr>
 			
-			<td class="col-name text-left" style="font-size: 8px;">Cb EP JOALISON</td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
+			<td class="col-name text-left">Cb EP ALYSSON COSTA</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
 			
-			<td class="col-name text-left" style="font-size: 8px;">Cb EP DOUGLAS</td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
+			<td class="col-name text-left">Cb EP MATOS</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
 			
-			<td class="col-name text-left" style="font-size: 8px;">Cb CET VITOR</td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			
-		</tr>
-		
-		<tr>
-			
-			<td class="col-name text-left" style="font-size: 8px;">Cb EP PAULO</td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			
-			<td class="col-name text-left" style="font-size: 8px;">CB AYROM</td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			
-			<td class="col-name text-left" style="font-size: 8px;">SD EP DOS SANTOS</td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
+			<td class="col-name text-left">Cb EP WILLAME</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
 			
 		</tr>
 		
 		<tr>
 			
-			<td class="col-name text-left" style="font-size: 8px;">SD EP HIGINO</td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
+			<td class="col-name text-left">Cb EP SILVA</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
 			
-			<td class="col-name text-left" style="font-size: 8px;">SD EP ANDREY</td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
+			<td class="col-name text-left">Cb EP ROQUE</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
 			
-			<td class="col-name text-left" style="font-size: 8px;">SD EP MAEL</td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			
-		</tr>
-		
-		<tr>
-			
-			<td class="col-name text-left" style="font-size: 8px;">SD EP PRAXEDES</td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			
-			<td class="col-name text-left" style="font-size: 8px;">SD EP IGOR</td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			
-			<td class="col-name text-left" style="font-size: 8px;">SD EP QUEIROZ</td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
+			<td class="col-name text-left">Cb CET GETÚLIO</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
 			
 		</tr>
 		
 		<tr>
 			
-			<td class="col-name text-left" style="font-size: 8px;">SD EP VINICIUS</td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
+			<td class="col-name text-left">Cb EP JOALISON</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
 			
-			<td class="col-name text-left" style="font-size: 8px;">SD EP ALU CRISTIAN</td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
+			<td class="col-name text-left">Cb EP DOUGLAS</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
 			
-			<td class="col-name text-left" style="font-size: 8px;">SD EP COSTA</td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			
-		</tr>
-		
-		<tr>
-			
-			<td class="col-name text-left" style="font-size: 8px;">SD EP IZAU</td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			
-			<td class="col-name text-left" style="font-size: 8px;">SD EP ALU LIMA ALVES</td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			
-			<td class="col-name text-left" style="font-size: 8px;">SD EP ALU FONSECA</td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
+			<td class="col-name text-left">Cb CET VITOR</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
 			
 		</tr>
 		
 		<tr>
 			
-			<td class="col-name text-left" style="font-size: 8px;">SD EP ALEXANDRE</td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
+			<td class="col-name text-left">Cb EP PAULO</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
 			
-			<td class="col-name text-left" style="font-size: 8px;">SD EP ARTHUR</td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
+			<td class="col-name text-left">CB AYROM</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
 			
-			<td class="col-name text-left" style="font-size: 8px;">SD EP FILHO</td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			
-		</tr>
-		
-		<tr>
-			
-			<td class="col-name text-left" style="font-size: 8px;">SD EP ANTUNES</td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			
-			<td class="col-name text-left" style="font-size: 8px;">SD EP AMORIM</td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			
-			<td class="col-name text-left" style="font-size: 8px;">SD EP DA CRUZ</td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
+			<td class="col-name text-left">SD EP DOS SANTOS</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
 			
 		</tr>
 		
 		<tr>
 			
-			<td class="col-name text-left" style="font-size: 8px;">SD EP ALU DE MELO</td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
+			<td class="col-name text-left">SD EP HIGINO</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
 			
-			<td class="col-name text-left" style="font-size: 8px;">SD EP LOAN</td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
+			<td class="col-name text-left">SD EP ANDREY</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
 			
-			<td class="col-name text-left" style="font-size: 8px;">SD EP AMERICO</td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
+			<td class="col-name text-left">SD EP MAEL</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
 			
 		</tr>
 		
 		<tr>
 			
-			<td class="col-name text-left" style="font-size: 8px;">SD EP ALU ABDIAS</td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
+			<td class="col-name text-left">SD EP PRAXEDES</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
 			
-			<td class="col-name text-left" style="font-size: 8px;">SD EP GOMES</td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
+			<td class="col-name text-left">SD EP IGOR</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
 			
-			<td class="col-name text-left" style="font-size: 8px;"></td>
+			<td class="col-name text-left">SD EP QUEIROZ</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			
+		</tr>
+		
+		<tr>
+			
+			<td class="col-name text-left">SD EP VINICIUS</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			
+			<td class="col-name text-left">SD EP ALU CRISTIAN</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			
+			<td class="col-name text-left">SD EP COSTA</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			
+		</tr>
+		
+		<tr>
+			
+			<td class="col-name text-left">SD EP IZAU</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			
+			<td class="col-name text-left">SD EP ALU LIMA ALVES</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			
+			<td class="col-name text-left">SD EP ALU FONSECA</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			
+		</tr>
+		
+		<tr>
+			
+			<td class="col-name text-left">SD EP ALEXANDRE</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			
+			<td class="col-name text-left">SD EP ARTHUR</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			
+			<td class="col-name text-left">SD EP FILHO</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			
+		</tr>
+		
+		<tr>
+			
+			<td class="col-name text-left">SD EP ANTUNES</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			
+			<td class="col-name text-left">SD EP AMORIM</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			
+			<td class="col-name text-left">SD EP DA CRUZ</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			
+		</tr>
+		
+		<tr>
+			
+			<td class="col-name text-left">SD EP ALU DE MELO</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			
+			<td class="col-name text-left">SD EP LOAN</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			
+			<td class="col-name text-left">SD EP AMERICO</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			
+		</tr>
+		
+		<tr>
+			
+			<td class="col-name text-left">SD EP ALU ABDIAS</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			
+			<td class="col-name text-left">SD EP GOMES</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			
+			<td class="col-name text-left"></td>
 			<td class="col-mark"></td>
 			<td class="col-mark"></td>
 			<td class="col-mark"></td>
@@ -656,6 +691,8 @@
 		</tr>
 		
 	</table>
+	
+	
 	
 	<table style="table-layout: fixed;">
 		<tr>
@@ -669,378 +706,378 @@
 		
 		<tr>
 			
-			<td class="col-name text-left" style="font-size: 8px;">301 ADRIANO</td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
+			<td class="col-name text-left">301 ADRIANO</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
 			
-			<td class="col-name text-left" style="font-size: 8px;">302 ROCHA</td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
+			<td class="col-name text-left">302 ROCHA</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
 			
-			<td class="col-name text-left" style="font-size: 8px;">303 ARNÓBIO</td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			
-		</tr>
-		
-		<tr>
-			
-			<td class="col-name text-left" style="font-size: 8px;">304 RAMOS</td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			
-			<td class="col-name text-left" style="font-size: 8px;">305 CAUÃ</td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			
-			<td class="col-name text-left" style="font-size: 8px;">306 MIRANDA</td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
+			<td class="col-name text-left">303 ARNÓBIO</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
 			
 		</tr>
 		
 		<tr>
 			
-			<td class="col-name text-left" style="font-size: 8px;">307 DE LIMA</td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
+			<td class="col-name text-left">304 RAMOS</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
 			
-			<td class="col-name text-left" style="font-size: 8px;">308 MATIAS</td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
+			<td class="col-name text-left">305 CAUÃ</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
 			
-			<td class="col-name text-left" style="font-size: 8px;">309 DO NASCIMENTO</td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			
-		</tr>
-		
-		<tr>
-			
-			<td class="col-name text-left" style="font-size: 8px;">310 NUNES</td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			
-			<td class="col-name text-left" style="font-size: 8px;">311 RODRIGUES</td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			
-			<td class="col-name text-left" style="font-size: 8px;">312 BANDEIRA</td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
+			<td class="col-name text-left">306 MIRANDA</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
 			
 		</tr>
 		
 		<tr>
 			
-			<td class="col-name text-left" style="font-size: 8px;">313 EVANDRO</td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
+			<td class="col-name text-left">307 DE LIMA</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
 			
-			<td class="col-name text-left" style="font-size: 8px;">314 WALLES</td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
+			<td class="col-name text-left">308 MATIAS</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
 			
-			<td class="col-name text-left" style="font-size: 8px;">315 BATISTA</td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			
-		</tr>
-		
-		<tr>
-			
-			<td class="col-name text-left" style="font-size: 8px;">316 FREITAS</td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			
-			<td class="col-name text-left" style="font-size: 8px;">317 R. SANTOS</td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			
-			<td class="col-name text-left" style="font-size: 8px;">318 THIAGO</td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
+			<td class="col-name text-left">309 DO NASCIMENTO</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
 			
 		</tr>
 		
 		<tr>
 			
-			<td class="col-name text-left" style="font-size: 8px;">319 ESTEVAM</td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
+			<td class="col-name text-left">310 NUNES</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
 			
-			<td class="col-name text-left" style="font-size: 8px;">320 TOSCANO</td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
+			<td class="col-name text-left">311 RODRIGUES</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
 			
-			<td class="col-name text-left" style="font-size: 8px;">321 SALDANHA</td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			
-		</tr>
-		
-		<tr>
-			
-			<td class="col-name text-left" style="font-size: 8px;">322 BEZERRA</td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			
-			<td class="col-name text-left" style="font-size: 8px;">323 FERNANDO</td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			
-			<td class="col-name text-left" style="font-size: 8px;">324 PEDRO SANTOS</td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
+			<td class="col-name text-left">312 BANDEIRA</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
 			
 		</tr>
 		
 		<tr>
 			
-			<td class="col-name text-left" style="font-size: 8px;">325 JOÃO GOMES</td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
+			<td class="col-name text-left">313 EVANDRO</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
 			
-			<td class="col-name text-left" style="font-size: 8px;">326 MENDONÇA</td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
+			<td class="col-name text-left">314 WALLES</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
 			
-			<td class="col-name text-left" style="font-size: 8px;">327 CÂMARA</td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			
-		</tr>
-		
-		<tr>
-			
-			<td class="col-name text-left" style="font-size: 8px;">328 FAUSTO</td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			
-			<td class="col-name text-left" style="font-size: 8px;">329 LINHARES</td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			
-			<td class="col-name text-left" style="font-size: 8px;">330 JAIR</td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
+			<td class="col-name text-left">315 BATISTA</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
 			
 		</tr>
 		
 		<tr>
 			
-			<td class="col-name text-left" style="font-size: 8px;">331 KAUÃ</td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
+			<td class="col-name text-left">316 FREITAS</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
 			
-			<td class="col-name text-left" style="font-size: 8px;">332 BORBA</td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
+			<td class="col-name text-left">317 R. SANTOS</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
 			
-			<td class="col-name text-left" style="font-size: 8px;">333 XAVIER</td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			
-		</tr>
-		
-		<tr>
-			
-			<td class="col-name text-left" style="font-size: 8px;">334 LEANDRO</td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			
-			<td class="col-name text-left" style="font-size: 8px;">335</td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			
-			<td class="col-name text-left" style="font-size: 8px;">336 RUFINO</td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
+			<td class="col-name text-left">318 THIAGO</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
 			
 		</tr>
 		
 		<tr>
 			
-			<td class="col-name text-left" style="font-size: 8px;">337 DE AQUINO</td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
+			<td class="col-name text-left">319 ESTEVAM</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
 			
-			<td class="col-name text-left" style="font-size: 8px;">338 F. SANTOS</td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
+			<td class="col-name text-left">320 TOSCANO</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
 			
-			<td class="col-name text-left" style="font-size: 8px;">339 FLORÊNCION</td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			
-		</tr>
-		
-		<tr>
-			
-			<td class="col-name text-left" style="font-size: 8px;">340 SANTOS</td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			
-			<td class="col-name text-left" style="font-size: 8px;">341 EPIFANIO</td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			
-			<td class="col-name text-left" style="font-size: 8px;">342 M. SOUZA</td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
+			<td class="col-name text-left">321 SALDANHA</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
 			
 		</tr>
 		
 		<tr>
 			
-			<td class="col-name text-left" style="font-size: 8px;">343 DE FRANÇA</td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
+			<td class="col-name text-left">322 BEZERRA</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
 			
-			<td class="col-name text-left" style="font-size: 8px;">344 MACHADO</td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
+			<td class="col-name text-left">323 FERNANDO</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
 			
-			<td class="col-name text-left" style="font-size: 8px;">345</td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			
-		</tr>
-		
-		<tr>
-			
-			<td class="col-name text-left" style="font-size: 8px;">346 NICÁSSIO</td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			
-			<td class="col-name text-left" style="font-size: 8px;">347 MOURA</td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			
-			<td class="col-name text-left" style="font-size: 8px;">348 KAIURY</td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
+			<td class="col-name text-left">324 PEDRO SANTOS</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
 			
 		</tr>
 		
 		<tr>
 			
-			<td class="col-name text-left" style="font-size: 8px;">349 BRAZ</td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
+			<td class="col-name text-left">325 JOÃO GOMES</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
 			
-			<td class="col-name text-left" style="font-size: 8px;">350 VICTOR ALVES</td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
+			<td class="col-name text-left">326 MENDONÇA</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
 			
-			<td class="col-name text-left" style="font-size: 8px;">351 RAIKKONEN</td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			
-		</tr>
-		
-		<tr>
-			
-			<td class="col-name text-left" style="font-size: 8px;">352 FERNANDES</td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			
-			<td class="col-name text-left" style="font-size: 8px;">353 MANOEL</td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			
-			<td class="col-name text-left" style="font-size: 8px;">354 GABRIEL</td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
+			<td class="col-name text-left">327 CÂMARA</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
 			
 		</tr>
 		
 		<tr>
 			
-			<td class="col-name text-left" style="font-size: 8px;">355 V. SILVA</td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
+			<td class="col-name text-left">328 FAUSTO</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
 			
-			<td class="col-name text-left" style="font-size: 8px;">356 LUCAS LIMA</td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
+			<td class="col-name text-left">329 LINHARES</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
 			
-			<td class="col-name text-left" style="font-size: 8px;">357 PONTES</td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
+			<td class="col-name text-left">330 JAIR</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
 			
 		</tr>
 		
 		<tr>
 			
-			<td class="col-name text-left" style="font-size: 8px;">358 WILSON</td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
+			<td class="col-name text-left">331 KAUÃ</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
 			
-			<td class="col-name text-left" style="font-size: 8px;">359 YAN</td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
-			<td class="col-mark"></td>
+			<td class="col-name text-left">332 BORBA</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
 			
-			<td class="col-name text-left" style="font-size: 8px;"></td>
+			<td class="col-name text-left">333 XAVIER</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			
+		</tr>
+		
+		<tr>
+			
+			<td class="col-name text-left">334 LEANDRO</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			
+			<td class="col-name text-left">335</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			
+			<td class="col-name text-left">336 RUFINO</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			
+		</tr>
+		
+		<tr>
+			
+			<td class="col-name text-left">337 DE AQUINO</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			
+			<td class="col-name text-left">338 F. SANTOS</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			
+			<td class="col-name text-left">339 FLORÊNCION</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			
+		</tr>
+		
+		<tr>
+			
+			<td class="col-name text-left">340 SANTOS</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			
+			<td class="col-name text-left">341 EPIFANIO</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			
+			<td class="col-name text-left">342 M. SOUZA</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			
+		</tr>
+		
+		<tr>
+			
+			<td class="col-name text-left">343 DE FRANÇA</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			
+			<td class="col-name text-left">344 MACHADO</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			
+			<td class="col-name text-left">345</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			
+		</tr>
+		
+		<tr>
+			
+			<td class="col-name text-left">346 NICÁSSIO</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			
+			<td class="col-name text-left">347 MOURA</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			
+			<td class="col-name text-left">348 KAIURY</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			
+		</tr>
+		
+		<tr>
+			
+			<td class="col-name text-left">349 BRAZ</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			
+			<td class="col-name text-left">350 VICTOR ALVES</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			
+			<td class="col-name text-left">351 RAIKKONEN</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			
+		</tr>
+		
+		<tr>
+			
+			<td class="col-name text-left">352 FERNANDES</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			
+			<td class="col-name text-left">353 MANOEL</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			
+			<td class="col-name text-left">354 GABRIEL</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			
+		</tr>
+		
+		<tr>
+			
+			<td class="col-name text-left">355 V. SILVA</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			
+			<td class="col-name text-left">356 LUCAS LIMA</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			
+			<td class="col-name text-left">357 PONTES</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			
+		</tr>
+		
+		<tr>
+			
+			<td class="col-name text-left">358 WILSON</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			
+			<td class="col-name text-left">359 YAN</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			<td class="col-mark">X</td>
+			
+			<td class="col-name text-left"></td>
 			<td class="col-mark"></td>
 			<td class="col-mark"></td>
 			<td class="col-mark"></td>
@@ -1049,18 +1086,20 @@
 		
 	</table>
 	
+	
+	
 
 	<table class="footer-table">
 		<tr>
-			<th colspan="4" style="background-color: #f0f0f0;">Etapas reduzidas</th>
-			<th colspan="4" style="background-color: #f0f0f0;">Etapas Completas</th>
-			<th style="background-color: #f0f0f0;">Alimentar</th>
-			<th style="background-color: #f0f0f0;">Soma</th>
-			<th style="background-color: #f0f0f0;">Tipo</th>
-			<th style="background-color: #f0f0f0;">Quantitativo</th>
-			<th style="background-color: #f0f0f0;">C HOSP</th>
-			<th style="background-color: #f0f0f0;">C ESC</th>
-			<th style="background-color: #f0f0f0;">CF 60%</th>
+			<th colspan="4">Etapas reduzidas</th>
+			<th colspan="4">Etapas Completas</th>
+			<th>Alimentar</th>
+			<th>Soma</th>
+			<th>Tipo</th>
+			<th>Quantitativo</th>
+			<th>C HOSP</th>
+			<th>C ESC</th>
+			<th>CF 60%</th>
 		</tr>
 		<tr>
 			<td colspan="1"></td>
@@ -1070,30 +1109,30 @@
 		</tr>
 		<tr>
 			<td><b>Oficiais</b></td>
-			<td>00</td><td>00</td><td>00</td>
+			<td>12</td><td>12</td><td>12</td>
 			<td colspan="4"><b>Oficiais</b></td>
-			<td>00</td><td>00</td><td>RR</td><td>00</td>
+			<td>12</td><td>12</td><td>RR</td><td>12</td>
 			<td>*</td><td>*</td><td>*</td>
 		</tr>
 		<tr>
 			<td><b>S Ten / Sgt</b></td>
-			<td>02</td><td>02</td><td>02</td>
+			<td>28</td><td>28</td><td>28</td>
 			<td colspan="4"><b>S Ten / Sgt</b></td>
-			<td>02</td><td>02</td><td>RR</td><td>02</td>
+			<td>28</td><td>28</td><td>RR</td><td>28</td>
 			<td>*</td><td>*</td><td>*</td>
 		</tr>
 		<tr>
 			<td><b>Cb / Sd</b></td>
-			<td>00</td><td>00</td><td>00</td>
+			<td>100</td><td>100</td><td>100</td>
 			<td colspan="4"><b>Cb / Sd</b></td>
-			<td>00</td><td>00</td><td>QR</td><td>00</td>
+			<td>100</td><td>100</td><td>QR</td><td>100</td>
 			<td>*</td><td>*</td><td>*</td>
 		</tr>
 		<tr>
 			<td><b>Total</b></td>
-			<td>02</td><td>02</td><td>02</td>
+			<td>140</td><td>140</td><td>140</td>
 			<td colspan="4"><b>Total</b></td>
-			<td>02</td><td>02</td><td>CF</td><td>02</td>
+			<td>140</td><td>140</td><td>CF</td><td>140</td>
 			<td>*</td><td>*</td><td>*</td>
 		</tr>
 	</table>

@@ -2,10 +2,12 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"os"
 	"path/filepath"
 	"time"
-	"os"
+
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 	"GeradorEscalasWeb/backend"
 )
@@ -57,6 +59,71 @@ func (a *App) GetState() backend.AppState {
 func (a *App) SaveState(state backend.AppState) error {
 	a.state = state
 	return backend.SaveState(a.getStatePath(), state)
+}
+
+func (a *App) ExportBackup() error {
+	stateBytes, err := json.MarshalIndent(a.state, "", "    ")
+	if err != nil {
+		return err
+	}
+
+	today := time.Now().Format("2006-01-02")
+	defaultFilename := fmt.Sprintf("Backup_Escalas_%s.json", today)
+
+	savePath, err := runtime.SaveFileDialog(a.ctx, runtime.SaveDialogOptions{
+		DefaultFilename: defaultFilename,
+		Title:           "Exportar Backup do Sistema",
+		Filters: []runtime.FileFilter{
+			{DisplayName: "Arquivo de Backup JSON (*.json)", Pattern: "*.json"},
+		},
+	})
+	if err != nil {
+		return err
+	}
+	if savePath == "" {
+		return nil
+	}
+
+	return os.WriteFile(savePath, stateBytes, 0644)
+}
+
+func (a *App) ImportBackup() (backend.AppState, error) {
+	filePath, err := runtime.OpenFileDialog(a.ctx, runtime.OpenDialogOptions{
+		Title: "Importar Backup do Sistema",
+		Filters: []runtime.FileFilter{
+			{DisplayName: "Arquivo de Backup JSON (*.json)", Pattern: "*.json"},
+		},
+	})
+	if err != nil {
+		return a.state, err
+	}
+	if filePath == "" {
+		return a.state, nil
+	}
+
+	newState, err := backend.LoadState(filePath)
+	if err != nil {
+		return a.state, fmt.Errorf("arquivo de backup inválido: %w", err)
+	}
+
+	a.state = newState
+	if err := a.SaveState(newState); err != nil {
+		return a.state, fmt.Errorf("erro ao salvar backup importado: %w", err)
+	}
+
+	return a.state, nil
+}
+
+func (a *App) ImportBackupJSON(jsonStr string) (backend.AppState, error) {
+	var newState backend.AppState
+	if err := json.Unmarshal([]byte(jsonStr), &newState); err != nil {
+		return a.state, fmt.Errorf("JSON de backup inválido: %w", err)
+	}
+	a.state = newState
+	if err := a.SaveState(newState); err != nil {
+		return a.state, fmt.Errorf("erro ao salvar backup importado: %w", err)
+	}
+	return a.state, nil
 }
 
 func (a *App) GenerateSchedule(opts backend.GenerateOpts) (backend.HistoricoEscala, error) {
