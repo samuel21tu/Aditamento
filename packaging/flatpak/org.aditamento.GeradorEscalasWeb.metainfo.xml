@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>org.aditamento.GeradorEscalasWeb</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>MIT</project_license>
+  <name>Gerador de Escala</name>
+  <summary>Gerador de Escalas e Aditamentos Militares</summary>
+  <description>
+    <p>
+      Aplicativo para gerenciamento, geração e exportação de escalas de serviço e aditamentos militares.
+    </p>
+  </description>
+  <launchable type="desktop-id">org.aditamento.GeradorEscalasWeb.desktop</launchable>
+  <provides>
+    <binary>GeradorEscalasWeb</binary>
+  </provides>
+  <developer_name>Samuel Nascimento</developer_name>
+</component>

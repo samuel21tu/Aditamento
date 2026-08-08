@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Gerador de Escala
+Comment=Gerador de Escalas e Aditamentos
+Exec=GeradorEscalasWeb
+Icon=gerador-escalas
+Categories=Office;Utility;
+Terminal=false
+StartupNotify=true

@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Gerador de Escala
+Comment=Gerador de Escalas e Aditamentos Militares
+Exec=GeradorEscalasWeb
+Icon=org.aditamento.GeradorEscalasWeb
+Categories=Office;Utility;
+Terminal=false
+StartupNotify=true
