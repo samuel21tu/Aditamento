@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=Gerador de Escalas
+Comment=Gerador de Escalas e Aditamentos Militares
+Exec=gerador-escalas
+Icon=br.mil.gerador_escalas
+Type=Application
+Categories=Utility;Office;
+StartupNotify=true

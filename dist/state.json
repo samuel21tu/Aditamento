@@ -745,6 +745,61 @@
             "aditamento_nr": 1,
             "atividade_tipo": "TFM",
             "parada_diaria": "09h30"
+        },
+        {
+            "data": "2026-09-03",
+            "dia_semana": 3,
+            "escalados": {
+                "APOIO PRAIA/HT": [
+                    "Cap LENTZ",
+                    "2º Sgt LANCASTER"
+                ],
+                "GDA QTEL": [
+                    "309 DO NASCIMENTO",
+                    "3º Sgt CUNHA",
+                    "303 ARNÓBIO",
+                    "314 WALLES",
+                    "316 FREITAS",
+                    "324 PEDRO SANTOS",
+                    "3º Sgt JOELITO"
+                ],
+                "GDA VILA": [
+                    "333 XAVIER"
+                ],
+                "MOT VILA": [
+                    "SD EP COSTA"
+                ],
+                "PADIOLEIRO": [
+                    "3º Sgt TEIXEIRA"
+                ],
+                "PLANTÃO ALOJ EP": [
+                    "302 ROCHA",
+                    "3º Sgt GABRIEL NETO",
+                    "301 ADRIANO"
+                ],
+                "PLANTÃO ALOJ EV": [
+                    "342 M. SOUZA",
+                    "327 CÂMARA",
+                    "304 RAMOS"
+                ],
+                "SOBRE AVISO": [
+                    "1º Ten RENATO",
+                    "2º Sgt RAFAEL P."
+                ],
+                "SOMBRA": [
+                    "3º Sgt HIPOLITA"
+                ]
+            },
+            "manual_roles": {
+                "ADJ OF DIA": "",
+                "CB DIA Bia C": "",
+                "MOT DIA": "",
+                "OF DIA": "",
+                "SGT DIA Bia C": ""
+            },
+            "aditamento_nr": 1,
+            "atividade_tipo": "TFM",
+            "parada_diaria": "09h30"
         }
     ],
     "dispensas_v2": {},

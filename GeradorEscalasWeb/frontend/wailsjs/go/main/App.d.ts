@@ -6,6 +6,8 @@ export function DownloadArranchamento(arg1:string,arg2:Record<string, backend.Re
 
 export function DownloadWordMulti(arg1:Array<backend.HistoricoEscala>,arg2:string,arg3:string,arg4:string):Promise<void>;
 
+export function ExportBackup():Promise<void>;
+
 export function GenerateDocumentArranchamentoHTML(arg1:string,arg2:Record<string, backend.Refeicoes>):Promise<string>;
 
 export function GenerateDocumentHTML(arg1:Array<backend.HistoricoEscala>,arg2:string,arg3:string):Promise<string>;
@@ -17,6 +19,10 @@ export function GetAllMilitares():Promise<Array<string>>;
 export function GetScores(arg1:string):Promise<backend.ScoreData>;
 
 export function GetState():Promise<backend.AppState>;
+
+export function ImportBackup():Promise<backend.AppState>;
+
+export function ImportBackupJSON(arg1:string):Promise<backend.AppState>;
 
 export function InitializeState(arg1:string):Promise<backend.AppState>;
 

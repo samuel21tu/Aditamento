@@ -84,29 +84,29 @@ const docTemplate = `
 	{{range .Days}}
 	<table class="data-table">
 		{{if .ServicoExterno}}
-		<tr><td colspan="3" class="bg-gray bold text-center">Serviço Externo para {{.DiaSemanaTitle}}, {{.DataExtenso}}.</td></tr>
+		<tr><td colspan="3" bgcolor="#d9d9d9" style="background-color: #d9d9d9; font-weight: bold; text-align: center;">Serviço Externo para {{.DiaSemanaTitle}}, {{.DataExtenso}}.</td></tr>
 		{{range .ServicoExterno}}
 		<tr>
-			<td style="width: 25%;" class="bg-gray text-center">{{.RoleName}}</td>
-			<td style="width: 15%;" class="bg-gray text-center">{{.PostoGrad}}</td>
+			<td style="width: 25%; background-color: #d9d9d9; text-align: center;" bgcolor="#d9d9d9">{{.RoleName}}</td>
+			<td style="width: 15%; background-color: #d9d9d9; text-align: center;" bgcolor="#d9d9d9">{{.PostoGrad}}</td>
 			<td class="text-center">{{.Names}}</td>
 		</tr>
 		{{end}}
 		{{end}}
 
 		{{if .ServicoInterno}}
-		<tr><td colspan="3" class="bg-gray bold text-center">Serviço Interno para {{.DiaSemanaTitle}}, {{.DataExtenso}}.</td></tr>
+		<tr><td colspan="3" bgcolor="#d9d9d9" style="background-color: #d9d9d9; font-weight: bold; text-align: center;">Serviço Interno para {{.DiaSemanaTitle}}, {{.DataExtenso}}.</td></tr>
 		{{range .ServicoInterno}}
 		<tr>
-			<td style="width: 25%;" class="bg-gray text-center">{{.RoleName}}</td>
-			<td style="width: 15%;" class="bg-gray text-center">{{.PostoGrad}}</td>
+			<td style="width: 25%; background-color: #d9d9d9; text-align: center;" bgcolor="#d9d9d9">{{.RoleName}}</td>
+			<td style="width: 15%; background-color: #d9d9d9; text-align: center;" bgcolor="#d9d9d9">{{.PostoGrad}}</td>
 			<td class="text-center">{{.Names}}</td>
 		</tr>
 		{{end}}
 		{{end}}
 		<tr>
-			<td style="width: 25%;" class="bg-gray text-center">PARADA DIÁRIA</td>
-			<td style="width: 15%;" class="bg-gray text-center">-</td>
+			<td style="width: 25%; background-color: #d9d9d9; text-align: center;" bgcolor="#d9d9d9">PARADA DIÁRIA</td>
+			<td style="width: 15%; background-color: #d9d9d9; text-align: center;" bgcolor="#d9d9d9">-</td>
 			<td class="text-center">{{if eq .ParadaDiaria "Personalizado"}}{{else if eq .ParadaDiaria ""}}09h30min{{else}}{{.ParadaDiaria}}min{{end}}</td>
 		</tr>
 	</table>
@@ -205,16 +205,16 @@ const docTemplate = `
 			</td>
 		</tr>
 		<tr>
-			<td colspan="5" class="bg-gray" style="border-top: 1px solid black; padding: 5px;">
+			<td colspan="5" bgcolor="#d9d9d9" style="background-color: #d9d9d9; border-top: 1px solid black; padding: 5px;">
 				Controle de Efetivo para {{.DiaSemanaTitle}}, {{.DataExtenso}}.
 			</td>
 		</tr>
 
 		<!-- EM FORMA -->
 		<tr>
-			<td style="width: 15%; border: 1px solid black; padding: 4px;" class="bg-gray">GRAD</td>
-			<td colspan="3" style="width: 70%; border: 1px solid black; padding: 4px;" class="bg-gray">EM FORMA</td>
-			<td style="width: 15%; border: 1px solid black; padding: 4px;" class="bg-gray">SOMA</td>
+			<td style="width: 15%; border: 1px solid black; padding: 4px; background-color: #d9d9d9;" bgcolor="#d9d9d9">GRAD</td>
+			<td colspan="3" style="width: 70%; border: 1px solid black; padding: 4px; background-color: #d9d9d9;" bgcolor="#d9d9d9">EM FORMA</td>
+			<td style="width: 15%; border: 1px solid black; padding: 4px; background-color: #d9d9d9;" bgcolor="#d9d9d9">SOMA</td>
 		</tr>
 		{{range .Pernoite.EmForma}}
 		<tr>
@@ -230,14 +230,14 @@ const docTemplate = `
 
 		<!-- PUNIDOS -->
 		<tr>
-			<td colspan="5" class="bg-gray" style="border: 1px solid black; padding: 4px;">PUNIDOS DISCIPLINARMENTE</td>
+			<td colspan="5" bgcolor="#d9d9d9" style="background-color: #d9d9d9; border: 1px solid black; padding: 4px;">PUNIDOS DISCIPLINARMENTE</td>
 		</tr>
 		<tr>
-			<td style="width: 15%; border: 1px solid black; padding: 4px;" class="bg-gray">PROC.</td>
-			<td style="width: 40%; border: 1px solid black; padding: 4px;" class="bg-gray">GRAD/NOME</td>
-			<td style="width: 15%; border: 1px solid black; padding: 4px;" class="bg-gray">TIPO</td>
-			<td style="width: 15%; border: 1px solid black; padding: 4px;" class="bg-gray">INÍCIO</td>
-			<td style="width: 15%; border: 1px solid black; padding: 4px;" class="bg-gray">TÉRMINO</td>
+			<td style="width: 15%; border: 1px solid black; padding: 4px; background-color: #d9d9d9;" bgcolor="#d9d9d9">PROC.</td>
+			<td style="width: 40%; border: 1px solid black; padding: 4px; background-color: #d9d9d9;" bgcolor="#d9d9d9">GRAD/NOME</td>
+			<td style="width: 15%; border: 1px solid black; padding: 4px; background-color: #d9d9d9;" bgcolor="#d9d9d9">TIPO</td>
+			<td style="width: 15%; border: 1px solid black; padding: 4px; background-color: #d9d9d9;" bgcolor="#d9d9d9">INÍCIO</td>
+			<td style="width: 15%; border: 1px solid black; padding: 4px; background-color: #d9d9d9;" bgcolor="#d9d9d9">TÉRMINO</td>
 		</tr>
 		<tr>
 			<td style="border: 1px solid black; padding: 4px;">-</td>
@@ -249,8 +249,8 @@ const docTemplate = `
 
 		<!-- OUTROS DESTINOS -->
 		<tr>
-			<td colspan="4" class="bg-gray" style="border: 1px solid black; padding: 4px;">EM OUTROS DESTINOS</td>
-			<td style="border: 1px solid black; padding: 4px;" class="bg-gray">SOMA</td>
+			<td colspan="4" bgcolor="#d9d9d9" style="background-color: #d9d9d9; border: 1px solid black; padding: 4px;">EM OUTROS DESTINOS</td>
+			<td style="border: 1px solid black; padding: 4px; background-color: #d9d9d9;" bgcolor="#d9d9d9">SOMA</td>
 		</tr>
 		{{range .Pernoite.OutrosDestinos}}
 		<tr>

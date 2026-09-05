@@ -11,6 +11,69 @@ const getTomorrow = () => {
     return d.toISOString().split('T')[0];
 };
 
+const printHtmlDocument = (html: string) => {
+    const existingContainer = document.getElementById('print-container');
+    if (existingContainer) existingContainer.remove();
+    
+    const existingStyle = document.getElementById('print-style-override');
+    if (existingStyle) existingStyle.remove();
+
+    const printContainer = document.createElement('div');
+    printContainer.id = 'print-container';
+    printContainer.innerHTML = html;
+    document.body.appendChild(printContainer);
+
+    const style = document.createElement('style');
+    style.id = 'print-style-override';
+    style.innerHTML = `
+        @media print {
+            html, body {
+                height: auto !important;
+                overflow: visible !important;
+                background: white !important;
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+            body > *:not(#print-container):not(#print-style-override) {
+                display: none !important;
+            }
+            #print-container {
+                display: block !important;
+            }
+            /* CSS Reset for print container to prevent dark mode leaking */
+            #print-container, #print-container * {
+                color: black !important;
+            }
+            #print-container table {
+                border-spacing: 0 !important;
+            }
+            #print-container th, #print-container td {
+                background-color: transparent;
+                text-transform: none;
+            }
+        }
+        @media screen {
+            #print-container {
+                display: none !important;
+            }
+        }
+    `;
+    document.head.appendChild(style);
+
+    setTimeout(() => {
+        window.print();
+        
+        const afterPrintHandler = () => {
+            const pc = document.getElementById('print-container');
+            if (pc) pc.remove();
+            const ps = document.getElementById('print-style-override');
+            if (ps) ps.remove();
+            window.removeEventListener('afterprint', afterPrintHandler);
+        };
+        window.addEventListener('afterprint', afterPrintHandler);
+    }, 500);
+};
+
 function App() {
     const [activeTab, setActiveTab] = useState('gerador');
     const [state, setState] = useState<any>(null);
@@ -264,13 +327,7 @@ function App() {
 
             // @ts-ignore
             const html = await window.go.main.App.GenerateDocumentHTML(itemsToPrint, state.nome_cmt, state.unidade);
-            const newWindow = window.open();
-            if (newWindow) {
-                newWindow.document.write(html);
-                newWindow.document.close();
-                newWindow.focus();
-                newWindow.print();
-            }
+            printHtmlDocument(html);
         } catch (err) {
             showAlert("Erro ao gerar documento: " + err);
         }
@@ -761,13 +818,7 @@ function App() {
         try {
             // @ts-ignore
             const html = await window.go.main.App.GenerateDocumentArranchamentoHTML(h.data, h.refeicoes);
-            const newWindow = window.open();
-            if (newWindow) {
-                newWindow.document.write(html);
-                newWindow.document.close();
-                newWindow.focus();
-                newWindow.print();
-            }
+            printHtmlDocument(html);
         } catch (err) {
             showAlert("Erro ao gerar documento: " + err);
         }
@@ -1144,7 +1195,7 @@ function App() {
                                 </div>
                             </div>
 
-                            <div className="card">
+                            <div className="card span-full">
                                 <h3>5. Justiça e Disciplina (Opcional)</h3>
                                 <p style={{marginBottom:'10px', fontSize:'0.9em', color:'var(--text-light)'}}>Preencha os campos abaixo. O que ficar em branco será substituído por "- Sem Alteração.".</p>
                                 

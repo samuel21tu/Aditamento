@@ -463,3 +463,7 @@ tr:hover td {
   display: flex;
   flex-direction: column;
 }
+
+.span-full {
+  grid-column: 1 / -1;
+}

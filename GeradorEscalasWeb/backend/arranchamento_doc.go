@@ -125,7 +125,7 @@ const arranchamentoTemplate = `
 </style>
 </head>
 <body>
-	<div class="header-title">Arranchamento – {{.UnidadeNome}}</div>
+	<div class="header-title" style="background-color: black; color: white; text-align: center; font-weight: bold; font-size: 13px; padding: 3px;">Arranchamento – {{.UnidadeNome}}</div>
 	<div style="font-weight: bold; font-size: 11px; margin: 3px 0;">Data: {{.DataFormatada}}</div>
 
 	{{if .Secoes}}
@@ -133,7 +133,7 @@ const arranchamentoTemplate = `
 	{{if .Linhas}}
 	<table style="table-layout: fixed;">
 		<tr>
-			<td colspan="12" class="section-title" style="border: none;">{{.Nome}}</td>
+			<td colspan="12" class="section-title" bgcolor="black" style="background-color: black; color: white; text-align: center; font-weight: bold; font-size: 10.5px; padding: 2px; border: none;">{{.Nome}}</td>
 		</tr>
 		<tr>
 			<th class="col-name text-left">Nome</th><th class="col-mark">C</th><th class="col-mark">A</th><th class="col-mark">J</th>
@@ -156,7 +156,7 @@ const arranchamentoTemplate = `
 	{{else}}
 	<table style="table-layout: fixed;">
 		<tr>
-			<td colspan="12" class="section-title" style="border: none;">Militares Arranchados</td>
+			<td colspan="12" class="section-title" bgcolor="black" style="background-color: black; color: white; text-align: center; font-weight: bold; font-size: 10.5px; padding: 2px; border: none;">Militares Arranchados</td>
 		</tr>
 		<tr>
 			<th class="col-name text-left">Nome</th><th class="col-mark">C</th><th class="col-mark">A</th><th class="col-mark">J</th>
@@ -170,16 +170,16 @@ const arranchamentoTemplate = `
 	{{end}}
 
 	<table class="footer-table">
-		<tr>
-			<th colspan="4">Etapas reduzidas</th>
-			<th colspan="4">Etapas Completas</th>
-			<th>Alimentar</th>
-			<th>Soma</th>
-			<th>Tipo</th>
-			<th>Quantitativo</th>
-			<th>C HOSP</th>
-			<th>C ESC</th>
-			<th>CF 60%</th>
+		<tr style="background-color: #f0f0f0;" bgcolor="#f0f0f0">
+			<th colspan="4" bgcolor="#f0f0f0" style="background-color: #f0f0f0;">Etapas reduzidas</th>
+			<th colspan="4" bgcolor="#f0f0f0" style="background-color: #f0f0f0;">Etapas Completas</th>
+			<th bgcolor="#f0f0f0" style="background-color: #f0f0f0;">Alimentar</th>
+			<th bgcolor="#f0f0f0" style="background-color: #f0f0f0;">Soma</th>
+			<th bgcolor="#f0f0f0" style="background-color: #f0f0f0;">Tipo</th>
+			<th bgcolor="#f0f0f0" style="background-color: #f0f0f0;">Quantitativo</th>
+			<th bgcolor="#f0f0f0" style="background-color: #f0f0f0;">C HOSP</th>
+			<th bgcolor="#f0f0f0" style="background-color: #f0f0f0;">C ESC</th>
+			<th bgcolor="#f0f0f0" style="background-color: #f0f0f0;">CF 60%</th>
 		</tr>
 		<tr>
 			<td colspan="1"></td>

@@ -1,0 +1,44 @@
+{
+    "app-id": "br.mil.gerador_escalas",
+    "runtime": "org.freedesktop.Platform",
+    "runtime-version": "24.08",
+    "sdk": "org.freedesktop.Sdk",
+    "command": "gerador-escalas",
+    "finish-args": [
+        "--share=network",
+        "--share=ipc",
+        "--socket=fallback-x11",
+        "--socket=wayland",
+        "--device=dri",
+        "--filesystem=home",
+        "--talk-name=org.kde.StatusNotifierWatcher"
+    ],
+    "modules": [
+        {
+            "name": "gerador-escalas",
+            "buildsystem": "simple",
+            "build-commands": [
+                "install -D gerador-escalas /app/bin/gerador-escalas",
+                "install -D br.mil.gerador_escalas.desktop /app/share/applications/br.mil.gerador_escalas.desktop",
+                "install -D br.mil.gerador_escalas.png /app/share/icons/hicolor/512x512/apps/br.mil.gerador_escalas.png"
+            ],
+            "sources": [
+                {
+                    "type": "file",
+                    "path": "../build/bin/Gerador de Escala",
+                    "dest-filename": "gerador-escalas"
+                },
+                {
+                    "type": "file",
+                    "path": "../AppDir/gerador-escalas.desktop",
+                    "dest-filename": "br.mil.gerador_escalas.desktop"
+                },
+                {
+                    "type": "file",
+                    "path": "../build/appicon_square.png",
+                    "dest-filename": "br.mil.gerador_escalas.png"
+                }
+            ]
+        }
+    ]
+}

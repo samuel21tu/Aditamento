@@ -10,6 +10,10 @@ export function DownloadWordMulti(arg1, arg2, arg3, arg4) {
   return window['go']['main']['App']['DownloadWordMulti'](arg1, arg2, arg3, arg4);
 }
 
+export function ExportBackup() {
+  return window['go']['main']['App']['ExportBackup']();
+}
+
 export function GenerateDocumentArranchamentoHTML(arg1, arg2) {
   return window['go']['main']['App']['GenerateDocumentArranchamentoHTML'](arg1, arg2);
 }
@@ -32,6 +36,14 @@ export function GetScores(arg1) {
 
 export function GetState() {
   return window['go']['main']['App']['GetState']();
+}
+
+export function ImportBackup() {
+  return window['go']['main']['App']['ImportBackup']();
+}
+
+export function ImportBackupJSON(arg1) {
+  return window['go']['main']['App']['ImportBackupJSON'](arg1);
 }
 
 export function InitializeState(arg1) {
