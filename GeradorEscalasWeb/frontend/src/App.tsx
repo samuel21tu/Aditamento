@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect, Component } from 'react';
 import { Calendar, Users, ClipboardList, Settings, Trophy, FileText, CheckCircle2, Plus, Trash2, Edit2, Check, Download, Printer, Upload } from 'lucide-react';
 import './App.css';
-import { GenerateSchedule, GenerateDocumentHTML, GetState, SaveState } from '../wailsjs/go/main/App';
+import { GenerateSchedule, GenerateDocumentHTML, GetState, SaveState, GetScores } from '../wailsjs/go/main/App';
 // @ts-ignore
 import brasaoImg from './assets/brasao.png';
 
@@ -11,67 +11,111 @@ const getTomorrow = () => {
     return d.toISOString().split('T')[0];
 };
 
+const getDiaSemanaExtenso = (dateStr: string, fallback?: any) => {
+    if (!dateStr) return fallback || '';
+    try {
+        const parts = String(dateStr).split('-');
+        if (parts.length === 3) {
+            const d = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+            const dias = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'];
+            return dias[d.getDay()] || fallback || '';
+        }
+    } catch (e) {}
+    return fallback || '';
+};
+
+const isSoldadoEV = (m: string, p?: any, statePessoas?: any) => {
+    const pessoa = p || statePessoas?.[m];
+    if (pessoa?.posto_grad === "Soldado EV") return true;
+    if (pessoa?.posto_grad && pessoa.posto_grad !== "Soldado EV") return false;
+    const nome = (m || '').trim();
+    if (nome.startsWith("SD EV") || nome.startsWith("Sd EV")) return true;
+    if (/^[345]\d{2}\s/.test(nome) && !nome.includes("Sgt") && !nome.includes("Ten") && !nome.includes("Cb") && !nome.includes("Cap")) return true;
+    return false;
+};
+
+const isSoldadoEP = (m: string, p?: any, statePessoas?: any) => {
+    const pessoa = p || statePessoas?.[m];
+    if (pessoa?.posto_grad === "Soldado EP") return true;
+    if (pessoa?.posto_grad && pessoa.posto_grad !== "Soldado EP") return false;
+    const nome = (m || '').trim();
+    if (nome.startsWith("SD EP") || nome.startsWith("Sd EP")) return true;
+    return false;
+};
+
+interface ErrorBoundaryProps {
+    children: React.ReactNode;
+}
+
+interface ErrorBoundaryState {
+    hasError: boolean;
+    error: any;
+}
+
+class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
+    constructor(props: ErrorBoundaryProps) {
+        super(props);
+        this.state = { hasError: false, error: null };
+    }
+
+    static getDerivedStateFromError(error: any) {
+        return { hasError: true, error };
+    }
+
+    componentDidCatch(error: any, errorInfo: any) {
+        console.error("ErrorBoundary capturou um erro:", error, errorInfo);
+    }
+
+    render() {
+        if (this.state.hasError) {
+            return (
+                <div className="card" style={{margin: '30px auto', maxWidth: '650px', padding: '30px', textAlign: 'center', border: '1px solid var(--danger)'}}>
+                    <h3 style={{color: 'var(--danger)', borderBottom: 'none'}}>Ocorreu um erro ao exibir este conteúdo</h3>
+                    <p style={{color: 'var(--text-light)', marginBottom: '20px', fontSize: '0.9em'}}>
+                        {this.state.error?.message || String(this.state.error)}
+                    </p>
+                    <button className="btn-primary" onClick={() => this.setState({ hasError: false, error: null })}>
+                        Recarregar Tela
+                    </button>
+                </div>
+            );
+        }
+        return this.props.children;
+    }
+}
+
 const printHtmlDocument = (html: string) => {
-    const existingContainer = document.getElementById('print-container');
-    if (existingContainer) existingContainer.remove();
-    
-    const existingStyle = document.getElementById('print-style-override');
-    if (existingStyle) existingStyle.remove();
+    const existingIframe = document.getElementById('print-iframe');
+    if (existingIframe) existingIframe.remove();
 
-    const printContainer = document.createElement('div');
-    printContainer.id = 'print-container';
-    printContainer.innerHTML = html;
-    document.body.appendChild(printContainer);
+    const iframe = document.createElement('iframe');
+    iframe.id = 'print-iframe';
+    iframe.style.position = 'fixed';
+    iframe.style.right = '0';
+    iframe.style.bottom = '0';
+    iframe.style.width = '0';
+    iframe.style.height = '0';
+    iframe.style.border = '0';
+    document.body.appendChild(iframe);
 
-    const style = document.createElement('style');
-    style.id = 'print-style-override';
-    style.innerHTML = `
-        @media print {
-            html, body {
-                height: auto !important;
-                overflow: visible !important;
-                background: white !important;
-                margin: 0 !important;
-                padding: 0 !important;
-            }
-            body > *:not(#print-container):not(#print-style-override) {
-                display: none !important;
-            }
-            #print-container {
-                display: block !important;
-            }
-            /* CSS Reset for print container to prevent dark mode leaking */
-            #print-container, #print-container * {
-                color: black !important;
-            }
-            #print-container table {
-                border-spacing: 0 !important;
-            }
-            #print-container th, #print-container td {
-                background-color: transparent;
-                text-transform: none;
-            }
-        }
-        @media screen {
-            #print-container {
-                display: none !important;
-            }
-        }
-    `;
-    document.head.appendChild(style);
+    const doc = iframe.contentWindow?.document;
+    if (doc) {
+        doc.open();
+        doc.write(html);
+        doc.close();
 
-    setTimeout(() => {
-        window.print();
-        
-        const afterPrintHandler = () => {
-            const pc = document.getElementById('print-container');
-            if (pc) pc.remove();
-            const ps = document.getElementById('print-style-override');
-            if (ps) ps.remove();
-            window.removeEventListener('afterprint', afterPrintHandler);
-        };
-        window.addEventListener('afterprint', afterPrintHandler);
-    }, 500);
+        // Give it time to render images/styles
+        setTimeout(() => {
+            iframe.contentWindow?.focus();
+            iframe.contentWindow?.print();
+            
+            // Clean up iframe after a generous delay (handles cases where afterprint doesn't fire)
+            setTimeout(() => {
+                const el = document.getElementById('print-iframe');
+                if (el) el.remove();
+            }, 60000); // 1 minute cleanup fallback
+        }, 500);
+    }
 };
 
 function App() {
@@ -80,7 +124,7 @@ function App() {
     const [targetDate, setTargetDate] = useState(getTomorrow());
     const [schedulePreview, setSchedulePreview] = useState<any>(null);
 
-    const [boletimNr, setBoletimNr] = useState('');
+    const [boletimNr, setBoletimNr] = useState('1');
     const [aditamentoNr, setAditamentoNr] = useState(1);
     
     // Instrução
@@ -94,6 +138,9 @@ function App() {
     const [atividadeTipo, setAtividadeTipo] = useState('TFM');
     const [paradaDiaria, setParadaDiaria] = useState('09h30');
     const [justicaDisciplina, setJusticaDisciplina] = useState('');
+    const [punidos, setPunidos] = useState<{proc: string, nome: string, tipo: string, inicio: string, termino: string}[]>([]);
+    const [punidosModalOpen, setPunidosModalOpen] = useState(false);
+    const [punidoForm, setPunidoForm] = useState({proc: '', nome: '', tipo: '', inicio: '', termino: ''});
 
     // Missões e Avisos Modals
     const [missaoModalOpen, setMissaoModalOpen] = useState(false);
@@ -165,18 +212,38 @@ function App() {
     // Efetivo Profissional
     const [epModalOpen, setEpModalOpen] = useState(false);
     const [newEPName, setNewEPName] = useState('');
-    const [newPostoGrad, setNewPostoGrad] = useState('Cabo/Soldado EP');
+    const [newPostoGrad, setNewPostoGrad] = useState('Soldado EP');
 
     // Dispensas
     const [dispensaModalOpen, setDispensaModalOpen] = useState(false);
     const [selectedPessoaId, setSelectedPessoaId] = useState('');
     const [dispStart, setDispStart] = useState('');
     const [dispEnd, setDispEnd] = useState('');
+    const [dispMotivo, setDispMotivo] = useState('');
+
+    // Editar Militar
+    const [editMilitarModalOpen, setEditMilitarModalOpen] = useState(false);
+    const [editMilitarOldId, setEditMilitarOldId] = useState('');
+    const [editMilitarNewName, setEditMilitarNewName] = useState('');
+    const [editMilitarNewPostoGrad, setEditMilitarNewPostoGrad] = useState('');
 
     // Histórico Edit
     const [editHistModalOpen, setEditHistModalOpen] = useState(false);
     const [editHistIndex, setEditHistIndex] = useState(-1);
     const [editHistData, setEditHistData] = useState<any>(null);
+    const [histScoresData, setHistScoresData] = useState<any>(null);
+
+    // Substituição de Soldados (EP/EV)
+    const [substModalOpen, setSubstModalOpen] = useState(false);
+    const [substRole, setSubstRole] = useState('');
+    const [substMilitarSai, setSubstMilitarSai] = useState('');
+    const [substMilitarEntra, setSubstMilitarEntra] = useState('');
+    const [substMotivo, setSubstMotivo] = useState('');
+    const [substSource, setSubstSource] = useState<'history' | 'preview'>('history');
+
+    // Visualização de Trocas
+    const [verTrocasModalOpen, setVerTrocasModalOpen] = useState(false);
+    const [verTrocasData, setVerTrocasData] = useState<any>(null);
 
     const [arranchados, setArranchados] = useState<Record<string, {c: boolean, a: boolean, j: boolean}>>({});
     const [allMilitares, setAllMilitares] = useState<string[]>([]);
@@ -193,9 +260,9 @@ function App() {
                 root.style.setProperty('--primary-hover', '#c62828');
                 root.style.setProperty('--glass-border', 'rgba(183, 28, 28, 0.6)');
             } else if (state.unidade === '2BO') {
-                root.style.setProperty('--primary', '#37474f');
-                root.style.setProperty('--primary-hover', '#455a64');
-                root.style.setProperty('--glass-border', 'rgba(69, 90, 100, 0.6)');
+                root.style.setProperty('--primary', '#111111');
+                root.style.setProperty('--primary-hover', '#222222');
+                root.style.setProperty('--glass-border', 'rgba(34, 34, 34, 0.6)');
             } else { // BC
                 root.style.setProperty('--primary', '#4b5320');
                 root.style.setProperty('--primary-hover', '#5c6628');
@@ -207,18 +274,40 @@ function App() {
     const loadState = async () => {
         try {
             const data = await GetState();
+            if (data) {
+                if (!data.historico_escalas) data.historico_escalas = [];
+                if (!data.historico_arranchamentos) data.historico_arranchamentos = [];
+            }
             setState(data);
             
-            // @ts-ignore
-            const todos = await window.go.main.App.GetAllMilitares();
-            setAllMilitares(todos || []);
+            if ((window as any).go?.main?.App?.GetAllMilitares) {
+                const todos = await (window as any).go.main.App.GetAllMilitares();
+                setAllMilitares(todos || []);
+            } else if (data?.pessoas) {
+                setAllMilitares(Object.keys(data.pessoas));
+            }
 
             if (data?.role_configs) {
                 setEnabledRoles(Object.keys(data.role_configs));
             }
             if (data) {
-                setAditamentoNr(data.aditamento_nr || 1);
-                setBoletimNr(data.boletim_interno_nr ? String(data.boletim_interno_nr) : "");
+                let initialAdit = (data.aditamento_nr && data.aditamento_nr > 0) ? Number(data.aditamento_nr) : 0;
+                let initialBol = (data.boletim_interno_nr && data.boletim_interno_nr > 0) ? Number(data.boletim_interno_nr) : 0;
+
+                if (initialAdit === 0 && data.historico_escalas && data.historico_escalas.length > 0) {
+                    const maxAdit = Math.max(...data.historico_escalas.map((h: any) => h.aditamento_nr || 0));
+                    if (maxAdit > 0) initialAdit = maxAdit + 1;
+                }
+                if (initialBol === 0 && data.historico_escalas && data.historico_escalas.length > 0) {
+                    const maxBol = Math.max(...data.historico_escalas.map((h: any) => h.boletim_interno_nr || parseInt(h.boletim_nr, 10) || 0));
+                    if (maxBol > 0) initialBol = maxBol + 1;
+                }
+
+                if (!initialAdit || initialAdit < 1) initialAdit = 1;
+                if (!initialBol || initialBol < 1) initialBol = 1;
+
+                setAditamentoNr(initialAdit);
+                setBoletimNr(String(initialBol));
             }
         } catch (err) {
             console.error("Error loading state", err);
@@ -229,6 +318,10 @@ function App() {
         try {
             // @ts-ignore
             const newState = await window.go.main.App.InitializeState(unidade);
+            if (newState) {
+                if (!newState.historico_escalas) newState.historico_escalas = [];
+                if (!newState.historico_arranchamentos) newState.historico_arranchamentos = [];
+            }
             setState(newState);
         } catch (err) {
             console.error(err);
@@ -249,6 +342,10 @@ function App() {
 
     const handleSave = async (newState: any) => {
         try {
+            if (newState) {
+                if (!newState.historico_escalas) newState.historico_escalas = [];
+                if (!newState.historico_arranchamentos) newState.historico_arranchamentos = [];
+            }
             await SaveState(newState);
             setState(newState);
         } catch (err) {
@@ -285,13 +382,250 @@ function App() {
         }
     };
 
+    const validarDuplicidadeEscala = (escaladosMap: Record<string, string[]>, manualRolesMap: Record<string, string>) => {
+        const mapaAlocacoes: Record<string, string[]> = {};
+
+        // 1. Funções Manuais (Oficiais / Sargentos / Cabos / Motorista)
+        if (manualRolesMap) {
+            Object.keys(manualRolesMap).forEach(role => {
+                const val = (manualRolesMap[role] || '').trim();
+                if (val) {
+                    if (!mapaAlocacoes[val]) mapaAlocacoes[val] = [];
+                    mapaAlocacoes[val].push(`${role} (Manual)`);
+                }
+            });
+        }
+
+        // 2. Funções Automáticas / Escalados (Soldados EP / EV)
+        if (escaladosMap) {
+            Object.keys(escaladosMap).forEach(role => {
+                const list = escaladosMap[role];
+                if (Array.isArray(list)) {
+                    list.forEach(militar => {
+                        const m = (militar || '').trim();
+                        if (m) {
+                            if (!mapaAlocacoes[m]) mapaAlocacoes[m] = [];
+                            mapaAlocacoes[m].push(role);
+                        }
+                    });
+                }
+            });
+        }
+
+        // 3. Checar duplicados
+        const duplicados: { militar: string; roles: string[] }[] = [];
+        Object.keys(mapaAlocacoes).forEach(militar => {
+            if (mapaAlocacoes[militar].length > 1) {
+                duplicados.push({ militar, roles: mapaAlocacoes[militar] });
+            }
+        });
+
+        if (duplicados.length > 0) {
+            const detalhes = duplicados.map(d => 
+                `• ${d.militar}: escalado em [${d.roles.join(', ')}]`
+            ).join('\n');
+            return {
+                isValid: false,
+                error: `Bloqueio de Duplicidade!\n\nNão é permitido escalar a mesma pessoa para mais de uma função no mesmo dia:\n\n${detalhes}\n\nPor favor, escolha outro militar para uma das funções antes de salvar.`
+            };
+        }
+
+        return { isValid: true, error: '' };
+    };
+
+    const abrirModalSubstituicao = (role: string, militar: string, source: 'history' | 'preview' = 'history') => {
+        setSubstRole(role);
+        setSubstMilitarSai(militar);
+        setSubstMilitarEntra('');
+        setSubstMotivo('');
+        setSubstSource(source);
+        setSubstModalOpen(true);
+    };
+
+    const removerSoldadoRole = (role: string, militar: string, source: 'history' | 'preview' = 'history') => {
+        if (source === 'preview' && schedulePreview) {
+            const list = (schedulePreview.escalados?.[role] || []).filter((m: string) => m !== militar);
+            setSchedulePreview({
+                ...schedulePreview,
+                escalados: {
+                    ...schedulePreview.escalados,
+                    [role]: list
+                }
+            });
+        } else if (editHistData) {
+            const list = (editHistData.escalados?.[role] || []).filter((m: string) => m !== militar);
+            setEditHistData({
+                ...editHistData,
+                escalados: {
+                    ...editHistData.escalados,
+                    [role]: list
+                }
+            });
+        }
+    };
+
+    const getCandidatosSubstituicao = (roleName: string, dataStr: string, militarSaindo: string, source: 'history' | 'preview' = 'history') => {
+        if (!state?.pessoas) return [];
+        
+        const roleConf = state.role_configs?.[roleName];
+        const aptosConfig = roleConf?.aptos || [];
+        const destinadoA = roleConf?.destinado_a || (roleName.includes('EP') ? 'EP' : roleName.includes('EV') ? 'EV' : 'AMBOS');
+        
+        // Quem já está escalado no dia
+        const escaladosHoje = new Set<string>();
+        const activeData = (source === 'preview') ? schedulePreview : editHistData;
+        const activeManual = (source === 'preview') ? manualRoles : (editHistData?.manual_roles || {});
+
+        if (activeData?.escalados) {
+            Object.values(activeData.escalados).forEach((list: any) => {
+                if (Array.isArray(list)) list.forEach(m => escaladosHoje.add(m));
+            });
+        }
+        if (activeManual) {
+            Object.values(activeManual).forEach((val: any) => {
+                if (val && typeof val === 'string' && val.trim() !== "") {
+                    escaladosHoje.add(val.trim());
+                }
+            });
+        }
+
+        // Pontos de cansaço para a data
+        const scores = (source === 'history') ? (histScoresData || scoresData) : scoresData;
+        const mapPts: Record<string, number> = {};
+        Object.keys(state.pessoas).forEach(id => {
+            mapPts[id] = (scores?.pontos_preta?.[id] || 0) + (scores?.pontos_vermelha?.[id] || 0);
+        });
+
+        const targetDateObj = new Date(dataStr + "T00:00:00");
+
+        // Filtrar pessoas aptas
+        const candidatos = Object.keys(state.pessoas).filter(id => {
+            if (id === militarSaindo) return false;
+
+            const p = state.pessoas[id];
+            if (!p || !p.ativo || p.foi_de_rota) return false;
+
+            // O sistema só escala Soldados EP e EV para funções do aditamento
+            const isEP = isSoldadoEP(id, p, state.pessoas);
+            const isEV = isSoldadoEV(id, p, state.pessoas);
+            if (!isEP && !isEV) return false;
+
+            if (aptosConfig.length > 0) {
+                if (!aptosConfig.includes(id)) return false;
+            } else {
+                if (destinadoA === 'EP' && !isEP) return false;
+                if (destinadoA === 'EV' && !isEV) return false;
+            }
+
+            // Bloqueio de duplicidade: não pode já estar escalado em outra função hoje
+            if (escaladosHoje.has(id)) return false;
+
+            // Não pode estar dispensado na data
+            if (state.dispensas_v2?.[id]) {
+                for (let d of state.dispensas_v2[id]) {
+                    const start = new Date(d.inicio + "T00:00:00");
+                    const end = new Date(d.fim + "T23:59:59");
+                    if (targetDateObj >= start && targetDateObj <= end) return false;
+                }
+            }
+
+            return true;
+        });
+
+        // Ordenar rigorosamente em ordem de cansaço: SENDO O PRIMEIRO O MAIS DESCANSADO!
+        candidatos.sort((a, b) => {
+            const ptsA = mapPts[a] ?? 0;
+            const ptsB = mapPts[b] ?? 0;
+            if (ptsA !== ptsB) return ptsA - ptsB;
+            return a.localeCompare(b);
+        });
+
+        return candidatos.map((id, index) => ({
+            id,
+            pontos: mapPts[id] ?? 0,
+            tipo: isSoldadoEP(id, state.pessoas[id], state.pessoas) ? 'EP' : 'EV',
+            posicao: index + 1
+        }));
+    };
+
+    const confirmarSubstituicao = () => {
+        if (!substMilitarEntra) {
+            showAlert("Selecione o soldado que entrará no lugar!");
+            return;
+        }
+        if (!substMotivo.trim()) {
+            showAlert("Por favor, informe o motivo da substituição (ex: Atestado médico, dispensa, etc).");
+            return;
+        }
+
+        const dataHoraAgora = new Date().toLocaleString('pt-BR');
+        const novoRegistro = {
+            data_hora: dataHoraAgora,
+            funcao: substRole,
+            saiu: substMilitarSai,
+            entrou: substMilitarEntra,
+            motivo: substMotivo.trim()
+        };
+
+        if (substSource === 'preview' && schedulePreview) {
+            const newEscalados = { ...schedulePreview.escalados };
+            const list = [...(newEscalados[substRole] || [])];
+            const idx = list.indexOf(substMilitarSai);
+            if (idx !== -1) {
+                list[idx] = substMilitarEntra;
+            } else {
+                list.push(substMilitarEntra);
+            }
+            newEscalados[substRole] = list;
+
+            const existingTrocas = schedulePreview.trocas_registro || [];
+            setSchedulePreview({
+                ...schedulePreview,
+                escalados: newEscalados,
+                trocas_registro: [...existingTrocas, novoRegistro]
+            });
+        } else if (editHistData) {
+            const newEscalados = { ...editHistData.escalados };
+            const list = [...(newEscalados[substRole] || [])];
+            const idx = list.indexOf(substMilitarSai);
+            if (idx !== -1) {
+                list[idx] = substMilitarEntra;
+            } else {
+                list.push(substMilitarEntra);
+            }
+            newEscalados[substRole] = list;
+
+            const existingTrocas = editHistData.trocas_registro || [];
+            setEditHistData({
+                ...editHistData,
+                escalados: newEscalados,
+                trocas_registro: [...existingTrocas, novoRegistro]
+            });
+        }
+
+        setSubstModalOpen(false);
+        showAlert(`Substituição registrada com sucesso!\n${substMilitarSai} ➔ ${substMilitarEntra}\nMotivo: ${substMotivo.trim()}`);
+    };
+
     const confirmarEscala = async () => {
         if (!schedulePreview || !state) return;
+
+        // Validação Estrita de Duplicidade
+        const validacao = validarDuplicidadeEscala(schedulePreview.escalados || {}, manualRoles || {});
+        if (!validacao.isValid) {
+            showAlert(validacao.error);
+            return;
+        }
+
+        const currentAditNr = parseInt(String(aditamentoNr), 10) || 1;
+        const currentBolNr = parseInt(String(boletimNr), 10) || 1;
+
         const newState = { ...state };
         const finalSchedule = { ...schedulePreview };
         finalSchedule.manual_roles = manualRoles;
-        finalSchedule.boletim_nr = boletimNr;
-        finalSchedule.aditamento_nr = aditamentoNr; // Save current aditamentoNr
+        finalSchedule.boletim_nr = String(currentBolNr);
+        finalSchedule.boletim_interno_nr = currentBolNr;
+        finalSchedule.aditamento_nr = currentAditNr;
         finalSchedule.instrucao_nome = instrucaoNome;
         finalSchedule.instrucao_horario = instrucaoHorario;
         finalSchedule.instrucao_fardamento = instrucaoFardamento;
@@ -300,14 +634,22 @@ function App() {
         finalSchedule.atividade_tipo = atividadeTipo;
         finalSchedule.parada_diaria = paradaDiaria;
         finalSchedule.justica_disciplina_text = justicaDisciplina;
+        finalSchedule.punidos = punidos;
 
         newState.historico_escalas = [...(newState.historico_escalas || []), finalSchedule];
         
-        // Save the manual aditamento_nr so it persists for the next scale if user wants to group
-        newState.aditamento_nr = aditamentoNr;
+        // Auto increment aditamento_nr and boletim_interno_nr by 1 for the next aditamento
+        const nextAditamentoNr = currentAditNr + 1;
+        const nextBoletimNr = currentBolNr + 1;
+
+        newState.aditamento_nr = nextAditamentoNr;
+        newState.boletim_interno_nr = nextBoletimNr;
         
+        setAditamentoNr(nextAditamentoNr);
+        setBoletimNr(String(nextBoletimNr));
+
         await handleSave(newState);
-        showAlert("Escala confirmada e salva no histórico! (Mantenha o mesmo Aditamento Nr. se quiser juntar com a próxima)");
+        showAlert(`Escala confirmada e salva no histórico!\nAditamento avançou para Nº ${nextAditamentoNr} e Boletim Interno para Nº ${nextBoletimNr}.`);
         setSchedulePreview(null);
 
         // Auto advance targetDate
@@ -321,7 +663,11 @@ function App() {
         try {
             let itemsToPrint = [preview];
             if (isFromHistory && preview.aditamento_nr) {
-                itemsToPrint = state.historico_escalas.filter((i: any) => i.aditamento_nr === preview.aditamento_nr && i.boletim_interno_nr === preview.boletim_interno_nr);
+                const bolComp = preview.boletim_interno_nr || parseInt(preview.boletim_nr, 10) || 0;
+                itemsToPrint = (state.historico_escalas || []).filter((i: any) => 
+                    i.aditamento_nr === preview.aditamento_nr && 
+                    ((i.boletim_interno_nr || parseInt(i.boletim_nr, 10) || 0) === bolComp || !bolComp)
+                );
                 itemsToPrint.sort((a: any, b: any) => new Date(a.data).getTime() - new Date(b.data).getTime());
             }
 
@@ -338,7 +684,11 @@ function App() {
         try {
             let itemsToPrint = [preview];
             if (preview.aditamento_nr) {
-                itemsToPrint = state.historico_escalas.filter((i: any) => i.aditamento_nr === preview.aditamento_nr && i.boletim_interno_nr === preview.boletim_interno_nr);
+                const bolComp = preview.boletim_interno_nr || parseInt(preview.boletim_nr, 10) || 0;
+                itemsToPrint = (state.historico_escalas || []).filter((i: any) => 
+                    i.aditamento_nr === preview.aditamento_nr && 
+                    ((i.boletim_interno_nr || parseInt(i.boletim_nr, 10) || 0) === bolComp || !bolComp)
+                );
                 itemsToPrint.sort((a: any, b: any) => new Date(a.data).getTime() - new Date(b.data).getTime());
             }
 
@@ -351,9 +701,13 @@ function App() {
 
     const getMergedPreview = () => {
         if (!schedulePreview) return null;
+        const currentAditNr = parseInt(String(aditamentoNr), 10) || 1;
+        const currentBolNr = parseInt(String(boletimNr), 10) || 1;
         return {
             ...schedulePreview,
-            aditamento_nr: aditamentoNr,
+            aditamento_nr: currentAditNr,
+            boletim_nr: String(currentBolNr),
+            boletim_interno_nr: currentBolNr,
             manual_roles: manualRoles,
             instrucao_nome: instrucaoNome,
             instrucao_horario: instrucaoHorario,
@@ -372,17 +726,40 @@ function App() {
     };
     const imprimirHistorico = (h: any) => imprimirEscalaBase(h, true);
 
-    const abrirEdicaoHistorico = (h: any, index: number) => {
+    const abrirEdicaoHistorico = async (h: any, index: number) => {
         setEditHistIndex(index);
         setEditHistData(JSON.parse(JSON.stringify(h)));
         setEditHistModalOpen(true);
+        try {
+            // @ts-ignore
+            const sData = await window.go.main.App.GetScores(h.data);
+            setHistScoresData(sData);
+        } catch (e) {
+            console.error("Erro ao carregar scores para histórico:", e);
+        }
     };
 
     const salvarEdicaoHistorico = async () => {
+        if (!editHistData || editHistIndex < 0 || !state) return;
+
+        // Validação Estrita de Duplicidade ao salvar edição no Histórico
+        const validacao = validarDuplicidadeEscala(editHistData.escalados || {}, editHistData.manual_roles || {});
+        if (!validacao.isValid) {
+            showAlert(validacao.error);
+            return;
+        }
+
+        const currentAdit = parseInt(String(editHistData.aditamento_nr), 10) || 1;
+        const currentBol = parseInt(String(editHistData.boletim_interno_nr || editHistData.boletim_nr), 10) || 1;
+        editHistData.aditamento_nr = currentAdit;
+        editHistData.boletim_interno_nr = currentBol;
+        editHistData.boletim_nr = String(currentBol);
+
         const newState = { ...state };
         newState.historico_escalas[editHistIndex] = editHistData;
         await handleSave(newState);
         setEditHistModalOpen(false);
+        showAlert("Histórico da escala atualizado com sucesso!");
     };
 
     const apagarHistorico = async (h: any, index: number) => {
@@ -432,11 +809,16 @@ function App() {
         const newState = { ...state };
         if (!newState.dispensas_v2) newState.dispensas_v2 = {};
         if (!newState.dispensas_v2[selectedPessoaId]) newState.dispensas_v2[selectedPessoaId] = [];
-        newState.dispensas_v2[selectedPessoaId].push({ inicio: dispStart, fim: dispEnd });
+        newState.dispensas_v2[selectedPessoaId].push({ 
+            inicio: dispStart, 
+            fim: dispEnd, 
+            motivo: dispMotivo.trim() 
+        });
         await handleSave(newState);
         setDispensaModalOpen(false);
         setDispStart('');
         setDispEnd('');
+        setDispMotivo('');
     };
     
     const removerDispensa = async (id: string, index: number) => {
@@ -450,13 +832,13 @@ function App() {
         const newState = { ...state };
         newState.pessoas[newEPName.trim()] = {
             ativo: true,
-            is_ep: newPostoGrad !== 'Soldado EV',
+            is_ep: newPostoGrad === 'Soldado EP',
             posto_grad: newPostoGrad
         };
         await handleSave(newState);
         setEpModalOpen(false);
         setNewEPName('');
-        setNewPostoGrad('Cabo/Soldado EP');
+        setNewPostoGrad('Soldado EP');
     };
 
     const removerPessoa = async (id: string) => {
@@ -466,6 +848,33 @@ function App() {
             delete newState.pessoas[id];
             await handleSave(newState);
         });
+    };
+
+    const salvarEdicaoMilitar = async () => {
+        if (!editMilitarNewName.trim() || !state) return;
+        const newId = editMilitarNewName.trim();
+        const oldId = editMilitarOldId;
+        
+        const newState = { ...state };
+        
+        // Se o nome mudou, copia para a nova chave e deleta a velha
+        if (newId !== oldId) {
+            newState.pessoas[newId] = { ...newState.pessoas[oldId] };
+            delete newState.pessoas[oldId];
+            
+            // Migrar dispensas se existirem
+            if (newState.dispensas_v2 && newState.dispensas_v2[oldId]) {
+                newState.dispensas_v2[newId] = [...newState.dispensas_v2[oldId]];
+                delete newState.dispensas_v2[oldId];
+            }
+        }
+        
+        // Atualiza os dados
+        newState.pessoas[newId].posto_grad = editMilitarNewPostoGrad;
+        newState.pessoas[newId].is_ep = editMilitarNewPostoGrad === 'Soldado EP';
+        
+        await handleSave(newState);
+        setEditMilitarModalOpen(false);
     };
 
     const adicionarFuncao = async () => {
@@ -600,9 +1009,10 @@ function App() {
                 }
 
                 // EP/EV matching
-                const isEP = p.is_ep || false;
+                const isEP = isSoldadoEP(id, p, state.pessoas);
+                const isEV = isSoldadoEV(id, p, state.pessoas);
                 if (missaoTarget === 'EP' && !isEP) return false;
-                if (missaoTarget === 'EV' && isEP) return false;
+                if (missaoTarget === 'EV' && !isEV) return false;
 
                 return true;
             }).sort((a, b) => mapPts[a] - mapPts[b]);
@@ -673,8 +1083,8 @@ function App() {
         if (!scoresData || !state?.pessoas) return null;
         
         let mapPts: any = {};
-        if (type === 'preta') mapPts = scoresData.pontos_preta;
-        else if (type === 'vermelha') mapPts = scoresData.pontos_vermelha;
+        if (type === 'preta') mapPts = scoresData.pontos_preta || {};
+        else if (type === 'vermelha') mapPts = scoresData.pontos_vermelha || {};
         else {
             Object.keys(state.pessoas).forEach(id => {
                 mapPts[id] = (scoresData.pontos_preta?.[id] || 0) + (scoresData.pontos_vermelha?.[id] || 0);
@@ -687,10 +1097,9 @@ function App() {
             .filter(id => {
                 const p = state.pessoas[id];
                 if (!p || p.foi_de_rota) return false;
-                const isEP = p.is_ep || false;
-                return (group === 'EP') ? isEP : !isEP;
+                return (group === 'EP') ? isSoldadoEP(id, p, state.pessoas) : isSoldadoEV(id, p, state.pessoas);
             })
-            .sort((a, b) => mapPts[a] - mapPts[b]);
+            .sort((a, b) => (mapPts[a] || 0) - (mapPts[b] || 0));
 
         return (
             <table>
@@ -703,13 +1112,13 @@ function App() {
                 </thead>
                 <tbody>
                     {sortedPessoas.length === 0 && (
-                        <tr><td colSpan={3} style={{textAlign: 'center'}}>Nenhum militar</td></tr>
+                        <tr><td colSpan={3} style={{textAlign: 'center'}}>{group === 'EP' ? 'Nenhum Soldado EP com pontuação registrada.' : 'Nenhum Soldado EV com pontuação registrada.'}</td></tr>
                     )}
                     {sortedPessoas.map((id, index) => (
                         <tr key={id} className={state.pessoas[id]?.ativo ? '' : 'inactive-row'} style={{opacity: state.pessoas[id]?.ativo ? 1 : 0.5}}>
                             <td><strong>{index + 1}º</strong></td>
                             <td>{id} {!state.pessoas[id]?.ativo ? '(Baixado)' : (state.pessoas[id]?.apenas_semana ? '(Plantão Sem)' : '')}</td>
-                            <td>{mapPts[id]?.toFixed(2)}</td>
+                            <td>{(mapPts[id] || 0).toFixed(2)}</td>
                         </tr>
                     ))}
                 </tbody>
@@ -719,20 +1128,26 @@ function App() {
 
     const carregarArranchamentoData = (dateStr: string) => {
         if (!state) return;
-        const savedArr = state.historico_arranchamentos?.find((a: any) => a.data === dateStr);
+        const historicoArr = state.historico_arranchamentos || [];
+        const savedArr = historicoArr.find((a: any) => a && a.data === dateStr);
         if (savedArr && savedArr.refeicoes) {
             setArranchados(savedArr.refeicoes);
             return;
         }
 
-        const escala = state.historico_escalas?.find((e: any) => e.data === dateStr);
+        const historicoEsc = state.historico_escalas || [];
+        const escala = historicoEsc.find((e: any) => e && e.data === dateStr);
         if (escala) {
             let names: string[] = [];
             Object.values(escala.escalados || {}).forEach((list: any) => {
-                names.push(...list);
+                if (Array.isArray(list)) {
+                    names.push(...list);
+                }
             });
             Object.values(escala.manual_roles || {}).forEach((val: any) => {
-                if (val.trim() !== "") names.push(val.trim());
+                if (val && typeof val === 'string' && val.trim() !== "") {
+                    names.push(val.trim());
+                }
             });
             
             const initialMap: Record<string, {c: boolean, a: boolean, j: boolean}> = {};
@@ -753,29 +1168,29 @@ function App() {
 
     const toggleArranchadoMeal = (nome: string, meal: 'c' | 'a' | 'j') => {
         setArranchados(prev => {
-            const current = prev[nome] || { c: false, a: false, j: false };
+            const current = prev?.[nome] || { c: false, a: false, j: false };
             const updated = { ...current, [meal]: !current[meal] };
-            return { ...prev, [nome]: updated };
+            return { ...(prev || {}), [nome]: updated };
         });
     };
 
     const toggleArranchadoAll = (nome: string, checked?: boolean) => {
         setArranchados(prev => {
-            const current = prev[nome] || { c: false, a: false, j: false };
+            const current = prev?.[nome] || { c: false, a: false, j: false };
             const isAll = current.c && current.a && current.j;
             const targetVal = checked !== undefined ? checked : !isAll;
             return {
-                ...prev,
+                ...(prev || {}),
                 [nome]: { c: targetVal, a: targetVal, j: targetVal }
             };
         });
     };
 
     const toggleArrancharTodos = (checked?: boolean) => {
-        if (!state) return;
+        if (!state || !state.pessoas) return;
         const keys = Object.keys(state.pessoas);
         const isAllSelected = keys.length > 0 && keys.every(id => {
-            const r = arranchados[id];
+            const r = arranchados?.[id];
             return r && r.c && r.a && r.j;
         });
         const targetVal = checked !== undefined ? checked : !isAllSelected;
@@ -909,7 +1324,7 @@ function App() {
 
         return (
             <div style={{marginBottom: '30px'}}>
-                <h4 style={{color: 'var(--primary-color)'}}>{title}</h4>
+                <h4 style={{color: 'var(--text-dark)'}}>{title}</h4>
                 <table>
                     <thead>
                         <tr>
@@ -926,6 +1341,12 @@ function App() {
                                 <td>
                                     <div style={{display:'flex', alignItems:'center'}}>
                                         <strong style={{marginRight: '10px'}}>{id}</strong>
+                                        <button className="icon-btn" style={{marginRight: '5px', color: 'var(--text-dark)'}} onClick={() => {
+                                            setEditMilitarOldId(id);
+                                            setEditMilitarNewName(id);
+                                            setEditMilitarNewPostoGrad(p.posto_grad || '');
+                                            setEditMilitarModalOpen(true);
+                                        }} title="Editar"><Settings size={16} /></button>
                                         <button className="icon-btn danger" onClick={() => removerPessoa(id)} title="Remover"><Trash2 size={16} /></button>
                                     </div>
                                 </td>
@@ -961,14 +1382,22 @@ function App() {
                                 </td>
                                 <td>
                                     <div style={{display:'flex', gap: '5px', marginBottom: '5px', flexWrap: 'wrap'}}>
-                                        <button className="btn-outline btn-sm" onClick={() => { setSelectedPessoaId(id); setDispensaModalOpen(true); }} disabled={p.foi_de_rota}>+ Dispensa</button>
-                                        {!p.foi_de_rota && (
-                                            <button className="btn-danger btn-sm" onClick={() => togglePessoaAtributo(id, 'foi_de_rota')} style={{padding: '4px 8px', fontSize: '11px'}} title="Marcar como 'Foi de Rota' (Irreversível)">Rota</button>
-                                        )}
+                                        <button className="btn-outline btn-sm" onClick={() => { setSelectedPessoaId(id); setDispMotivo(''); setDispStart(''); setDispEnd(''); setDispensaModalOpen(true); }} disabled={p.foi_de_rota}>+ Dispensa</button>
+                                        <button 
+                                            className={p.foi_de_rota ? "btn-outline btn-sm" : "btn-danger btn-sm"} 
+                                            onClick={() => togglePessoaAtributo(id, 'foi_de_rota')} 
+                                            style={{padding: '4px 8px', fontSize: '11px', marginLeft: '5px'}} 
+                                            title={p.foi_de_rota ? "Desmarcar 'Foi de Rota'" : "Marcar como 'Foi de Rota'"}
+                                        >
+                                            {p.foi_de_rota ? "Desfazer Rota" : "Rota"}
+                                        </button>
                                     </div>
                                     {state?.dispensas_v2?.[id]?.map((d: any, idx: number) => (
-                                        <div key={idx} style={{fontSize: '11px', background: 'rgba(255,255,255,0.05)', padding: '2px 5px', borderRadius: '4px', marginBottom: '2px', display:'flex', justifyContent:'space-between', alignItems: 'center'}}>
-                                            <span>{d.inicio} a {d.fim}</span>
+                                        <div key={idx} style={{fontSize: '11px', background: 'rgba(255,255,255,0.05)', padding: '3px 6px', borderRadius: '4px', marginBottom: '2px', display:'flex', justifyContent:'space-between', alignItems: 'center'}}>
+                                            <span>
+                                                {d.inicio} a {d.fim}
+                                                {d.motivo ? <span style={{color: 'var(--primary-color)', marginLeft: '5px', fontWeight: 'bold'}}>({d.motivo})</span> : null}
+                                            </span>
                                             <button className="icon-btn danger" style={{padding:'2px', marginLeft:'5px'}} onClick={()=>removerDispensa(id, idx)}><Trash2 size={12}/></button>
                                         </div>
                                     ))}
@@ -992,7 +1421,7 @@ function App() {
                     <div style={{display: 'flex', flexDirection: 'column', gap: '15px', marginTop: '30px'}}>
                         <button className="btn" style={{background: '#4b5320', color: '#fff', padding: '15px', fontSize: '1.1em'}} onClick={() => handleInitialize('BC')}>Bateria de Comando (BC)</button>
                         <button className="btn" style={{background: '#b71c1c', color: '#fff', padding: '15px', fontSize: '1.1em'}} onClick={() => handleInitialize('1BO')}>1ª Bateria de Obuses (1ª Bia O)</button>
-                        <button className="btn" style={{background: '#37474f', color: '#fff', padding: '15px', fontSize: '1.1em'}} onClick={() => handleInitialize('2BO')}>2ª Bateria de Obuses (2ª Bia O)</button>
+                        <button className="btn" style={{background: '#111111', color: '#fff', padding: '15px', fontSize: '1.1em'}} onClick={() => handleInitialize('2BO')}>2ª Bateria de Obuses (2ª Bia O)</button>
                     </div>
                 </div>
             </div>
@@ -1039,10 +1468,23 @@ function App() {
             <main className="main-content">
                 <header className="topbar">
                     <h1>{activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}</h1>
-                    <div className="date-display">{new Date().toLocaleDateString('pt-BR')}</div>
+                    <div className="date-display" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <span style={{ fontSize: '12px', color: 'var(--text-light)', textTransform: 'uppercase' }}>Data Alvo:</span>
+                        <input 
+                            type="date" 
+                            value={targetDate} 
+                            onChange={(e) => {
+                                if (e.target.value) setTargetDate(e.target.value);
+                            }}
+                            title="Alterar Data"
+                            className="input-modern"
+                            style={{ padding: '4px 8px', fontSize: '14px', width: 'auto', cursor: 'pointer', background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.1)' }}
+                        />
+                    </div>
                 </header>
 
                 <div className="content-area" style={{position: 'relative'}}>
+                    <ErrorBoundary>
                     {activeTab === 'gerador' && state && (
                         <div className="tab-gerador slide-up">
                             <datalist id="pessoas-list">
@@ -1050,172 +1492,345 @@ function App() {
                                     <option key={id} value={id} />
                                 ))}
                             </datalist>
-                            <h2 style={{ color: '#a3b18a', marginTop: '10px', marginBottom: '20px', textTransform: 'capitalize', paddingLeft: '5px' }}>
-                                {new Date(targetDate + "T00:00:00").toLocaleDateString('pt-BR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
-                            </h2>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginTop: '10px', marginBottom: '20px', paddingLeft: '5px' }}>
+                                <h2 style={{ color: 'var(--text-dark)', margin: 0, textTransform: 'capitalize' }}>
+                                    {new Date(targetDate + "T00:00:00").toLocaleDateString('pt-BR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                                </h2>
+                            </div>
                             <div className="gerador-grid">
-                            <div className="card">
-                                <h3>1. Configurar Serviço</h3>
+                            {/* 1. CONFIGURAR SERVIÇO */}
+                            <div className="card card-config-servico">
+                                <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '8px'}}>
+                                    <h3 style={{margin: 0, borderBottom: 'none', paddingBottom: 0}}>1. Configurar Serviço</h3>
+                                    <div style={{display: 'flex', gap: '6px'}}>
+                                        <button 
+                                            type="button" 
+                                            className="btn-outline btn-sm" 
+                                            style={{fontSize: '11px', padding: '2px 8px'}}
+                                            onClick={() => {
+                                                if (state?.role_configs) setEnabledRoles(Object.keys(state.role_configs));
+                                            }}
+                                            title="Marcar todas as funções"
+                                        >
+                                            Todos
+                                        </button>
+                                        <button 
+                                            type="button" 
+                                            className="btn-outline btn-sm" 
+                                            style={{fontSize: '11px', padding: '2px 8px'}}
+                                            onClick={() => setEnabledRoles([])}
+                                            title="Desmarcar todas"
+                                        >
+                                            Nenhum
+                                        </button>
+                                    </div>
+                                </div>
                                 
-                                <p style={{marginTop:'15px', marginBottom:'5px', color:'var(--text-light)', fontWeight: 'bold'}}>Selecione as funções que precisam ser preenchidas:</p>
-                                <div className="checkbox-group">
-                                    {state.role_configs && Object.keys(state.role_configs).map(rName => (
-                                        <label key={rName}>
+                                <p style={{marginTop: 0, marginBottom:'10px', color:'var(--text-light)', fontSize: '0.82rem'}}>
+                                    Funções a escalar ({enabledRoles.length} de {state.role_configs ? Object.keys(state.role_configs).length : 0} ativas):
+                                </p>
+                                <div className="role-checkbox-container">
+                                    {state.role_configs && Object.keys(state.role_configs).map(rName => {
+                                        const isChecked = enabledRoles.includes(rName);
+                                        const req = state.role_configs[rName].required;
+                                        const dest = state.role_configs[rName].destinado_a || (rName.includes('EP') ? 'EP' : rName.includes('EV') ? 'EV' : 'AMBOS');
+                                        return (
+                                            <label key={rName} className={`role-badge-label ${isChecked ? 'role-badge-checked' : ''}`}>
+                                                <input 
+                                                    type="checkbox" 
+                                                    checked={isChecked} 
+                                                    onChange={(e) => setRoleEnabled(rName, e.target.checked)}
+                                                /> 
+                                                <span className="role-title" title={rName}>{rName}</span>
+                                                <span className="role-badge-pill">{req}x</span>
+                                                <span className="role-dest-pill">{dest}</span>
+                                            </label>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                            
+                            {/* 2. DADOS MANUAIS DO ADITAMENTO */}
+                            <div className="card card-dados-manuais">
+                                <h3>2. Dados Manuais do Aditamento</h3>
+                                <div className="form-group row" style={{display: 'flex', gap: '15px', marginBottom: '10px'}}>
+                                    <div style={{flex: 1}}>
+                                        <label style={{fontSize: '0.82rem', color: 'var(--text-light)'}}>Aditamento Nr:</label>
+                                        <input 
+                                            type="number" 
+                                            value={aditamentoNr} 
+                                            onChange={(e) => {
+                                                const val = parseInt(e.target.value, 10) || 1;
+                                                setAditamentoNr(val);
+                                                if (state) {
+                                                    setState({ ...state, aditamento_nr: val });
+                                                }
+                                            }} 
+                                            onBlur={() => {
+                                                if (state) {
+                                                    const val = parseInt(String(aditamentoNr), 10) || 1;
+                                                    handleSave({ ...state, aditamento_nr: val });
+                                                }
+                                            }}
+                                            placeholder="Ex: 8" 
+                                            className="input-modern" 
+                                            style={{padding: '8px 12px'}}
+                                        />
+                                    </div>
+                                    <div style={{flex: 1}}>
+                                        <label style={{fontSize: '0.82rem', color: 'var(--text-light)'}}>Boletim Interno Nr:</label>
+                                        <input 
+                                            type="number" 
+                                            value={boletimNr} 
+                                            onChange={(e) => {
+                                                const val = parseInt(e.target.value, 10) || 1;
+                                                setBoletimNr(String(val));
+                                                if (state) {
+                                                    setState({ ...state, boletim_interno_nr: val });
+                                                }
+                                            }} 
+                                            onBlur={() => {
+                                                if (state) {
+                                                    const val = parseInt(String(boletimNr), 10) || 1;
+                                                    handleSave({ ...state, boletim_interno_nr: val });
+                                                }
+                                            }}
+                                            placeholder="Ex: 2" 
+                                            className="input-modern" 
+                                            style={{padding: '8px 12px'}}
+                                        />
+                                    </div>
+                                </div>
+                                <p style={{margin: '0 0 8px 0', fontSize:'0.82rem', color:'var(--text-light)'}}>Serviços manuais (Posto/Grad | Nome):</p>
+                                <div className="manual-roles-grid">
+                                    {Object.keys(manualRoles).map(mr => (
+                                        <div className="form-group" key={mr} style={{marginBottom: 0}}>
+                                            <label style={{fontSize: '0.8rem', color: 'var(--text-light)', marginBottom: '3px'}}>{mr}:</label>
                                             <input 
-                                                type="checkbox" 
-                                                checked={enabledRoles.includes(rName)} 
-                                                onChange={(e) => setRoleEnabled(rName, e.target.checked)}
-                                            /> 
-                                            {rName} ({state.role_configs[rName].required}x)
-                                        </label>
+                                                type="text" 
+                                                list="pessoas-list"
+                                                value={manualRoles[mr]} 
+                                                onChange={(e) => setManualRoles({...manualRoles, [mr]: e.target.value.toUpperCase()})} 
+                                                onBlur={(e) => {
+                                                    let val = e.target.value.trim().toUpperCase();
+                                                    if (val && allMilitares && allMilitares.length > 0) {
+                                                        const ids = allMilitares;
+                                                        const exact = ids.find(id => id === val);
+                                                        if (!exact) {
+                                                            const partial = ids.find(id => id.includes(val) || val.includes(id));
+                                                            if (partial) val = partial;
+                                                        }
+                                                    }
+                                                    setManualRoles({...manualRoles, [mr]: val});
+                                                }}
+                                                placeholder="Pesquise o militar..."
+                                                className="input-modern"
+                                                style={{padding: '8px 10px', fontSize: '0.88rem'}}
+                                            />
+                                        </div>
                                     ))}
                                 </div>
                             </div>
-                            
-                            <div className="card">
-                                <h3>2. Dados Manuais do Aditamento</h3>
-                                <div className="form-group row" style={{display: 'flex', gap: '20px'}}>
-                                    <div style={{flex: 1}}>
-                                        <label>Aditamento Nr:</label>
-                                        <input type="number" value={aditamentoNr} onChange={(e) => setAditamentoNr(parseInt(e.target.value) || 1)} placeholder="Ex: 8" className="input-modern"/>
-                                    </div>
-                                    <div style={{flex: 1}}>
-                                        <label>Boletim Interno Nr:</label>
-                                        <input type="text" value={boletimNr} onChange={(e) => setBoletimNr(e.target.value)} placeholder="Ex: 2/2026" className="input-modern"/>
-                                    </div>
+
+                            {/* 3. INSTRUÇÃO (OPCIONAL) */}
+                            <div className="card card-instrucao">
+                                <h3>3. Instrução (Opcional)</h3>
+                                <p style={{marginBottom:'10px', fontSize:'0.82rem', color:'var(--text-light)'}}>Preencha se houver instrução prevista na 2ª Parte:</p>
+                                
+                                <div className="form-group" style={{marginBottom: '10px'}}>
+                                    <label style={{fontSize: '0.82rem', color: 'var(--text-light)'}}>Instrução:</label>
+                                    <input 
+                                        type="text" 
+                                        value={instrucaoNome} 
+                                        onChange={(e) => setInstrucaoNome(e.target.value)} 
+                                        placeholder="Ex: TFM / Armamento / Tiro" 
+                                        className="input-modern"
+                                        style={{padding: '8px 12px'}}
+                                    />
                                 </div>
-                                <p style={{marginTop:'10px', fontSize:'0.9em', color:'var(--text-light)'}}>Preencha os dados dos serviços manuais (Formato: Posto/Grad | Nome):</p>
-                                {Object.keys(manualRoles).map(mr => (
-                                    <div className="form-group" key={mr}>
-                                        <label>{mr}</label>
+                                <div className="form-group row" style={{display: 'flex', gap: '15px', marginBottom: '10px'}}>
+                                    <div style={{flex: 1}}>
+                                        <label style={{fontSize: '0.82rem', color: 'var(--text-light)'}}>Horário:</label>
                                         <input 
                                             type="text" 
-                                            list="pessoas-list"
-                                            value={manualRoles[mr]} 
-                                            onChange={(e) => setManualRoles({...manualRoles, [mr]: e.target.value.toUpperCase()})} 
-                                            onBlur={(e) => {
-                                                let val = e.target.value.trim().toUpperCase();
-                                                if (val && allMilitares && allMilitares.length > 0) {
-                                                    const ids = allMilitares;
-                                                    const exact = ids.find(id => id === val);
-                                                    if (!exact) {
-                                                        const partial = ids.find(id => id.includes(val) || val.includes(id));
-                                                        if (partial) val = partial;
-                                                    }
-                                                }
-                                                setManualRoles({...manualRoles, [mr]: val});
-                                            }}
-                                            placeholder={`Pesquise o nome do militar...`}
+                                            value={instrucaoHorario} 
+                                            onChange={(e) => setInstrucaoHorario(e.target.value)} 
+                                            placeholder="Ex: 08:00 às 10:00" 
                                             className="input-modern"
+                                            style={{padding: '8px 12px'}}
                                         />
                                     </div>
-                                ))}
-                            </div>
-
-                            <div className="card">
-                                <h3>3. Instrução (Opcional)</h3>
-                                <p style={{marginBottom:'10px', fontSize:'0.9em', color:'var(--text-light)'}}>Preencha se houver instrução prevista na 2ª Parte. Caso contrário, sairá como "Sem Alteração".</p>
-                                
-                                <div className="form-group row">
-                                    <label>Instrução:</label>
-                                    <input type="text" value={instrucaoNome} onChange={(e) => setInstrucaoNome(e.target.value)} placeholder="Ex: TFM / Armamento / etc" className="input-modern"/>
-                                </div>
-                                <div className="form-group row" style={{display: 'flex', gap: '20px'}}>
                                     <div style={{flex: 1}}>
-                                        <label>Horário:</label>
-                                        <input type="text" value={instrucaoHorario} onChange={(e) => setInstrucaoHorario(e.target.value)} placeholder="Ex: 08:00 às 10:00" className="input-modern"/>
+                                        <label style={{fontSize: '0.82rem', color: 'var(--text-light)'}}>Fardamento:</label>
+                                        <input 
+                                            type="text" 
+                                            value={instrucaoFardamento} 
+                                            onChange={(e) => setInstrucaoFardamento(e.target.value)} 
+                                            placeholder="Ex: 9º B2 / 14º" 
+                                            className="input-modern"
+                                            style={{padding: '8px 12px'}}
+                                        />
                                     </div>
-                                    <div style={{flex: 1}}>
-                                        <label>Fardamento:</label>
-                                        <input type="text" value={instrucaoFardamento} onChange={(e) => setInstrucaoFardamento(e.target.value)} placeholder="Ex: 9º B2 / 14º" className="input-modern"/>
+                                </div>
+                                <div style={{display: 'flex', gap: '6px', flexWrap: 'wrap', marginTop: 'auto', paddingTop: '4px'}}>
+                                    {[
+                                        { nome: 'TFM', fard: '14º', hora: '08:00 às 09:30' },
+                                        { nome: 'Armamento e Tiro', fard: '9º B2', hora: '08:00 às 11:30' },
+                                        { nome: 'Ordem Unida', fard: '9º B2', hora: '08:00 às 10:00' },
+                                        { nome: 'Sem Alteração', fard: '', hora: '' }
+                                    ].map(item => (
+                                        <button 
+                                            key={item.nome}
+                                            type="button" 
+                                            className="btn-outline btn-sm" 
+                                            style={{fontSize: '11px', padding: '2px 8px'}}
+                                            onClick={() => {
+                                                setInstrucaoNome(item.nome === 'Sem Alteração' ? '' : item.nome);
+                                                setInstrucaoFardamento(item.fard);
+                                                setInstrucaoHorario(item.hora);
+                                            }}
+                                        >
+                                            {item.nome}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* 4. ASSUNTOS GERAIS E ADMINISTRATIVOS */}
+                            <div className="card card-assuntos span-2">
+                                <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '8px', flexWrap: 'wrap', gap: '8px'}}>
+                                    <h3 style={{margin: 0, borderBottom: 'none', paddingBottom: 0}}>4. Assuntos Gerais e Administrativos (Opcional)</h3>
+                                    <div style={{display: 'flex', gap: '6px', flexWrap: 'wrap'}}>
+                                        <button type="button" className="btn-outline btn-sm" style={{fontSize: '11px', padding: '3px 8px'}} onClick={() => setMissaoModalOpen(true)}>+ Missão / Escala Extra</button>
+                                        <button type="button" className="btn-outline btn-sm" style={{fontSize: '11px', padding: '3px 8px'}} onClick={() => setPalestraModalOpen(true)}>+ Palestra</button>
+                                        <button type="button" className="btn-outline btn-sm" style={{fontSize: '11px', padding: '3px 8px'}} onClick={() => setFormaturaModalOpen(true)}>+ Formatura</button>
+                                    </div>
+                                </div>
+                                
+                                <div className="assuntos-subgrid">
+                                    <div className="form-group" style={{display: 'flex', flexDirection: 'column', margin: 0}}>
+                                        <label style={{fontWeight: 'bold', fontSize: '0.85rem', marginBottom: '6px'}}>
+                                            1. Assuntos Gerais:
+                                        </label>
+                                        <textarea 
+                                            value={assuntosGerais} 
+                                            onChange={(e) => setAssuntosGerais(e.target.value)} 
+                                            placeholder="Ex: - MILITARES SOBRE AVISO...&#10;- APOIO AO CB DE DIA..." 
+                                            className="input-modern"
+                                            style={{flex: 1, minHeight: '125px', resize: 'vertical'}}
+                                        />
+                                    </div>
+
+                                    <div className="form-group" style={{display: 'flex', flexDirection: 'column', margin: 0}}>
+                                        <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px', flexWrap: 'wrap', gap: '6px'}}>
+                                            <label style={{fontWeight: 'bold', fontSize: '0.85rem', margin: 0}}>
+                                                2. Assuntos Administrativos:
+                                            </label>
+                                            <div style={{display: 'flex', gap: '8px', alignItems: 'center'}}>
+                                                <div style={{display: 'flex', alignItems: 'center', gap: '4px'}}>
+                                                    <span style={{fontSize: '0.76rem', color: 'var(--text-light)'}}>Atividade:</span>
+                                                    <select 
+                                                        className="input-modern" 
+                                                        value={atividadeTipo} 
+                                                        onChange={(e) => setAtividadeTipo(e.target.value)}
+                                                        style={{padding: '2px 6px', fontSize: '0.76rem', width: 'auto'}}
+                                                    >
+                                                        <option value="TFM">TFM</option>
+                                                        <option value="FAXINA">Faxina</option>
+                                                        <option value="SEÇÃO">Seção</option>
+                                                        <option value="SEM EXPEDIENTE">Sem Expediente</option>
+                                                        <option value="PERSONALIZADO">Personalizado</option>
+                                                    </select>
+                                                </div>
+                                                <div style={{display: 'flex', alignItems: 'center', gap: '4px'}}>
+                                                    <span style={{fontSize: '0.76rem', color: 'var(--text-light)'}}>Parada:</span>
+                                                    <select 
+                                                        className="input-modern" 
+                                                        value={paradaDiaria} 
+                                                        onChange={(e) => setParadaDiaria(e.target.value)}
+                                                        style={{padding: '2px 6px', fontSize: '0.76rem', width: 'auto'}}
+                                                    >
+                                                        <option value="09h30">09h30</option>
+                                                        <option value="07h30">07h30</option>
+                                                        <option value="Personalizado">Personalizado</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <textarea 
+                                            value={assuntosAdmin} 
+                                            onChange={(e) => setAssuntosAdmin(e.target.value)} 
+                                            placeholder={`Deixe em branco para manter o formato padrão de Início de Expediente e ${atividadeTipo}.`} 
+                                            className="input-modern"
+                                            style={{flex: 1, minHeight: '125px', resize: 'vertical'}}
+                                        />
                                     </div>
                                 </div>
                             </div>
 
-                            <div className="card">
-                                <h3>4. Assuntos Gerais e Administrativos (Opcional)</h3>
-                                <p style={{marginBottom:'10px', fontSize:'0.9em', color:'var(--text-light)'}}>Preencha os campos abaixo. O que ficar em branco será substituído por "- Sem Alteração." e/ou o cabeçalho padrão de Expediente.</p>
-                                <div style={{display: 'flex', gap: '10px', marginBottom: '15px', flexWrap: 'wrap'}}>
-                                    <button className="btn-outline btn-sm" onClick={() => setMissaoModalOpen(true)}>+ Adicionar Missão / Escala Extra</button>
-                                    <button className="btn-outline btn-sm" onClick={() => setPalestraModalOpen(true)}>+ Aviso de Palestra</button>
-                                    <button className="btn-outline btn-sm" onClick={() => setFormaturaModalOpen(true)}>+ Treinamento de Formatura</button>
+                            {/* 5. JUSTIÇA E DISCIPLINA */}
+                            <div className="card card-justica span-1">
+                                <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '8px'}}>
+                                    <h3 style={{margin: 0, borderBottom: 'none', paddingBottom: 0}}>5. Justiça e Disciplina (Opcional)</h3>
+                                    <button 
+                                        type="button" 
+                                        className="btn-outline btn-sm" 
+                                        style={{fontSize: '11px', padding: '3px 8px', borderColor: '#ffa726', color: '#ffa726'}}
+                                        onClick={() => setPunidosModalOpen(true)}
+                                    >
+                                        + Punido (Pernoite)
+                                    </button>
                                 </div>
-                                
-                                <div className="form-group row" style={{display: 'flex', flexDirection: 'column'}}>
-                                    <label>1. Assuntos Gerais:</label>
-                                    <textarea 
-                                        value={assuntosGerais} 
-                                        onChange={(e) => setAssuntosGerais(e.target.value)} 
-                                        placeholder="Ex: - MILITARES SOBRE AVISO...&#10;- APOIO AO CB DE DIA..." 
-                                        className="input-modern"
-                                        style={{minHeight: '80px', resize: 'vertical'}}
-                                    />
+                                <div style={{display: 'flex', gap: '5px', flexWrap: 'wrap', marginBottom: '8px'}}>
+                                    {[
+                                        { label: 'Sem Alteração', text: '- Sem Alteração.' },
+                                        { label: 'Elogio', text: '- Elogio individual aos militares de serviço pelo excelente desempenho.' }
+                                    ].map(item => (
+                                        <button 
+                                            key={item.label}
+                                            type="button" 
+                                            className="btn-outline btn-sm" 
+                                            style={{fontSize: '11px', padding: '2px 7px'}}
+                                            onClick={() => setJusticaDisciplina(item.text)}
+                                        >
+                                            {item.label}
+                                        </button>
+                                    ))}
                                 </div>
-
-                                <div className="form-group row" style={{display: 'flex', flexDirection: 'column', gap: '5px'}}>
-                                    <label>2. Assuntos Administrativos:</label>
-                                    <div style={{display: 'flex', alignItems: 'center', gap: '15px', flexWrap: 'wrap', marginBottom: '5px'}}>
-                                        <div style={{display: 'flex', alignItems: 'center', gap: '5px'}}>
-                                            <span style={{fontSize: '0.85em', color: 'var(--text-light)'}}>Atividade:</span>
-                                            <select 
-                                                className="input-modern" 
-                                                value={atividadeTipo} 
-                                                onChange={(e) => setAtividadeTipo(e.target.value)}
-                                                style={{padding: '5px 10px', fontSize: '0.85em', width: 'auto'}}
-                                            >
-                                                <option value="TFM">TFM</option>
-                                                <option value="FAXINA">Faxina</option>
-                                                <option value="SEÇÃO">Seção</option>
-                                                <option value="SEM EXPEDIENTE">Sem Expediente</option>
-                                                <option value="PERSONALIZADO">Personalizado (em branco)</option>
-                                            </select>
-                                        </div>
-
-                                        <div style={{display: 'flex', alignItems: 'center', gap: '5px'}}>
-                                            <span style={{fontSize: '0.85em', color: 'var(--text-light)'}}>Parada Diária:</span>
-                                            <select 
-                                                className="input-modern" 
-                                                value={paradaDiaria} 
-                                                onChange={(e) => setParadaDiaria(e.target.value)}
-                                                style={{padding: '5px 10px', fontSize: '0.85em', width: 'auto'}}
-                                            >
-                                                <option value="09h30">09h30</option>
-                                                <option value="07h30">07h30</option>
-                                                <option value="Personalizado">Personalizado (em branco)</option>
-                                            </select>
-                                        </div>
+                                {punidos.length > 0 && (
+                                    <div style={{marginBottom: '10px', background: 'rgba(255,255,255,0.03)', padding: '8px', borderRadius: '4px'}}>
+                                        <h4 style={{margin: '0 0 5px 0', fontSize: '11px', color: '#ffa726'}}>Militares Punidos ({punidos.length}):</h4>
+                                        <ul style={{margin: 0, paddingLeft: '15px', fontSize: '11px'}}>
+                                            {punidos.map((p, idx) => (
+                                                <li key={idx} style={{marginBottom: '3px'}}>
+                                                    <strong>{p.nome}</strong> - {p.tipo} ({p.inicio} a {p.termino})
+                                                    <button type="button" className="icon-btn danger" style={{padding: '0 4px', marginLeft: '5px'}} onClick={() => setPunidos(punidos.filter((_, i) => i !== idx))}>
+                                                        <Trash2 size={10}/>
+                                                    </button>
+                                                </li>
+                                            ))}
+                                        </ul>
                                     </div>
-                                    <textarea 
-                                        value={assuntosAdmin} 
-                                        onChange={(e) => setAssuntosAdmin(e.target.value)} 
-                                        placeholder={`Deixe em branco para manter o formato padrão de Início de Expediente e ${atividadeTipo}.`} 
-                                        className="input-modern"
-                                        style={{minHeight: '100px', resize: 'vertical'}}
-                                    />
-                                </div>
-                            </div>
-
-                            <div className="card span-full">
-                                <h3>5. Justiça e Disciplina (Opcional)</h3>
-                                <p style={{marginBottom:'10px', fontSize:'0.9em', color:'var(--text-light)'}}>Preencha os campos abaixo. O que ficar em branco será substituído por "- Sem Alteração.".</p>
-                                
-                                <div className="form-group row" style={{display: 'flex', flexDirection: 'column'}}>
+                                )}
+                                <div className="form-group" style={{display: 'flex', flexDirection: 'column', flex: 1, margin: 0}}>
                                     <textarea 
                                         value={justicaDisciplina} 
                                         onChange={(e) => setJusticaDisciplina(e.target.value)} 
-                                        placeholder="Ex: - SD EP 123 SILVA: Punido com 2 dias de impedimento..." 
+                                        placeholder="Ex: - SD EP 123 SILVA: Punido com 2 dias de impedimento... (deixe em branco para '- Sem Alteração.')" 
                                         className="input-modern"
-                                        style={{minHeight: '80px', resize: 'vertical'}}
+                                        style={{flex: 1, minHeight: '125px', resize: 'vertical'}}
                                     />
                                 </div>
                             </div>
                             </div>
                             
-                            <div className="actions card row">
-                                <button className="btn-primary" onClick={gerarPrevia}><Calendar size={18}/> GERAR PRÉVIA</button>
+                            <div className="actions card row" style={{justifyContent: 'center', marginTop: '15px', padding: '15px'}}>
+                                <button className="btn-primary" onClick={gerarPrevia} style={{fontSize: '1rem', padding: '12px 28px'}}>
+                                    <Calendar size={18}/> GERAR PRÉVIA DA ESCALA
+                                </button>
                             </div>
 
-                            {schedulePreview && (
+                            {schedulePreview ? (
                                 <div className="card preview-card fade-in">
                                     <h3>Visualização da Escala</h3>
                                     <div className="preview-content">
@@ -1228,13 +1843,49 @@ function App() {
                                         {Object.keys(schedulePreview.escalados || {}).map(role => (
                                             <div className="preview-col" key={role}>
                                                 <h4>{role}</h4>
-                                                <p>{schedulePreview.escalados[role]?.length > 0 ? schedulePreview.escalados[role].join(" - ") : "Nenhum"}</p>
+                                                <div style={{display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '6px'}}>
+                                                    {schedulePreview.escalados[role]?.length > 0 ? (
+                                                        schedulePreview.escalados[role].map((soldier: string) => (
+                                                            <div 
+                                                                key={soldier} 
+                                                                style={{
+                                                                    display: 'inline-flex', 
+                                                                    alignItems: 'center', 
+                                                                    gap: '6px', 
+                                                                    background: 'rgba(255,255,255,0.06)', 
+                                                                    padding: '3px 8px', 
+                                                                    borderRadius: '4px', 
+                                                                    fontSize: '12px'
+                                                                }}
+                                                            >
+                                                                <span>{soldier}</span>
+                                                                <button 
+                                                                    type="button" 
+                                                                    className="btn-outline btn-sm" 
+                                                                    style={{padding: '1px 5px', fontSize: '10px'}}
+                                                                    title="Substituir pelo mais descansado"
+                                                                    onClick={() => abrirModalSubstituicao(role, soldier, 'preview')}
+                                                                >
+                                                                    ⇄ Trocar
+                                                                </button>
+                                                            </div>
+                                                        ))
+                                                    ) : (
+                                                        <p>Nenhum</p>
+                                                    )}
+                                                </div>
                                             </div>
                                         ))}
                                     </div>
                                     <div className="actions row" style={{justifyContent: 'center', marginTop: '20px'}}>
                                         <button className="btn-success" onClick={confirmarEscala}><Check size={18}/> Confirmar e Salvar no Histórico</button>
                                     </div>
+                                </div>
+                            ) : (
+                                <div className="card" style={{textAlign: 'center', padding: '35px 20px', background: 'rgba(255,255,255,0.02)', border: '1px dashed var(--glass-border)'}}>
+                                    <Calendar size={32} style={{color: 'var(--text-light)', opacity: 0.6, marginBottom: '10px'}} />
+                                    <h4 style={{margin: '0 0 8px 0', color: 'var(--text-dark)', fontWeight: 600, fontSize: '1.05rem'}}>Nenhuma Prévia Gerada</h4>
+                                    <p style={{margin: 0, color: 'var(--text-light)', fontSize: '0.9rem'}}>Preencha ou revise as informações acima e clique em <strong>"GERAR PRÉVIA"</strong> para calcular a escala e habilitar a exportação do aditamento.</p>
                                 </div>
                             )}
                         </div>
@@ -1254,9 +1905,9 @@ function App() {
                                 
                                 <div style={{maxHeight: '450px', overflowY: 'auto', background: 'rgba(0,0,0,0.2)', padding: '15px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)', marginTop: '20px'}}>
                                     {(() => {
-                                        const militarKeys = Object.keys(state.pessoas);
+                                        const militarKeys = Object.keys(state.pessoas || {});
                                         const todosArranchadosTudo = militarKeys.length > 0 && militarKeys.every(id => {
-                                            const r = arranchados[id];
+                                            const r = arranchados?.[id];
                                             return r && r.c && r.a && r.j;
                                         });
 
@@ -1280,7 +1931,7 @@ function App() {
                                                 </div>
                                                 <div className="checkbox-group" style={{display: 'flex', flexDirection: 'column', gap: '5px', marginTop: '10px'}}>
                                                     {militarKeys.sort().map(id => {
-                                                        const r = arranchados[id] || { c: false, a: false, j: false };
+                                                        const r = arranchados?.[id] || { c: false, a: false, j: false };
                                                         const isAllPerson = r.c && r.a && r.j;
                                                         return (
                                                             <div key={id} style={{display: 'flex', alignItems: 'center', background: 'rgba(255,255,255,0.05)', padding: '6px 12px', borderRadius: '4px'}}>
@@ -1293,13 +1944,13 @@ function App() {
                                                                     /> Tudo
                                                                 </label>
                                                                 <label style={{marginRight: '15px', display: 'flex', alignItems: 'center', gap: '5px', cursor: 'pointer'}}>
-                                                                    <input type="checkbox" checked={r.c} onChange={() => toggleArranchadoMeal(id, 'c')} /> C
+                                                                    <input type="checkbox" checked={!!r.c} onChange={() => toggleArranchadoMeal(id, 'c')} /> C
                                                                 </label>
                                                                 <label style={{marginRight: '15px', display: 'flex', alignItems: 'center', gap: '5px', cursor: 'pointer'}}>
-                                                                    <input type="checkbox" checked={r.a} onChange={() => toggleArranchadoMeal(id, 'a')} /> A
+                                                                    <input type="checkbox" checked={!!r.a} onChange={() => toggleArranchadoMeal(id, 'a')} /> A
                                                                 </label>
                                                                 <label style={{display: 'flex', alignItems: 'center', gap: '5px', cursor: 'pointer'}}>
-                                                                    <input type="checkbox" checked={r.j} onChange={() => toggleArranchadoMeal(id, 'j')} /> J
+                                                                    <input type="checkbox" checked={!!r.j} onChange={() => toggleArranchadoMeal(id, 'j')} /> J
                                                                 </label>
                                                             </div>
                                                         );
@@ -1317,7 +1968,7 @@ function App() {
 
                             <div className="card" style={{marginTop: '20px'}}>
                                 <h3>Histórico de Arranchamentos</h3>
-                                {state.historico_arranchamentos?.length > 0 ? (
+                                {(state.historico_arranchamentos || []).length > 0 ? (
                                     <table>
                                         <thead>
                                             <tr>
@@ -1327,12 +1978,13 @@ function App() {
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            {[...state.historico_arranchamentos].reverse().map((h: any, reversedIndex: number) => {
-                                                const i = state.historico_arranchamentos.length - 1 - reversedIndex;
+                                            {[...(state.historico_arranchamentos || [])].reverse().map((h: any, reversedIndex: number) => {
+                                                const i = (state.historico_arranchamentos || []).length - 1 - reversedIndex;
+                                                const totalMilitares = Object.keys(h.refeicoes || {}).filter(k => h.refeicoes?.[k]?.c || h.refeicoes?.[k]?.a || h.refeicoes?.[k]?.j).length;
                                                 return (
                                                     <tr key={i}>
                                                         <td>{h.data}</td>
-                                                        <td>{Object.keys(h.refeicoes || {}).filter(k => h.refeicoes[k].c || h.refeicoes[k].a || h.refeicoes[k].j).length} militares</td>
+                                                        <td>{totalMilitares} militares</td>
                                                         <td>
                                                             <div style={{display:'flex', gap: '8px', flexWrap: 'wrap'}}>
                                                                 <button className="btn-outline btn-sm" onClick={() => imprimirArranchamentoBase(h)}><Printer size={14}/> IMPRIMIR</button>
@@ -1384,26 +2036,42 @@ function App() {
                         <div className="tab-historico slide-up">
                             <div className="card">
                                 <h3>Histórico de Escalas Geradas</h3>
-                                {state.historico_escalas?.length > 0 ? (
+                                {(state.historico_escalas || []).length > 0 ? (
                                     <table>
                                         <thead>
                                             <tr>
                                                 <th>Data</th>
                                                 <th>Dia (Semana)</th>
                                                 <th>Funções Cobertas</th>
+                                                <th>Trocas</th>
                                                 <th>Vermelha?</th>
                                                 <th>Ações</th>
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            {[...state.historico_escalas].reverse().map((h: any, reversedIndex: number) => {
-                                                const i = state.historico_escalas.length - 1 - reversedIndex;
+                                            {[...(state.historico_escalas || [])].reverse().map((h: any, reversedIndex: number) => {
+                                                const i = (state.historico_escalas || []).length - 1 - reversedIndex;
                                                 const rolesCovered = Object.keys(h.escalados || {}).join(", ");
+                                                const qtdTrocas = h.trocas_registro?.length || 0;
                                                 return (
                                                     <tr key={i}>
                                                         <td>{h.data}</td>
-                                                        <td>{['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'][new Date(h.data).getDay() + 1] || h.dia_semana}</td>
+                                                        <td>{getDiaSemanaExtenso(h.data, h.dia_semana)}</td>
                                                         <td style={{fontSize:'0.85em'}}>{rolesCovered || 'Legado (Guarda/Plantão)'}</td>
+                                                        <td>
+                                                            {qtdTrocas > 0 ? (
+                                                                <button 
+                                                                    className="btn-outline btn-sm" 
+                                                                    style={{borderColor: '#ffa726', color: '#ffa726', padding: '2px 8px', fontSize: '11px', display: 'inline-flex', alignItems: 'center', gap: '4px'}}
+                                                                    onClick={() => { setVerTrocasData(h); setVerTrocasModalOpen(true); }}
+                                                                    title="Ver detalhes das trocas registradas nesta escala"
+                                                                >
+                                                                    ⇄ {qtdTrocas} Troca{qtdTrocas > 1 ? 's' : ''}
+                                                                </button>
+                                                            ) : (
+                                                                <span style={{color: 'var(--text-light)', fontSize: '11px'}}>-</span>
+                                                            )}
+                                                        </td>
                                                         <td>
                                                             {h.sem_expediente ? <span className="badge-inactive">Sim</span> : <span className="badge-active">Não</span>}
                                                         </td>
@@ -1429,32 +2097,14 @@ function App() {
 
                     {activeTab === 'ranking' && state && (
                         <div className="tab-ranking slide-up">
-                            <h2 style={{color: 'var(--primary-color)', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '10px', marginBottom: '20px'}}>Rankings EP (Profissionais)</h2>
+                            <h2 style={{color: 'var(--text-dark)', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '10px', marginBottom: '20px'}}>Rankings Soldados EV (Recrutas)</h2>
                             <div className="row" style={{marginBottom: '20px'}}>
-                                <div className="card" style={{flex: 1, border: '2px solid var(--primary-color)'}}>
-                                    <h3>🏆 Geral EP (Semana + FDS)</h3>
-                                    {renderRankingList('geral', 'EP')}
-                                </div>
-                            </div>
-                            <div className="row" style={{marginBottom: '40px'}}>
-                                <div className="card" style={{flex: 1}}>
-                                    <h3>Escala Preta EP</h3>
-                                    {renderRankingList('preta', 'EP')}
-                                </div>
-                                <div className="card" style={{flex: 1}}>
-                                    <h3>Escala Vermelha EP</h3>
-                                    {renderRankingList('vermelha', 'EP')}
-                                </div>
-                            </div>
-
-                            <h2 style={{color: 'var(--primary-color)', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '10px', marginBottom: '20px'}}>Rankings EV (Recrutas)</h2>
-                            <div className="row" style={{marginBottom: '20px'}}>
-                                <div className="card" style={{flex: 1, border: '2px solid var(--primary-color)'}}>
-                                    <h3>🏆 Geral EV (Semana + FDS)</h3>
+                                <div className="card" style={{flex: 1, border: '2px solid var(--primary)'}}>
+                                    <h3>🏆 Geral Soldados EV (Semana + FDS)</h3>
                                     {renderRankingList('geral', 'EV')}
                                 </div>
                             </div>
-                            <div className="row">
+                            <div className="row" style={{marginBottom: '40px'}}>
                                 <div className="card" style={{flex: 1}}>
                                     <h3>Escala Preta EV</h3>
                                     {renderRankingList('preta', 'EV')}
@@ -1462,6 +2112,24 @@ function App() {
                                 <div className="card" style={{flex: 1}}>
                                     <h3>Escala Vermelha EV</h3>
                                     {renderRankingList('vermelha', 'EV')}
+                                </div>
+                            </div>
+
+                            <h2 style={{color: 'var(--text-dark)', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '10px', marginBottom: '20px'}}>Rankings Soldados EP (Profissionais)</h2>
+                            <div className="row" style={{marginBottom: '20px'}}>
+                                <div className="card" style={{flex: 1, border: '2px solid var(--primary)'}}>
+                                    <h3>🏆 Geral Soldados EP (Semana + FDS)</h3>
+                                    {renderRankingList('geral', 'EP')}
+                                </div>
+                            </div>
+                            <div className="row">
+                                <div className="card" style={{flex: 1}}>
+                                    <h3>Escala Preta Soldados EP</h3>
+                                    {renderRankingList('preta', 'EP')}
+                                </div>
+                                <div className="card" style={{flex: 1}}>
+                                    <h3>Escala Vermelha Soldados EP</h3>
+                                    {renderRankingList('vermelha', 'EP')}
                                 </div>
                             </div>
                         </div>
@@ -1547,9 +2215,9 @@ function App() {
                                     <div className="form-group" style={{minWidth: '160px'}}>
                                         <label>Destinado a:</label>
                                         <select className="input-modern" value={newRoleDestinadoA} onChange={e=>setNewRoleDestinadoA(e.target.value)}>
-                                            <option value="AMBOS">Ambos (EP e EV)</option>
+                                            <option value="AMBOS">Ambos (Soldados EP e EV)</option>
                                             <option value="EV">Soldados EV</option>
-                                            <option value="EP">Cabos e Soldados EP</option>
+                                            <option value="EP">Soldados EP</option>
                                         </select>
                                     </div>
                                     <div className="form-group" style={{width: '120px'}}>
@@ -1594,9 +2262,12 @@ function App() {
                                     <input 
                                         type="number" 
                                         className="input-modern" 
-                                        value={state.aditamento_nr || 0} 
+                                        value={state.aditamento_nr || 1} 
                                         onChange={(e) => {
-                                            const ns = {...state}; ns.aditamento_nr = parseInt(e.target.value) || 0; setState(ns);
+                                            const val = parseInt(e.target.value, 10) || 1;
+                                            const ns = {...state, aditamento_nr: val};
+                                            setState(ns);
+                                            setAditamentoNr(val);
                                         }}
                                         onBlur={() => handleSave(state)}
                                     />
@@ -1606,9 +2277,12 @@ function App() {
                                     <input 
                                         type="number" 
                                         className="input-modern" 
-                                        value={state.boletim_interno_nr || 0} 
+                                        value={state.boletim_interno_nr || 1} 
                                         onChange={(e) => {
-                                            const ns = {...state}; ns.boletim_interno_nr = parseInt(e.target.value) || 0; setState(ns);
+                                            const val = parseInt(e.target.value, 10) || 1;
+                                            const ns = {...state, boletim_interno_nr: val};
+                                            setState(ns);
+                                            setBoletimNr(String(val));
                                         }}
                                         onBlur={() => handleSave(state)}
                                     />
@@ -1638,14 +2312,15 @@ function App() {
                             </div>
                         </div>
                     )}
+                    </ErrorBoundary>
                 </div>
 
                 {/* MODALS */}
                 {dispensaModalOpen && (
-                    <div style={{position:'absolute', top:0, left:0, right:0, bottom:0, background:'rgba(0,0,0,0.7)', display:'flex', alignItems:'center', justifyContent:'center', zIndex: 1000}}>
-                        <div className="card modal-card" style={{width: '350px'}}>
+                    <div style={{position:'fixed', top:0, left:0, right:0, bottom:0, background:'rgba(0,0,0,0.75)', backdropFilter: 'blur(3px)', display:'flex', alignItems:'center', justifyContent:'center', zIndex: 1000}}>
+                        <div className="card modal-card" style={{width: '380px'}}>
                             <h3>Adicionar Dispensa</h3>
-                            <p>Militar ID: {selectedPessoaId}</p>
+                            <p style={{color: 'var(--primary-color)', fontWeight: 'bold'}}>{selectedPessoaId}</p>
                             <div className="form-group">
                                 <label>Início:</label>
                                 <input type="date" className="input-modern" value={dispStart} onChange={e=>setDispStart(e.target.value)} />
@@ -1654,7 +2329,30 @@ function App() {
                                 <label>Fim:</label>
                                 <input type="date" className="input-modern" value={dispEnd} onChange={e=>setDispEnd(e.target.value)} />
                             </div>
-                            <div className="row" style={{marginTop: '15px'}}>
+                            <div className="form-group">
+                                <label>Motivo da Dispensa:</label>
+                                <input 
+                                    type="text" 
+                                    className="input-modern" 
+                                    value={dispMotivo} 
+                                    onChange={e=>setDispMotivo(e.target.value)} 
+                                    placeholder="Ex: Atestado Médico, Férias, Núpcias..." 
+                                />
+                                <div style={{display: 'flex', gap: '5px', flexWrap: 'wrap', marginTop: '6px'}}>
+                                    {['Atestado Médico', 'Férias', 'Luto', 'Núpcias', 'Missão', 'Dispensa Recompensa', 'Estudo'].map(m => (
+                                        <button 
+                                            key={m} 
+                                            type="button" 
+                                            className="btn-outline btn-sm" 
+                                            style={{fontSize: '11px', padding: '2px 6px'}}
+                                            onClick={() => setDispMotivo(m)}
+                                        >
+                                            {m}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                            <div className="row" style={{marginTop: '20px', justifyContent: 'flex-end', gap: '10px'}}>
                                 <button className="btn-outline" onClick={()=>setDispensaModalOpen(false)}>Cancelar</button>
                                 <button className="btn-success" onClick={adicionarDispensa}>Salvar</button>
                             </div>
@@ -1663,24 +2361,166 @@ function App() {
                 )}
 
                 {editHistModalOpen && editHistData && (
-                    <div style={{position:'absolute', top:0, left:0, right:0, bottom:0, background:'rgba(0,0,0,0.7)', display:'flex', alignItems:'center', justifyContent:'center', zIndex: 1000}}>
-                        <div className="card modal-card" style={{width: '500px', maxHeight: '80vh', overflowY: 'auto'}}>
-                            <h3>Editar Histórico ({editHistData.data})</h3>
-                            <p style={{color:'var(--text-light)'}}>Altere os IDs separados por vírgula se precisar corrigir quem tirou o serviço (ex: militar doente foi substituído).</p>
+                    <div style={{position:'fixed', top:0, left:0, right:0, bottom:0, background:'rgba(0,0,0,0.75)', backdropFilter: 'blur(3px)', display:'flex', alignItems:'center', justifyContent:'center', zIndex: 1000}}>
+                        <div className="card modal-card" style={{width: '640px', maxWidth: '95vw', maxHeight: '88vh', overflowY: 'auto'}}>
+                            <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px'}}>
+                                <h3 style={{margin: 0}}>Editar Escala ({editHistData.data})</h3>
+                                <button className="icon-btn" onClick={() => setEditHistModalOpen(false)}>✕</button>
+                            </div>
+                            <p style={{color:'var(--text-light)', fontSize: '13px', marginBottom: '15px'}}>
+                                Clique em <strong>"⇄ Substituir"</strong> em qualquer soldado para abrir a lista ordenada pelo mais descansado e registrar o motivo da troca.
+                            </p>
+                            
+                            {/* Identificação do Aditamento */}
+                            <div style={{display: 'flex', gap: '12px', marginBottom: '16px', background: 'rgba(255,255,255,0.02)', padding: '10px', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.08)'}}>
+                                <div style={{flex: 1}}>
+                                    <label style={{fontSize: '11px', color: 'var(--text-light)', display: 'block', marginBottom: '2px'}}>Aditamento Nr:</label>
+                                    <input 
+                                        type="number" 
+                                        className="input-modern" 
+                                        style={{fontSize: '12px', padding: '6px 8px'}}
+                                        value={editHistData.aditamento_nr || 1}
+                                        onChange={(e) => {
+                                            setEditHistData({ ...editHistData, aditamento_nr: parseInt(e.target.value, 10) || 1 });
+                                        }}
+                                    />
+                                </div>
+                                <div style={{flex: 1}}>
+                                    <label style={{fontSize: '11px', color: 'var(--text-light)', display: 'block', marginBottom: '2px'}}>Boletim Interno Nr:</label>
+                                    <input 
+                                        type="number" 
+                                        className="input-modern" 
+                                        style={{fontSize: '12px', padding: '6px 8px'}}
+                                        value={editHistData.boletim_interno_nr || parseInt(editHistData.boletim_nr, 10) || 1}
+                                        onChange={(e) => {
+                                            const val = parseInt(e.target.value, 10) || 1;
+                                            setEditHistData({ ...editHistData, boletim_interno_nr: val, boletim_nr: String(val) });
+                                        }}
+                                    />
+                                </div>
+                            </div>
+                            
+                            {/* Funções Manuais (Oficiais / Sargentos / Cabos) se existirem */}
+                            {editHistData.manual_roles && Object.keys(editHistData.manual_roles).length > 0 && (
+                                <div style={{marginBottom: '16px', background: 'rgba(255,255,255,0.02)', padding: '10px', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.08)'}}>
+                                    <h4 style={{fontSize: '12px', color: 'var(--success-color)', margin: '0 0 8px 0', textTransform: 'uppercase', letterSpacing: '0.5px'}}>
+                                        Funções Manuais (Oficiais / Sargentos / Cabos)
+                                    </h4>
+                                    <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '8px'}}>
+                                        {Object.keys(editHistData.manual_roles).map(mr => (
+                                            <div key={`hist-manual-${mr}`}>
+                                                <label style={{fontSize: '11px', color: 'var(--text-light)', display: 'block', marginBottom: '2px'}}>{mr}:</label>
+                                                <input 
+                                                    type="text" 
+                                                    list="pessoas-list"
+                                                    className="input-modern" 
+                                                    style={{fontSize: '12px', padding: '6px 8px'}}
+                                                    value={editHistData.manual_roles[mr] || ''}
+                                                    onChange={(e) => {
+                                                        setEditHistData({
+                                                            ...editHistData,
+                                                            manual_roles: {
+                                                                ...editHistData.manual_roles,
+                                                                [mr]: e.target.value.toUpperCase()
+                                                            }
+                                                        });
+                                                    }}
+                                                />
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Funções dos Soldados EP e EV */}
+                            <h4 style={{fontSize: '12px', color: 'var(--primary-color)', margin: '15px 0 10px 0', textTransform: 'uppercase', letterSpacing: '0.5px'}}>
+                                Funções da Escala (Soldados EP / EV)
+                            </h4>
                             
                             {Object.keys(editHistData.escalados || {}).map(role => (
-                                <div className="form-group" key={role}>
-                                    <label>{role}</label>
-                                    <input 
-                                        type="text" 
-                                        className="input-modern" 
-                                        value={editHistData.escalados[role].join(", ")}
-                                        onChange={(e) => atualizarEditHistData(role, e.target.value)}
-                                    />
+                                <div className="form-group" key={role} style={{marginBottom: '14px', background: 'rgba(255,255,255,0.03)', padding: '10px 12px', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.06)'}}>
+                                    <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px'}}>
+                                        <label style={{fontWeight: 'bold', margin: 0, fontSize: '13px'}}>{role}</label>
+                                        <span style={{fontSize: '11px', color: 'var(--text-light)'}}>
+                                            {state?.role_configs?.[role]?.destinado_a === 'EP' ? 'Soldados EP' : state?.role_configs?.[role]?.destinado_a === 'EV' ? 'Soldados EV' : 'Soldados EP / EV'}
+                                        </span>
+                                    </div>
+                                    
+                                    {/* Soldados escalados */}
+                                    <div style={{display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '8px'}}>
+                                        {(editHistData.escalados[role] || []).length > 0 ? (
+                                            editHistData.escalados[role].map((soldier: string) => (
+                                                <div 
+                                                    key={soldier} 
+                                                    style={{
+                                                        display: 'inline-flex', 
+                                                        alignItems: 'center', 
+                                                        gap: '6px', 
+                                                        background: 'rgba(255,255,255,0.08)', 
+                                                        padding: '4px 8px', 
+                                                        borderRadius: '4px',
+                                                        border: '1px solid rgba(255,255,255,0.1)'
+                                                    }}
+                                                >
+                                                    <span style={{fontWeight: 'bold', fontSize: '13px'}}>{soldier}</span>
+                                                    <button 
+                                                        type="button" 
+                                                        className="btn-outline btn-sm" 
+                                                        style={{padding: '2px 6px', fontSize: '11px', borderColor: 'var(--primary-color)', color: 'var(--primary-color)'}}
+                                                        title="Substituir pelo soldado mais descansado"
+                                                        onClick={() => abrirModalSubstituicao(role, soldier, 'history')}
+                                                    >
+                                                        ⇄ Substituir
+                                                    </button>
+                                                    <button 
+                                                        type="button" 
+                                                        className="icon-btn danger" 
+                                                        style={{padding: '2px'}}
+                                                        title="Remover da função"
+                                                        onClick={() => removerSoldadoRole(role, soldier, 'history')}
+                                                    >
+                                                        <Trash2 size={12}/>
+                                                    </button>
+                                                </div>
+                                            ))
+                                        ) : (
+                                            <span style={{fontSize: '12px', color: 'var(--text-light)', fontStyle: 'italic'}}>Nenhum soldado escalado</span>
+                                        )}
+                                    </div>
+
+                                    {/* Fallback texto manual */}
+                                    <details style={{fontSize: '11px', color: 'var(--text-light)', marginTop: '4px'}}>
+                                        <summary style={{cursor: 'pointer'}}>Editar texto manualmente</summary>
+                                        <input 
+                                            type="text" 
+                                            className="input-modern" 
+                                            style={{marginTop: '4px', fontSize: '12px'}}
+                                            value={editHistData.escalados[role].join(", ")}
+                                            onChange={(e) => atualizarEditHistData(role, e.target.value)}
+                                            placeholder="IDs separados por vírgula"
+                                        />
+                                    </details>
                                 </div>
                             ))}
 
-                            <div className="row" style={{marginTop: '20px'}}>
+                            {/* Histórico de Substituições da Escala */}
+                            {editHistData.trocas_registro && editHistData.trocas_registro.length > 0 && (
+                                <div style={{marginTop: '15px', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '12px'}}>
+                                    <h4 style={{fontSize: '13px', color: '#ffa726', margin: '0 0 8px 0'}}>
+                                        Substituições Registradas nesta Escala ({editHistData.trocas_registro.length})
+                                    </h4>
+                                    <div style={{display: 'flex', flexDirection: 'column', gap: '6px', maxHeight: '140px', overflowY: 'auto'}}>
+                                        {editHistData.trocas_registro.map((t: any, idx: number) => (
+                                            <div key={idx} style={{fontSize: '11px', background: 'rgba(255,255,255,0.04)', padding: '6px 8px', borderRadius: '4px', borderLeft: '3px solid #ffa726'}}>
+                                                <div><strong>{t.funcao}</strong>: <span style={{color: '#ff6b6b'}}>{t.saiu}</span> ➔ <span style={{color: '#4caf50'}}>{t.entrou}</span></div>
+                                                <div style={{color: 'var(--text-light)', fontStyle: 'italic'}}>Motivo: {t.motivo} ({t.data_hora})</div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            <div className="row" style={{marginTop: '20px', justifyContent: 'flex-end', gap: '10px'}}>
                                 <button className="btn-outline" onClick={()=>setEditHistModalOpen(false)}>Cancelar</button>
                                 <button className="btn-success" onClick={salvarEdicaoHistorico}>Salvar Histórico</button>
                             </div>
@@ -1688,8 +2528,181 @@ function App() {
                     </div>
                 )}
 
+                {/* MODAL DE SUBSTITUIÇÃO ORDENADO POR CANSAÇO */}
+                {substModalOpen && (
+                    <div style={{position:'fixed', top:0, left:0, right:0, bottom:0, background:'rgba(0,0,0,0.75)', backdropFilter: 'blur(3px)', display:'flex', alignItems:'center', justifyContent:'center', zIndex: 1100}}>
+                        <div className="card modal-card" style={{width: '600px', maxWidth: '95vw', maxHeight: '90vh', overflowY: 'auto', border: '1px solid var(--primary-color)'}}>
+                            <h3 style={{display: 'flex', alignItems: 'center', gap: '8px', margin: '0 0 10px 0'}}>
+                                <span>⇄</span> Substituição de Soldado
+                            </h3>
+                            
+                            <div style={{background: 'rgba(255,255,255,0.04)', padding: '12px', borderRadius: '6px', marginBottom: '15px', border: '1px solid rgba(255,255,255,0.08)'}}>
+                                <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', fontSize: '13px'}}>
+                                    <div><strong>Função:</strong> <span style={{color: 'var(--primary-color)'}}>{substRole}</span></div>
+                                    <div><strong>Data da Escala:</strong> {substSource === 'preview' ? targetDate : editHistData?.data}</div>
+                                    <div style={{gridColumn: '1 / -1'}}>
+                                        <strong>Militar a ser Substituído (Sai):</strong>{' '}
+                                        <span style={{color: 'var(--danger-color, #ff6b6b)', fontWeight: 'bold'}}>{substMilitarSai}</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="form-group" style={{marginBottom: '15px'}}>
+                                <label style={{fontWeight: 'bold', display: 'flex', justifyContent: 'space-between'}}>
+                                    <span>Motivo da Substituição / Troca: *</span>
+                                    <span style={{fontSize: '11px', color: 'var(--text-light)'}}>Obrigatório para registro</span>
+                                </label>
+                                <input 
+                                    type="text" 
+                                    className="input-modern" 
+                                    value={substMotivo} 
+                                    onChange={e => setSubstMotivo(e.target.value)} 
+                                    placeholder="Ex: Atestado médico de 3 dias, Troca autorizada pelo Cmt, etc."
+                                />
+                                <div style={{display: 'flex', gap: '5px', flexWrap: 'wrap', marginTop: '6px'}}>
+                                    {['Atestado Médico', 'Dispensa Recompensa', 'Troca Autorizada', 'Missão Urgente', 'Problema Particular', 'Férias'].map(m => (
+                                        <button 
+                                            key={m} 
+                                            type="button" 
+                                            className="btn-outline btn-sm" 
+                                            style={{fontSize: '11px', padding: '2px 8px'}}
+                                            onClick={() => setSubstMotivo(m)}
+                                        >
+                                            {m}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            <div className="form-group">
+                                <label style={{fontWeight: 'bold', display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+                                    <span>Selecione o Soldado Substituto (Entra): *</span>
+                                    <span style={{fontSize: '11px', color: 'var(--primary-color)'}}>⚡ Ordenado pelo mais descansado</span>
+                                </label>
+                                <p style={{fontSize: '11px', color: 'var(--text-light)', margin: '2px 0 8px 0'}}>
+                                    Apenas soldados aptos para a função, não dispensados nesta data e que não estejam em outra função no mesmo dia. O 1º da lista é o mais descansado.
+                                </p>
+
+                                {(() => {
+                                    const dataStr = substSource === 'preview' ? targetDate : (editHistData?.data || '');
+                                    const candidatos = getCandidatosSubstituicao(substRole, dataStr, substMilitarSai, substSource);
+
+                                    if (candidatos.length === 0) {
+                                        return (
+                                            <div style={{padding: '15px', background: 'rgba(255,255,255,0.03)', borderRadius: '6px', textAlign: 'center', color: 'var(--text-light)'}}>
+                                                Nenhum outro soldado apto disponível encontrado sem duplicidade ou dispensa nesta data.
+                                            </div>
+                                        );
+                                    }
+
+                                    return (
+                                        <div style={{maxHeight: '260px', overflowY: 'auto', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '6px', background: 'rgba(0,0,0,0.2)'}}>
+                                            <table style={{width: '100%', margin: 0, fontSize: '12px'}}>
+                                                <thead>
+                                                    <tr style={{position: 'sticky', top: 0, background: 'var(--card-bg, #1e1e1e)', zIndex: 1}}>
+                                                        <th style={{width: '40px'}}>Sel.</th>
+                                                        <th>Posição</th>
+                                                        <th>Militar</th>
+                                                        <th>Tipo</th>
+                                                        <th>Pontos Cansaço</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {candidatos.map(c => {
+                                                        const isSelected = substMilitarEntra === c.id;
+                                                        return (
+                                                            <tr 
+                                                                key={c.id} 
+                                                                onClick={() => setSubstMilitarEntra(c.id)}
+                                                                style={{
+                                                                    cursor: 'pointer',
+                                                                    background: isSelected ? 'rgba(76, 175, 80, 0.2)' : 'transparent',
+                                                                    borderLeft: isSelected ? '3px solid var(--success-color, #4caf50)' : '3px solid transparent'
+                                                                }}
+                                                            >
+                                                                <td style={{textAlign: 'center'}}>
+                                                                    <input 
+                                                                        type="radio" 
+                                                                        name="substMilitar" 
+                                                                        checked={isSelected} 
+                                                                        onChange={() => setSubstMilitarEntra(c.id)} 
+                                                                    />
+                                                                </td>
+                                                                <td>
+                                                                    {c.posicao === 1 ? (
+                                                                        <span style={{color: '#4caf50', fontWeight: 'bold'}}>1º (Mais descansado)</span>
+                                                                    ) : (
+                                                                        <span>{c.posicao}º</span>
+                                                                    )}
+                                                                </td>
+                                                                <td style={{fontWeight: isSelected ? 'bold' : 'normal'}}>{c.id}</td>
+                                                                <td><span className="badge-active" style={{fontSize: '10px'}}>{c.tipo}</span></td>
+                                                                <td>{c.pontos.toFixed(2)} pts</td>
+                                                            </tr>
+                                                        );
+                                                    })}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    );
+                                })()}
+                            </div>
+
+                            <div className="row" style={{marginTop: '20px', justifyContent: 'flex-end', gap: '10px'}}>
+                                <button className="btn-outline" onClick={() => setSubstModalOpen(false)}>Cancelar</button>
+                                <button 
+                                    className="btn-success" 
+                                    onClick={confirmarSubstituicao}
+                                    disabled={!substMilitarEntra}
+                                >
+                                    Confirmar Substituição
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* MODAL DE VISUALIZAÇÃO DE TROCAS */}
+                {verTrocasModalOpen && verTrocasData && (
+                    <div style={{position:'fixed', top:0, left:0, right:0, bottom:0, background:'rgba(0,0,0,0.75)', backdropFilter: 'blur(3px)', display:'flex', alignItems:'center', justifyContent:'center', zIndex: 1100}}>
+                        <div className="card modal-card" style={{width: '600px', maxWidth: '95vw', maxHeight: '85vh', overflowY: 'auto'}}>
+                            <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px'}}>
+                                <h3 style={{margin: 0}}>Registro de Substituições ({verTrocasData.data})</h3>
+                                <button className="icon-btn" onClick={() => setVerTrocasModalOpen(false)}>✕</button>
+                            </div>
+                            
+                            {(!verTrocasData.trocas_registro || verTrocasData.trocas_registro.length === 0) ? (
+                                <p style={{color: 'var(--text-light)'}}>Nenhuma substituição registrada para esta escala.</p>
+                            ) : (
+                                <div style={{display: 'flex', flexDirection: 'column', gap: '10px'}}>
+                                    {verTrocasData.trocas_registro.map((t: any, idx: number) => (
+                                        <div key={idx} style={{background: 'rgba(255,255,255,0.04)', padding: '12px', borderRadius: '6px', borderLeft: '3px solid #ffa726'}}>
+                                            <div style={{display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: 'var(--text-light)', marginBottom: '5px'}}>
+                                                <span><strong>Função:</strong> {t.funcao}</span>
+                                                <span>{t.data_hora}</span>
+                                            </div>
+                                            <div style={{fontSize: '14px', marginBottom: '6px', fontWeight: 'bold'}}>
+                                                <span style={{color: '#ff6b6b'}}>{t.saiu}</span>
+                                                <span style={{margin: '0 8px', color: 'var(--text-light)'}}>➔</span>
+                                                <span style={{color: '#4caf50'}}>{t.entrou}</span>
+                                            </div>
+                                            <div style={{fontSize: '12px'}}>
+                                                <strong>Motivo:</strong> <span style={{fontStyle: 'italic'}}>{t.motivo || 'Não especificado'}</span>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+
+                            <div className="row" style={{marginTop: '20px', justifyContent: 'flex-end'}}>
+                                <button className="btn-primary" onClick={() => setVerTrocasModalOpen(false)}>Fechar</button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
                 {editRoleModalOpen && (
-                    <div style={{position:'absolute', top:0, left:0, right:0, bottom:0, background:'rgba(0,0,0,0.7)', display:'flex', alignItems:'center', justifyContent:'center', zIndex: 1000}}>
+                    <div style={{position:'fixed', top:0, left:0, right:0, bottom:0, background:'rgba(0,0,0,0.7)', display:'flex', alignItems:'center', justifyContent:'center', zIndex: 1000}}>
                         <div className="card modal-card" style={{width: '380px'}}>
                             <h3>Editar Função: {editRoleName}</h3>
                             <div className="form-group">
@@ -1703,9 +2716,9 @@ function App() {
                             <div className="form-group">
                                 <label>Destinado a (Efetivo):</label>
                                 <select className="input-modern" value={editRoleDestinadoA} onChange={e=>setEditRoleDestinadoA(e.target.value)}>
-                                    <option value="AMBOS">Ambos (EP e EV)</option>
+                                    <option value="AMBOS">Ambos (Soldados EP e EV)</option>
                                     <option value="EV">Soldados EV (Efetivo Variável)</option>
-                                    <option value="EP">Cabos e Soldados EP (Profissional)</option>
+                                    <option value="EP">Soldados EP (Profissional)</option>
                                 </select>
                             </div>
                             <div className="form-group">
@@ -1724,14 +2737,14 @@ function App() {
                 )}
 
                 {aptidaoModalOpen && (
-                    <div style={{position:'absolute', top:0, left:0, right:0, bottom:0, background:'rgba(0,0,0,0.7)', display:'flex', alignItems:'center', justifyContent:'center', zIndex: 1000}}>
+                    <div style={{position:'fixed', top:0, left:0, right:0, bottom:0, background:'rgba(0,0,0,0.7)', display:'flex', alignItems:'center', justifyContent:'center', zIndex: 1000}}>
                         <div className="card modal-card" style={{width: '650px', maxHeight: '85vh', overflowY: 'auto', display: 'flex', flexDirection: 'column'}}>
                             <h3>Gerenciar Aptidões: {aptidaoRoleName}</h3>
                             <p style={{color:'var(--text-light)', fontSize: '0.88em', marginBottom: '10px'}}>
-                                Destinado a: <strong>{state?.role_configs[aptidaoRoleName]?.destinado_a === 'EP' ? 'Cabos / Soldados EP' : state?.role_configs[aptidaoRoleName]?.destinado_a === 'EV' ? 'Soldados EV' : 'Ambos (EP e EV)'}</strong>
+                                Destinado a: <strong>{state?.role_configs[aptidaoRoleName]?.destinado_a === 'EP' ? 'Soldados EP' : state?.role_configs[aptidaoRoleName]?.destinado_a === 'EV' ? 'Soldados EV' : 'Ambos (Soldados EP e EV)'}</strong>
                             </p>
                             <p style={{color:'var(--text-light)', fontSize: '0.84em', marginBottom: '15px', background:'rgba(0,0,0,0.2)', padding:'8px 12px', borderRadius:'6px', border:'1px solid rgba(255,255,255,0.05)'}}>
-                                💡 <strong>Dica:</strong> Se nenhum militar for marcado individualmente, <u>todos</u> os militares da categoria selecionada são considerados aptos automaticamente.
+                                💡 <strong>Dica:</strong> Se nenhum militar for marcado individualmente, <u>todos</u> os soldados da categoria selecionada são considerados aptos automaticamente.
                             </p>
                             
                             {/* Quick selection bar */}
@@ -1740,7 +2753,7 @@ function App() {
                                     type="button" 
                                     className="btn-outline btn-sm" 
                                     onClick={() => {
-                                        const epList = Object.keys(state?.pessoas || {}).filter(m => state?.pessoas[m].posto_grad === "Soldado EP" || state?.pessoas[m].posto_grad === "Cabo" || state?.pessoas[m].is_ep);
+                                        const epList = Object.keys(state?.pessoas || {}).filter(m => isSoldadoEP(m, undefined, state.pessoas));
                                         setAptidaoList(Array.from(new Set([...aptidaoList, ...epList])));
                                     }}
                                 >
@@ -1750,7 +2763,7 @@ function App() {
                                     type="button" 
                                     className="btn-outline btn-sm" 
                                     onClick={() => {
-                                        const evList = Object.keys(state?.pessoas || {}).filter(m => state?.pessoas[m].posto_grad === "Soldado EV" || (!state?.pessoas[m].is_ep && state?.pessoas[m].posto_grad !== "Cabo"));
+                                        const evList = Object.keys(state?.pessoas || {}).filter(m => isSoldadoEV(m, undefined, state.pessoas));
                                         setAptidaoList(Array.from(new Set([...aptidaoList, ...evList])));
                                     }}
                                 >
@@ -1768,9 +2781,9 @@ function App() {
 
                             <div style={{display: 'flex', gap: '20px', flex: 1, minHeight:'250px', overflowY: 'hidden'}}>
                                 <div style={{flex: 1, border: '1px solid rgba(255,255,255,0.1)', padding: '10px', borderRadius: '8px', display: 'flex', flexDirection: 'column'}}>
-                                    <h4 style={{marginBottom: '10px', color: '#aed581'}}>Cabos / Soldados EP</h4>
+                                    <h4 style={{marginBottom: '10px', color: '#aed581'}}>Soldados EP ({Object.keys(state?.pessoas || {}).filter(m => isSoldadoEP(m, undefined, state.pessoas)).length})</h4>
                                     <div style={{overflowY: 'auto', flex: 1}}>
-                                        {Object.keys(state?.pessoas || {}).filter(m => state?.pessoas[m].posto_grad === "Soldado EP" || state?.pessoas[m].posto_grad === "Cabo" || state?.pessoas[m].is_ep).map(m => (
+                                        {Object.keys(state?.pessoas || {}).filter(m => isSoldadoEP(m, undefined, state.pessoas)).sort().map(m => (
                                             <label key={m} style={{display: 'block', padding: '5px 0', borderBottom: '1px solid rgba(255,255,255,0.05)', cursor: 'pointer'}}>
                                                 <input type="checkbox" checked={aptidaoList.includes(m)} onChange={() => toggleAptidao(m)} style={{marginRight: '10px'}} />
                                                 {m}
@@ -1779,9 +2792,9 @@ function App() {
                                     </div>
                                 </div>
                                 <div style={{flex: 1, border: '1px solid rgba(255,255,255,0.1)', padding: '10px', borderRadius: '8px', display: 'flex', flexDirection: 'column'}}>
-                                    <h4 style={{marginBottom: '10px', color: '#90caf9'}}>Soldados EV</h4>
+                                    <h4 style={{marginBottom: '10px', color: '#90caf9'}}>Soldados EV ({Object.keys(state?.pessoas || {}).filter(m => isSoldadoEV(m, undefined, state.pessoas)).length})</h4>
                                     <div style={{overflowY: 'auto', flex: 1}}>
-                                        {Object.keys(state?.pessoas || {}).filter(m => state?.pessoas[m].posto_grad === "Soldado EV" || (!state?.pessoas[m].is_ep && state?.pessoas[m].posto_grad !== "Cabo" && !state?.pessoas[m].posto_grad?.includes('Sgt'))).map(m => (
+                                        {Object.keys(state?.pessoas || {}).filter(m => isSoldadoEV(m, undefined, state.pessoas)).sort().map(m => (
                                             <label key={m} style={{display: 'block', padding: '5px 0', borderBottom: '1px solid rgba(255,255,255,0.05)', cursor: 'pointer'}}>
                                                 <input type="checkbox" checked={aptidaoList.includes(m)} onChange={() => toggleAptidao(m)} style={{marginRight: '10px'}} />
                                                 {m}
@@ -1800,7 +2813,7 @@ function App() {
                 )}
 
                 {epModalOpen && (
-                    <div style={{position:'absolute', top:0, left:0, right:0, bottom:0, background:'rgba(0,0,0,0.7)', display:'flex', alignItems:'center', justifyContent:'center', zIndex: 1000}}>
+                    <div style={{position:'fixed', top:0, left:0, right:0, bottom:0, background:'rgba(0,0,0,0.7)', display:'flex', alignItems:'center', justifyContent:'center', zIndex: 1000}}>
                         <div className="card modal-card" style={{width: '350px'}}>
                             <h3>Cadastrar Militar</h3>
                             <p style={{fontSize: '0.9em', color:'var(--text-light)'}}>Selecione a patente e digite o nome do militar.</p>
@@ -1821,13 +2834,13 @@ function App() {
                                     <option value="3º Sargento">3º Sargento</option>
                                     <option value="Cabo">Cabo</option>
                                     <option value="Soldado EP">Soldado EP</option>
-                                    <option value="Soldado EV">Soldado EV (Recruta)</option>
+                                    <option value="Soldado EV">Soldado EV</option>
                                 </select>
                             </div>
 
                             <div className="form-group">
-                                <label>Nome (Identificação):</label>
-                                <input type="text" className="input-modern" value={newEPName} onChange={e=>setNewEPName(e.target.value)} placeholder="Ex: SD EP SILVA" />
+                                <label>Nome de Guerra:</label>
+                                <input type="text" className="input-modern" placeholder="Ex: Silva" value={newEPName} onChange={e=>setNewEPName(e.target.value)} />
                             </div>
                             <div className="row" style={{marginTop: '15px'}}>
                                 <button className="btn-outline" onClick={()=>setEpModalOpen(false)}>Cancelar</button>
@@ -1836,9 +2849,44 @@ function App() {
                         </div>
                     </div>
                 )}
-
+                {editMilitarModalOpen && (
+                    <div style={{position:'fixed', top:0, left:0, right:0, bottom:0, background:'rgba(0,0,0,0.7)', display:'flex', alignItems:'center', justifyContent:'center', zIndex: 1000}}>
+                        <div className="card modal-card" style={{width: '350px'}}>
+                            <h3>Editar Militar</h3>
+                            <div className="form-group">
+                                <label>Posto/Graduação:</label>
+                                <select className="input-modern" value={editMilitarNewPostoGrad} onChange={e=>setEditMilitarNewPostoGrad(e.target.value)}>
+                                    <option value="Coronel">Coronel</option>
+                                    <option value="Tenente Coronel">Tenente Coronel</option>
+                                    <option value="Major">Major</option>
+                                    <option value="Capitão">Capitão</option>
+                                    <option value="1º Tenente">1º Tenente</option>
+                                    <option value="2º Tenente">2º Tenente</option>
+                                    <option value="Aspirante">Aspirante</option>
+                                    <option value="Subtenente">Subtenente</option>
+                                    <option value="1º Sargento">1º Sargento</option>
+                                    <option value="2º Sargento">2º Sargento</option>
+                                    <option value="3º Sargento">3º Sargento</option>
+                                    <option value="Cabo">Cabo</option>
+                                    <option value="Soldado EP">Soldado EP</option>
+                                    <option value="Soldado EV">Soldado EV</option>
+                                </select>
+                            </div>
+                            
+                            <div className="form-group">
+                                <label>Nome de Guerra:</label>
+                                <input type="text" className="input-modern" placeholder="Ex: Silva" value={editMilitarNewName} onChange={e=>setEditMilitarNewName(e.target.value)} />
+                            </div>
+                            
+                            <div className="row" style={{marginTop: '15px'}}>
+                                <button className="btn-outline" onClick={()=>setEditMilitarModalOpen(false)}>Cancelar</button>
+                                <button className="btn-success" onClick={salvarEdicaoMilitar}>Salvar</button>
+                            </div>
+                        </div>
+                    </div>
+                )}
                 {dialogOpen && (
-                    <div className="modal-overlay fade-in" style={{position:'absolute', top:0, left:0, right:0, bottom:0, background:'rgba(0,0,0,0.7)', display:'flex', alignItems:'center', justifyContent:'center', zIndex: 1000}}>
+                    <div className="modal-overlay fade-in" style={{position:'fixed', top:0, left:0, right:0, bottom:0, background:'rgba(0,0,0,0.7)', display:'flex', alignItems:'center', justifyContent:'center', zIndex: 1000}}>
                         <div className="card modal-card slide-up" style={{width: '400px', textAlign: 'center'}}>
                             <h3 style={{borderBottom: 'none', marginBottom: '15px'}}>{dialogType === 'confirm' ? 'Confirmação' : 'Aviso'}</h3>
                             <p style={{marginBottom: '25px', lineHeight: '1.5'}}>{dialogMessage}</p>
@@ -1857,8 +2905,61 @@ function App() {
                     </div>
                 )}
 
+                {punidosModalOpen && (
+                    <div className="modal-overlay fade-in" style={{position:'fixed', top:0, left:0, right:0, bottom:0, background:'rgba(0,0,0,0.7)', display:'flex', alignItems:'center', justifyContent:'center', zIndex: 1000}}>
+                        <div className="card modal-card slide-up" style={{width: '400px'}}>
+                            <h3>Adicionar Militar Punido</h3>
+                            <div className="form-group">
+                                <label>Processo / Sindicância (Opcional):</label>
+                                <input type="text" className="input-modern" value={punidoForm.proc} onChange={e=>setPunidoForm({...punidoForm, proc: e.target.value})} placeholder="Ex: Sindicância nº 01/26" />
+                            </div>
+                            <div className="form-group">
+                                <label>Graduação e Nome: *</label>
+                                <input type="text" className="input-modern" value={punidoForm.nome} onChange={e=>setPunidoForm({...punidoForm, nome: e.target.value})} placeholder="Ex: SD EP FULANO" />
+                            </div>
+                            <div className="form-group">
+                                <label>Tipo de Punição: *</label>
+                                <input type="text" className="input-modern" value={punidoForm.tipo} onChange={e=>setPunidoForm({...punidoForm, tipo: e.target.value})} placeholder="Ex: 2 Dias de Prisão" />
+                            </div>
+                            <div className="form-group row" style={{display: 'flex', gap: '15px'}}>
+                                <div style={{flex: 1}}>
+                                    <label>Data de Início: *</label>
+                                    <input type="text" className="input-modern" value={punidoForm.inicio} onChange={e=>setPunidoForm({...punidoForm, inicio: e.target.value})} placeholder="Ex: 17 Set 26" />
+                                </div>
+                                <div style={{flex: 1}}>
+                                    <label>Data de Término: *</label>
+                                    <input type="text" className="input-modern" value={punidoForm.termino} onChange={e=>setPunidoForm({...punidoForm, termino: e.target.value})} placeholder="Ex: 19 Set 26" />
+                                </div>
+                            </div>
+                            <div className="row" style={{marginTop: '20px', justifyContent: 'flex-end', gap: '10px'}}>
+                                <button className="btn-outline" onClick={() => setPunidosModalOpen(false)}>Cancelar</button>
+                                <button className="btn-success" onClick={() => {
+                                    if(!punidoForm.nome || !punidoForm.tipo || !punidoForm.inicio || !punidoForm.termino) {
+                                        showAlert("Preencha Nome, Tipo, Início e Término!");
+                                        return;
+                                    }
+                                    const novoPunido = {...punidoForm, proc: punidoForm.proc || "-"};
+                                    setPunidos([...punidos, novoPunido]);
+                                    
+                                    // Update JusticaDisciplinaText
+                                    const procStr = novoPunido.proc !== "-" ? ` (Ref. ${novoPunido.proc})` : "";
+                                    const textoAdicional = `- ${novoPunido.nome}: Cumpre ${novoPunido.tipo}${procStr}, a contar de ${novoPunido.inicio} até ${novoPunido.termino}.`;
+                                    
+                                    setJusticaDisciplina(prev => {
+                                        if (prev === "" || prev === "- Sem Alteração.") return textoAdicional;
+                                        return prev + "\n" + textoAdicional;
+                                    });
+                                    
+                                    setPunidoForm({proc: '', nome: '', tipo: '', inicio: '', termino: ''});
+                                    setPunidosModalOpen(false);
+                                }}>Adicionar Punido</button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
                 {missaoModalOpen && (
-                    <div className="modal-overlay fade-in" style={{position:'absolute', top:0, left:0, right:0, bottom:0, background:'rgba(0,0,0,0.7)', display:'flex', alignItems:'center', justifyContent:'center', zIndex: 1000}}>
+                    <div className="modal-overlay fade-in" style={{position:'fixed', top:0, left:0, right:0, bottom:0, background:'rgba(0,0,0,0.7)', display:'flex', alignItems:'center', justifyContent:'center', zIndex: 1000}}>
                         <div className="card modal-card slide-up" style={{width: '400px'}}>
                             <h3>Adicionar Missão / Escala Extra</h3>
                             <div className="form-group">
@@ -1896,7 +2997,7 @@ function App() {
                 )}
 
                 {palestraModalOpen && (
-                    <div className="modal-overlay fade-in" style={{position:'absolute', top:0, left:0, right:0, bottom:0, background:'rgba(0,0,0,0.7)', display:'flex', alignItems:'center', justifyContent:'center', zIndex: 1000}}>
+                    <div className="modal-overlay fade-in" style={{position:'fixed', top:0, left:0, right:0, bottom:0, background:'rgba(0,0,0,0.7)', display:'flex', alignItems:'center', justifyContent:'center', zIndex: 1000}}>
                         <div className="card modal-card slide-up" style={{width: '400px'}}>
                             <h3>Aviso de Palestra</h3>
                             <div className="form-group">
@@ -1924,7 +3025,7 @@ function App() {
                 )}
 
                 {formaturaModalOpen && (
-                    <div className="modal-overlay fade-in" style={{position:'absolute', top:0, left:0, right:0, bottom:0, background:'rgba(0,0,0,0.7)', display:'flex', alignItems:'center', justifyContent:'center', zIndex: 1000}}>
+                    <div className="modal-overlay fade-in" style={{position:'fixed', top:0, left:0, right:0, bottom:0, background:'rgba(0,0,0,0.7)', display:'flex', alignItems:'center', justifyContent:'center', zIndex: 1000}}>
                         <div className="card modal-card slide-up" style={{width: '500px'}}>
                             <h3>Treinamento de Formatura</h3>
                             <div className="form-group" style={{display: 'flex', flexDirection: 'column'}}>
@@ -1945,7 +3046,7 @@ function App() {
                 )}
 
                 {trocarBateriaModalOpen && (
-                    <div className="modal-overlay fade-in" style={{position:'absolute', top:0, left:0, right:0, bottom:0, background:'rgba(0,0,0,0.7)', display:'flex', alignItems:'center', justifyContent:'center', zIndex: 1000}}>
+                    <div className="modal-overlay fade-in" style={{position:'fixed', top:0, left:0, right:0, bottom:0, background:'rgba(0,0,0,0.7)', display:'flex', alignItems:'center', justifyContent:'center', zIndex: 1000}}>
                         <div className="card modal-card slide-up" style={{width: '450px', textAlign: 'center'}}>
                             <h3>Trocar de Bateria</h3>
                             <p style={{marginTop: '10px', color: 'var(--text-light)', fontSize: '13px'}}>
@@ -1992,7 +3093,7 @@ function App() {
                                     type="button" 
                                     className="btn" 
                                     style={{
-                                        background: state.unidade === '2BO' ? '#37474f' : 'rgba(55, 71, 79, 0.4)', 
+                                        background: state.unidade === '2BO' ? '#111111' : 'rgba(17, 17, 17, 0.4)', 
                                         color: '#fff', 
                                         padding: '14px', 
                                         fontSize: '1.05em',

@@ -20,9 +20,10 @@ mkdir -p "${OUTPUT_DIR}"
 # Garantir que o binário mais recente esteja construído
 if [ ! -f "${ROOT_DIR}/GeradorEscalasWeb/build/bin/GeradorEscalasWeb" ]; then
     echo "Binário Linux não encontrado. Compilando..."
-    export PATH="$HOME/.local/go/bin:$HOME/go/bin:$HOME/.local/bin:$PATH"
+    export PATH="$HOME/.local/node/bin:$HOME/.local/go/bin:$HOME/go/bin:$HOME/.local/bin:$PATH"
     export GOROOT="$HOME/.local/go"
     export GOPATH="$HOME/go"
+    export GODEBUG="netdns=cgo"
     cd "${ROOT_DIR}/GeradorEscalasWeb/frontend" && npm run build
     cd "${ROOT_DIR}/GeradorEscalasWeb"
     go build -tags "desktop,production,webkit2_41" -ldflags "-w -s" -o "build/bin/GeradorEscalasWeb" .

@@ -2,9 +2,10 @@
 set -e
 
 # Configurar caminhos do Go e ferramentas locais
-export PATH="$HOME/.local/go/bin:$HOME/go/bin:$HOME/.local/bin:$PATH"
+export PATH="$HOME/.local/node/bin:$HOME/.local/go/bin:$HOME/go/bin:$HOME/.local/bin:$PATH"
 export GOROOT="$HOME/.local/go"
 export GOPATH="$HOME/go"
+export GODEBUG="netdns=cgo"
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 DIST_DIR="${ROOT_DIR}/dist"

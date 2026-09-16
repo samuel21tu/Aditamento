@@ -56,8 +56,8 @@ func CalculatePoints(historico []HistoricoEscala, pessoasKeys []string, targetDa
 		}
 
 		wkdy := int(dt.Weekday()) // 0=Sun..6=Sat
-		isRegVermelha := wkdy == 5 || wkdy == 6 || wkdy == 0
-		isWe := wkdy == 6 || wkdy == 0
+		isRegVermelha := wkdy == 5 || wkdy == 6 || wkdy == 0 || reg.SemExpediente
+		isWe := wkdy == 6 || wkdy == 0 || reg.SemExpediente
 
 		year, cWeek := getWeekNumber(dt)
 		daysDiff := int(targetDate.Sub(dt).Hours() / 24)
@@ -142,21 +142,57 @@ type GenerateOpts struct {
 	EnabledRoles []string
 }
 
-func isMilitarEV(name string, p Pessoa) bool {
+func IsMilitarEV(name string, p Pessoa) bool {
 	if p.PostoGrad == "Soldado EV" {
 		return true
 	}
-	if len(name) >= 3 && (name[0] == '3' || name[0] == '4' || name[0] == '5') {
+	if p.PostoGrad != "" && p.PostoGrad != "Soldado EV" {
+		return false
+	}
+	// Identificador numérico padrão de recruta EV (ex: "301 ADRIANO", "302 ROCHA", etc.)
+	if len(name) >= 3 && (name[0] == '3' || name[0] == '4' || name[0] == '5') && 
+		!strings.Contains(name, "Sgt") && 
+		!strings.Contains(name, "Ten") && 
+		!strings.Contains(name, "Cb") && 
+		!strings.Contains(name, "Cap") && 
+		!strings.Contains(name, "Cel") && 
+		!strings.Contains(name, "Maj") && 
+		!strings.Contains(name, "Subten") && 
+		!strings.Contains(name, "ST") {
 		return true
 	}
-	return !p.IsEP && p.PostoGrad != "Cabo" && p.PostoGrad != "Soldado EP" && !strings.HasPrefix(p.PostoGrad, "1º") && !strings.HasPrefix(p.PostoGrad, "2º") && !strings.HasPrefix(p.PostoGrad, "3º") && !strings.HasPrefix(p.PostoGrad, "Sub") && !strings.HasPrefix(p.PostoGrad, "Cap") && !strings.HasPrefix(p.PostoGrad, "Ten")
-}
-
-func isMilitarEP(name string, p Pessoa) bool {
-	if p.PostoGrad == "Soldado EP" || p.PostoGrad == "Cabo" || p.PostoGrad == "Cabo/Soldado EP" || p.IsEP {
+	upper := strings.ToUpper(name)
+	if strings.HasPrefix(upper, "SD EV") {
 		return true
 	}
 	return false
+}
+
+func isMilitarEV(name string, p Pessoa) bool {
+	return IsMilitarEV(name, p)
+}
+
+func IsMilitarEP(name string, p Pessoa) bool {
+	if p.PostoGrad == "Soldado EP" {
+		return true
+	}
+	if p.PostoGrad != "" && p.PostoGrad != "Soldado EP" {
+		return false
+	}
+	upper := strings.ToUpper(name)
+	return strings.HasPrefix(upper, "SD EP")
+}
+
+func isMilitarEP(name string, p Pessoa) bool {
+	return IsMilitarEP(name, p)
+}
+
+func IsMilitarSoldado(name string, p Pessoa) bool {
+	return isMilitarEV(name, p) || isMilitarEP(name, p)
+}
+
+func isMilitarSoldado(name string, p Pessoa) bool {
+	return IsMilitarSoldado(name, p)
 }
 
 func GenerateDailySchedule(opts GenerateOpts, currentState AppState) (HistoricoEscala, error) {
@@ -166,8 +202,10 @@ func GenerateDailySchedule(opts GenerateOpts, currentState AppState) (HistoricoE
 	}
 
 	pessoasKeys := make([]string, 0, len(currentState.Pessoas))
-	for k := range currentState.Pessoas {
-		pessoasKeys = append(pessoasKeys, k)
+	for k, pData := range currentState.Pessoas {
+		if isMilitarSoldado(k, pData) {
+			pessoasKeys = append(pessoasKeys, k)
+		}
 	}
 
 	sd := CalculatePoints(currentState.HistoricoEscalas, pessoasKeys, targetDate, currentState.RoleConfigs)
@@ -182,7 +220,8 @@ func GenerateDailySchedule(opts GenerateOpts, currentState AppState) (HistoricoE
 		if !pData.Ativo {
 			continue
 		}
-		if !isMilitarEV(pStr, pData) && !isMilitarEP(pStr, pData) {
+		// Apenas Soldados (EP e EV) concorrem à escala automática do aditamento
+		if !isMilitarSoldado(pStr, pData) {
 			continue
 		}
 		if pData.ApenasFimDeSemana && isMeioSemana {
@@ -329,12 +368,12 @@ func GenerateDailySchedule(opts GenerateOpts, currentState AppState) (HistoricoE
 			}
 			pData := currentState.Pessoas[p]
 
-			// Category Filtering (EV vs EP vs AMBOS)
-			if destinadoA == "EV" && !isMilitarEV(p, pData) {
+			// DestinadoA matching
+			if destinadoA == "EP" && !isMilitarEP(p, pData) {
 				i++
 				continue
 			}
-			if destinadoA == "EP" && !isMilitarEP(p, pData) {
+			if destinadoA == "EV" && !isMilitarEV(p, pData) {
 				i++
 				continue
 			}
@@ -357,11 +396,11 @@ func GenerateDailySchedule(opts GenerateOpts, currentState AppState) (HistoricoE
 		}
 
 		if len(selected) < req {
-			catName := "Efetivo Geral"
+			catName := "Efetivo Geral (Soldados)"
 			if destinadoA == "EV" {
 				catName = "Soldados EV"
 			} else if destinadoA == "EP" {
-				catName = "Cabos / Soldados EP"
+				catName = "Soldados EP"
 			}
 			return HistoricoEscala{}, fmt.Errorf("Não há militares aptos suficientes para a função '%s' (%s). Requisitado: %d, Alocados: %d. Por favor, adicione mais militares aptos na aba Configurações.", roleName, catName, req, len(selected))
 		}

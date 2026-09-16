@@ -49,6 +49,16 @@ func (a *App) GetAllMilitares() []string {
 }
 
 func (a *App) getStatePath() string {
+	if _, err := os.Stat("state.json"); err == nil {
+		return "state.json"
+	}
+	if exe, err := os.Executable(); err == nil {
+		exeDir := filepath.Dir(exe)
+		exeState := filepath.Join(exeDir, "state.json")
+		if _, err := os.Stat(exeState); err == nil {
+			return exeState
+		}
+	}
 	return filepath.Join(".", "state.json")
 }
 
@@ -194,8 +204,10 @@ func (a *App) GetScores(targetDate string) (backend.ScoreData, error) {
 	}
 
 	pessoasKeys := make([]string, 0, len(a.state.Pessoas))
-	for k := range a.state.Pessoas {
-		pessoasKeys = append(pessoasKeys, k)
+	for k, pData := range a.state.Pessoas {
+		if backend.IsMilitarSoldado(k, pData) {
+			pessoasKeys = append(pessoasKeys, k)
+		}
 	}
 
 	tDate, err := time.Parse("2006-01-02", targetDate)

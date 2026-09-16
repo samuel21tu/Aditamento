@@ -94,6 +94,7 @@ export namespace backend {
 	    plantao_ev?: string[];
 	    apoio?: string[];
 	    sobre_aviso?: string[];
+	    trocas_registro?: RegistroTroca[];
 	
 	    static createFrom(source: any = {}) {
 	        return new HistoricoEscala(source);
@@ -124,6 +125,7 @@ export namespace backend {
 	        this.plantao_ev = source["plantao_ev"];
 	        this.apoio = source["apoio"];
 	        this.sobre_aviso = source["sobre_aviso"];
+	        this.trocas_registro = source["trocas_registro"];
 	    }
 	}
 	export class Pessoa {
@@ -202,9 +204,30 @@ export namespace backend {
 		    return a;
 		}
 	}
+	export class RegistroTroca {
+	    data_hora: string;
+	    funcao: string;
+	    saiu: string;
+	    entrou: string;
+	    motivo: string;
+
+	    static createFrom(source: any = {}) {
+	        return new RegistroTroca(source);
+	    }
+
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.data_hora = source["data_hora"];
+	        this.funcao = source["funcao"];
+	        this.saiu = source["saiu"];
+	        this.entrou = source["entrou"];
+	        this.motivo = source["motivo"];
+	    }
+	}
 	export class Dispensa {
 	    inicio: string;
 	    fim: string;
+	    motivo?: string;
 	
 	    static createFrom(source: any = {}) {
 	        return new Dispensa(source);
@@ -214,6 +237,7 @@ export namespace backend {
 	        if ('string' === typeof source) source = JSON.parse(source);
 	        this.inicio = source["inicio"];
 	        this.fim = source["fim"];
+	        this.motivo = source["motivo"];
 	    }
 	}
 	export class GenerateOpts {

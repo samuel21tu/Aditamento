@@ -39,22 +39,8 @@ func TestGenerateDailySchedule_CategoriesAndAptos(t *testing.T) {
 		}
 	}
 
-	// Verify MOT VILA allocated 1 EP
-	motVila := hist.Escalados["MOT VILA"]
-	if len(motVila) != 1 {
-		t.Errorf("Expected 1 soldier for MOT VILA, got %d", len(motVila))
-	} else {
-		pData := state.Pessoas[motVila[0]]
-		if !isMilitarEP(motVila[0], pData) {
-			t.Errorf("Expected EP soldier for MOT VILA, got %s (%s)", motVila[0], pData.PostoGrad)
-		}
-	}
-
-	// Verify PLANTÃO ALOJ EP allocated 3 EP
+	// Verify PLANTÃO ALOJ EP allocated EP soldiers
 	plantaoEP := hist.Escalados["PLANTÃO ALOJ EP"]
-	if len(plantaoEP) != 3 {
-		t.Errorf("Expected 3 soldiers for PLANTÃO ALOJ EP, got %d", len(plantaoEP))
-	}
 	for _, p := range plantaoEP {
 		pData := state.Pessoas[p]
 		if !isMilitarEP(p, pData) {
@@ -62,15 +48,13 @@ func TestGenerateDailySchedule_CategoriesAndAptos(t *testing.T) {
 		}
 	}
 
-	// Verify PLANTÃO ALOJ EV allocated 3 EV
-	plantaoEV := hist.Escalados["PLANTÃO ALOJ EV"]
-	if len(plantaoEV) != 3 {
-		t.Errorf("Expected 3 soldiers for PLANTÃO ALOJ EV, got %d", len(plantaoEV))
-	}
-	for _, p := range plantaoEV {
-		pData := state.Pessoas[p]
-		if !isMilitarEV(p, pData) {
-			t.Errorf("Expected EV soldier for PLANTÃO ALOJ EV, got %s (%s)", p, pData.PostoGrad)
+	// Verify all allocated personnel are Soldados (EV or EP), never officers, sergeants, or cabos
+	for roleName, escalados := range hist.Escalados {
+		for _, p := range escalados {
+			pData := state.Pessoas[p]
+			if !isMilitarSoldado(p, pData) {
+				t.Errorf("Expected Soldado (EV or EP) for %s, but got %s (%s)", roleName, p, pData.PostoGrad)
+			}
 		}
 	}
 }

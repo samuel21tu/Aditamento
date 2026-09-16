@@ -31,6 +31,23 @@ type RoleConfig struct {
 type Dispensa struct {
 	Inicio string `json:"inicio"`
 	Fim    string `json:"fim"`
+	Motivo string `json:"motivo,omitempty"`
+}
+
+type RegistroTroca struct {
+	DataHora string `json:"data_hora"`
+	Funcao   string `json:"funcao"`
+	Saiu     string `json:"saiu"`
+	Entrou   string `json:"entrou"`
+	Motivo   string `json:"motivo"`
+}
+
+type Punido struct {
+	Proc    string `json:"proc"`
+	Nome    string `json:"nome"`
+	Tipo    string `json:"tipo"`
+	Inicio  string `json:"inicio"`
+	Termino string `json:"termino"`
 }
 
 type HistoricoEscala struct {
@@ -51,6 +68,8 @@ type HistoricoEscala struct {
 	AtividadeTipo       string           `json:"atividade_tipo,omitempty"`
 	ParadaDiaria        string           `json:"parada_diaria,omitempty"`
 	JusticaDisciplinaText string         `json:"justica_disciplina_text,omitempty"`
+	TrocasRegistro      []RegistroTroca  `json:"trocas_registro,omitempty"`
+	Punidos             []Punido         `json:"punidos,omitempty"`
 
 	// Legacy fields for backward compatibility during unmarshal
 	Guarda     []string `json:"guarda,omitempty"`
@@ -115,11 +134,6 @@ func GetDefaultState(unidade string) AppState {
 	pessoas := make(map[string]Pessoa)
 	for _, name := range listaAlvo {
 		ativo := !strings.Contains(name, "ALU")
-		
-		isEP := false
-		if !strings.HasPrefix(name, "3") && !strings.HasPrefix(name, "4") && !strings.HasPrefix(name, "5") {
-			isEP = true
-		}
 
 		postoGrad := "Cabo/Soldado EP"
 		if strings.HasPrefix(name, "Cel") {
@@ -146,17 +160,17 @@ func GetDefaultState(unidade string) AppState {
 			postoGrad = "3º Sargento"
 		} else if strings.HasPrefix(name, "Cb") || strings.HasPrefix(name, "CB") {
 			postoGrad = "Cabo"
-		} else if !isEP {
-			postoGrad = "Soldado EV"
-		} else {
+		} else if strings.HasPrefix(name, "SD EP") || strings.HasPrefix(name, "Sd EP") {
 			postoGrad = "Soldado EP"
+		} else {
+			postoGrad = "Soldado EV"
 		}
 
 		pessoas[name] = Pessoa{
 			Ativo:             ativo,
 			ApenasSemana:      false,
 			ApenasFimDeSemana: false,
-			IsEP:              isEP,
+			IsEP:              (postoGrad == "Soldado EP"),
 			FoiDeRota:         !ativo,
 			PostoGrad:         postoGrad,
 		}

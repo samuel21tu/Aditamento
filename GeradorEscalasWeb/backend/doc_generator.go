@@ -3,6 +3,7 @@ package backend
 import (
 	"bytes"
 	_ "embed"
+	"encoding/base64"
 	"fmt"
 	"html/template"
 	"sort"
@@ -15,15 +16,30 @@ var brasaoBytes []byte
 
 const docTemplate = `
 <!DOCTYPE html>
-<html>
+<html xmlns:v="urn:schemas-microsoft-com:vml"
+xmlns:o="urn:schemas-microsoft-com:office:office"
+xmlns:w="urn:schemas-microsoft-com:office:word"
+xmlns:m="http://schemas.microsoft.com/office/2004/12/omml"
+xmlns="http://www.w3.org/TR/REC-html40">
 <head>
 <meta charset="UTF-8">
+<!--[if gte mso 9]>
+<xml>
+  <w:WordDocument>
+    <w:View>Print</w:View>
+    <w:Zoom>100</w:Zoom>
+    <w:DoNotOptimizeForBrowser/>
+  </w:WordDocument>
+</xml>
+<![endif]-->
 <style>
-	body { font-family: "Times New Roman", Times, serif; font-size: 14px; margin: 40px; }
-	table.data-table { width: 100%; border-collapse: collapse; margin-top: 10px; margin-bottom: 20px; }
+	@page { margin: 1.5cm; size: A4 portrait; }
+	table { mso-table-lspace: 0pt; mso-table-rspace: 0pt; }
+	body { font-family: "Times New Roman", Times, serif; font-size: 14px; margin: 20px; }
+	table.data-table { width: 100%; border-collapse: collapse; margin-top: 10px; margin-bottom: 20px; border: 1px solid black; }
 	table.data-table th, table.data-table td { border: 1px solid black; padding: 5px; text-align: center; vertical-align: middle; }
 	
-	table.pernoite-table { width: 100%; border-collapse: collapse; margin-top: 10px; margin-bottom: 20px; font-size: 11px; font-weight: bold; }
+	table.pernoite-table { width: 100%; border-collapse: collapse; margin-top: 10px; margin-bottom: 20px; font-size: 11px; font-weight: bold; border: 1px solid black; }
 	table.pernoite-table th, table.pernoite-table td { border: 1px solid black; padding: 4px; text-align: center; vertical-align: middle; }
 
 	table.header-table { width: 100%; border: none; margin-bottom: 20px; border-collapse: collapse; }
@@ -42,7 +58,7 @@ const docTemplate = `
 	.text-left { text-align: left; }
 </style>
 </head>
-<body>
+<body style="font-family: 'Times New Roman', Times, serif;">
 	<table class="header-table" style="width: 100%;">
 		<tr>
 			<td style="width: 120px; vertical-align: top;"></td>
@@ -55,10 +71,14 @@ const docTemplate = `
 				GRUPO JERÔNIMO DE ALBUQUERQUE
 			</td>
 			<td style="width: 120px; vertical-align: top;">
-				<div class="right-box">
-					<span style="font-size: 10px;">_______________</span>
-					<span style="font-size: 12px; margin-top: 2px;" class="bold underline">Visto Sgte</span>
-				</div>
+				<table border="1" cellpadding="0" cellspacing="0" style="width: 100px; height: 70px; border-collapse: collapse; border: 1px solid black; text-align: center; margin-top: 15px;" align="right">
+					<tr>
+						<td style="vertical-align: bottom; padding-bottom: 5px; height: 70px;">
+							<span style="font-size: 10px;">_______________</span><br>
+							<span style="font-size: 12px; margin-top: 2px;" class="bold underline">Visto Sgte</span>
+						</td>
+					</tr>
+				</table>
 			</td>
 		</tr>
 	</table>
@@ -82,32 +102,42 @@ const docTemplate = `
 	</div>
 
 	{{range .Days}}
-	<table class="data-table">
+	<table border="1" cellpadding="3" cellspacing="0" width="600" style="width: 600px; border-collapse: collapse; text-align: center; font-size: 10px; border: 1px solid black; page-break-inside: avoid;">
+		<colgroup>
+			<col width="150">
+			<col width="90">
+			<col width="360">
+		</colgroup>
 		{{if .ServicoExterno}}
-		<tr><td colspan="3" bgcolor="#d9d9d9" style="background-color: #d9d9d9; font-weight: bold; text-align: center;">Serviço Externo para {{.DiaSemanaTitle}}, {{.DataExtenso}}.</td></tr>
+		<tr>
+			<td colspan="3" bgcolor="#d9d9d9" width="600" style="width: 600px; background-color: #d9d9d9; font-weight: bold;">Serviço Externo para {{.DiaSemanaTitle}}, {{.DataExtenso}}.</td>
+		</tr>
 		{{range .ServicoExterno}}
 		<tr>
-			<td style="width: 25%; background-color: #d9d9d9; text-align: center;" bgcolor="#d9d9d9">{{.RoleName}}</td>
-			<td style="width: 15%; background-color: #d9d9d9; text-align: center;" bgcolor="#d9d9d9">{{.PostoGrad}}</td>
-			<td class="text-center">{{.Names}}</td>
+			<td width="150" style="width: 150px; background-color: #d9d9d9;" bgcolor="#d9d9d9">{{.RoleName}}</td>
+			<td width="90" style="width: 90px; background-color: #d9d9d9;" bgcolor="#d9d9d9">{{.PostoGrad}}</td>
+			<td width="360" style="width: 360px;" class="text-center">{{.Names}}</td>
 		</tr>
 		{{end}}
 		{{end}}
 
 		{{if .ServicoInterno}}
-		<tr><td colspan="3" bgcolor="#d9d9d9" style="background-color: #d9d9d9; font-weight: bold; text-align: center;">Serviço Interno para {{.DiaSemanaTitle}}, {{.DataExtenso}}.</td></tr>
+		<tr>
+			<td colspan="3" bgcolor="#d9d9d9" width="600" style="width: 600px; background-color: #d9d9d9; font-weight: bold;">Serviço Interno para {{.DiaSemanaTitle}}, {{.DataExtenso}}.</td>
+		</tr>
 		{{range .ServicoInterno}}
 		<tr>
-			<td style="width: 25%; background-color: #d9d9d9; text-align: center;" bgcolor="#d9d9d9">{{.RoleName}}</td>
-			<td style="width: 15%; background-color: #d9d9d9; text-align: center;" bgcolor="#d9d9d9">{{.PostoGrad}}</td>
-			<td class="text-center">{{.Names}}</td>
+			<td width="150" style="width: 150px; background-color: #d9d9d9;" bgcolor="#d9d9d9">{{.RoleName}}</td>
+			<td width="90" style="width: 90px; background-color: #d9d9d9;" bgcolor="#d9d9d9">{{.PostoGrad}}</td>
+			<td width="360" style="width: 360px;" class="text-center">{{.Names}}</td>
 		</tr>
 		{{end}}
 		{{end}}
+		
 		<tr>
-			<td style="width: 25%; background-color: #d9d9d9; text-align: center;" bgcolor="#d9d9d9">PARADA DIÁRIA</td>
-			<td style="width: 15%; background-color: #d9d9d9; text-align: center;" bgcolor="#d9d9d9">-</td>
-			<td class="text-center">{{if eq .ParadaDiaria "Personalizado"}}{{else if eq .ParadaDiaria ""}}09h30min{{else}}{{.ParadaDiaria}}min{{end}}</td>
+			<td width="150" style="width: 150px; background-color: #d9d9d9;" bgcolor="#d9d9d9">PARADA DIÁRIA</td>
+			<td width="90" style="width: 90px; background-color: #d9d9d9;" bgcolor="#d9d9d9">-</td>
+			<td width="360" style="width: 360px;" class="text-center">{{if eq .ParadaDiaria "Personalizado"}}{{else if eq .ParadaDiaria ""}}09h30min{{else}}{{.ParadaDiaria}}min{{end}}</td>
 		</tr>
 	</table>
 	{{end}}
@@ -181,23 +211,31 @@ const docTemplate = `
 	<div class="text-left">- Sem Alteração.</div>
 	{{end}}
 
-	<br><br><br><br>
+	<br><br>
 	<div class="text-center">
 		<p class="bold" style="margin-bottom: 0;">{{.CmtName}}</p>
 		<p class="bold underline" style="margin-top: 0;">Comandante da Bateria De Comando</p>
 	</div>
 
 	{{range .Days}}
-	<div style="page-break-before: always;"></div>
-	<table style="width: 100%; border-collapse: collapse; text-align: center; font-weight: bold; font-size: 11px; border: 1px solid black;">
-		<!-- Pernoite Header -->
+	<p style="page-break-before: always; margin: 0; padding: 0;">&nbsp;</p>
+	
+	<!-- HEADER E MASTER TABLE -->
+	<table border="1" cellpadding="2" cellspacing="0" width="600" style="width: 600px; border-collapse: collapse; text-align: center; font-size: 10px; border: 1px solid black; page-break-inside: avoid; page-break-before: always;">
+		<colgroup>
+			<col width="90">
+			<col width="240">
+			<col width="90">
+			<col width="90">
+			<col width="90">
+		</colgroup>
 		<tr>
-			<td style="width: 15%; border-right: 1px solid black; vertical-align: top; padding: 5px;">
-				<div style="text-decoration: underline; text-align: left;">Visto:</div>
+			<td width="90" style="width: 90px; vertical-align: top; text-align: left; font-weight: bold;">
+				<div style="text-decoration: underline;">Visto:</div>
 				<br><br><br>
 				<div>Cmt SU</div>
 			</td>
-			<td colspan="4" style="width: 85%; padding: 5px;">
+			<td colspan="4" width="510" style="width: 510px; text-align: center; font-weight: bold;">
 				MINISTÉRIO DA DEFESA<br>
 				EXÉRCITO BRASILEIRO<br>
 				17º GRUPO DE ARTILHARIA DE CAMPANHA<br>
@@ -205,100 +243,94 @@ const docTemplate = `
 			</td>
 		</tr>
 		<tr>
-			<td colspan="5" bgcolor="#d9d9d9" style="background-color: #d9d9d9; border-top: 1px solid black; padding: 5px;">
+			<td colspan="5" bgcolor="#d9d9d9" width="600" style="width: 600px; background-color: #d9d9d9; font-weight: bold;">
 				Controle de Efetivo para {{.DiaSemanaTitle}}, {{.DataExtenso}}.
 			</td>
 		</tr>
-
-		<!-- EM FORMA -->
 		<tr>
-			<td style="width: 15%; border: 1px solid black; padding: 4px; background-color: #d9d9d9;" bgcolor="#d9d9d9">GRAD</td>
-			<td colspan="3" style="width: 70%; border: 1px solid black; padding: 4px; background-color: #d9d9d9;" bgcolor="#d9d9d9">EM FORMA</td>
-			<td style="width: 15%; border: 1px solid black; padding: 4px; background-color: #d9d9d9;" bgcolor="#d9d9d9">SOMA</td>
+			<td width="90" style="width: 90px; background-color: #d9d9d9; font-weight: bold;" bgcolor="#d9d9d9">GRAD</td>
+			<td colspan="3" width="420" style="width: 420px; background-color: #d9d9d9; font-weight: bold;" bgcolor="#d9d9d9">EM FORMA</td>
+			<td width="90" style="width: 90px; background-color: #d9d9d9; font-weight: bold;" bgcolor="#d9d9d9">SOMA</td>
 		</tr>
 		{{range .Pernoite.EmForma}}
 		<tr>
-			<td style="border: 1px solid black; padding: 4px;">{{.Grad}}</td>
-			<td colspan="3" class="text-left" style="border: 1px solid black; padding: 4px 4px 4px 10px;">{{.Text}}</td>
-			<td style="border: 1px solid black; padding: 4px;">{{.Soma}}</td>
+			<td width="90" style="width: 90px;">{{.Grad}}</td>
+			<td colspan="3" width="420" style="width: 420px; padding-left: 10px;" class="text-left">{{.Text}}</td>
+			<td width="90" style="width: 90px;">{{.Soma}}</td>
 		</tr>
 		{{end}}
 		<tr>
-			<td colspan="4" class="text-left" style="border: 1px solid black; padding: 4px 4px 4px 10px;">TOTAL EM FORMA: {{.Pernoite.TotalEmFormaExtenso}}</td>
-			<td style="border: 1px solid black; padding: 4px;">{{.Pernoite.TotalEmFormaNum}}</td>
-		</tr>
-
-		<!-- PUNIDOS -->
-		<tr>
-			<td colspan="5" bgcolor="#d9d9d9" style="background-color: #d9d9d9; border: 1px solid black; padding: 4px;">PUNIDOS DISCIPLINARMENTE</td>
+			<td colspan="4" width="510" style="width: 510px; padding-left: 10px; font-weight: bold;" class="text-left">TOTAL EM FORMA: {{.Pernoite.TotalEmFormaExtenso}}</td>
+			<td width="90" style="width: 90px; font-weight: bold;">{{.Pernoite.TotalEmFormaNum}}</td>
 		</tr>
 		<tr>
-			<td style="width: 15%; border: 1px solid black; padding: 4px; background-color: #d9d9d9;" bgcolor="#d9d9d9">PROC.</td>
-			<td style="width: 40%; border: 1px solid black; padding: 4px; background-color: #d9d9d9;" bgcolor="#d9d9d9">GRAD/NOME</td>
-			<td style="width: 15%; border: 1px solid black; padding: 4px; background-color: #d9d9d9;" bgcolor="#d9d9d9">TIPO</td>
-			<td style="width: 15%; border: 1px solid black; padding: 4px; background-color: #d9d9d9;" bgcolor="#d9d9d9">INÍCIO</td>
-			<td style="width: 15%; border: 1px solid black; padding: 4px; background-color: #d9d9d9;" bgcolor="#d9d9d9">TÉRMINO</td>
+			<td colspan="5" width="600" style="width: 600px; background-color: #d9d9d9; font-weight: bold;" bgcolor="#d9d9d9">PUNIDOS DISCIPLINARMENTE</td>
 		</tr>
 		<tr>
-			<td style="border: 1px solid black; padding: 4px;">-</td>
-			<td style="border: 1px solid black; padding: 4px;">-</td>
-			<td style="border: 1px solid black; padding: 4px;">-</td>
-			<td style="border: 1px solid black; padding: 4px;">-</td>
-			<td style="border: 1px solid black; padding: 4px;">-</td>
+			<td width="90" style="width: 90px; background-color: #d9d9d9; font-weight: bold;" bgcolor="#d9d9d9">PROC.</td>
+			<td width="240" style="width: 240px; background-color: #d9d9d9; font-weight: bold;" bgcolor="#d9d9d9">GRAD/NOME</td>
+			<td width="90" style="width: 90px; background-color: #d9d9d9; font-weight: bold;" bgcolor="#d9d9d9">TIPO</td>
+			<td width="90" style="width: 90px; background-color: #d9d9d9; font-weight: bold;" bgcolor="#d9d9d9">INÍCIO</td>
+			<td width="90" style="width: 90px; background-color: #d9d9d9; font-weight: bold;" bgcolor="#d9d9d9">TÉRMINO</td>
 		</tr>
-
-		<!-- OUTROS DESTINOS -->
+		{{if .Pernoite.Punidos}}
+		{{range .Pernoite.Punidos}}
 		<tr>
-			<td colspan="4" bgcolor="#d9d9d9" style="background-color: #d9d9d9; border: 1px solid black; padding: 4px;">EM OUTROS DESTINOS</td>
-			<td style="border: 1px solid black; padding: 4px; background-color: #d9d9d9;" bgcolor="#d9d9d9">SOMA</td>
+			<td width="90" style="width: 90px;">{{.Proc}}</td>
+			<td width="240" style="width: 240px;">{{.Nome}}</td>
+			<td width="90" style="width: 90px;">{{.Tipo}}</td>
+			<td width="90" style="width: 90px;">{{.Inicio}}</td>
+			<td width="90" style="width: 90px;">{{.Termino}}</td>
+		</tr>
+		{{end}}
+		{{else}}
+		<tr>
+			<td width="90" style="width: 90px;">-</td><td width="240" style="width: 240px;">-</td><td width="90" style="width: 90px;">-</td><td width="90" style="width: 90px;">-</td><td width="90" style="width: 90px;">-</td>
+		</tr>
+		{{end}}
+		<tr>
+			<td colspan="4" width="510" style="width: 510px; background-color: #d9d9d9; font-weight: bold;" bgcolor="#d9d9d9">EM OUTROS DESTINOS</td>
+			<td width="90" style="width: 90px; background-color: #d9d9d9; font-weight: bold;" bgcolor="#d9d9d9">SOMA</td>
 		</tr>
 		{{range .Pernoite.OutrosDestinos}}
 		<tr>
-			<td style="border: 1px solid black; padding: 4px;">{{.Grad}}</td>
-			<td colspan="3" class="text-left" style="border: 1px solid black; padding: 4px 4px 4px 10px;">{{.Text}}</td>
-			<td style="border: 1px solid black; padding: 4px;">{{.Soma}}</td>
+			<td width="90" style="width: 90px;">{{.Grad}}</td>
+			<td colspan="3" width="420" style="width: 420px; padding-left: 10px;" class="text-left">{{.Text}}</td>
+			<td width="90" style="width: 90px;">{{.Soma}}</td>
 		</tr>
 		{{end}}
 		<tr>
-			<td colspan="4" class="text-left" style="border: 1px solid black; padding: 4px 4px 4px 10px;">TOTAL EM OUTROS DESTINOS: {{.Pernoite.TotalOutrosDestinosExtenso}}</td>
-			<td style="border: 1px solid black; padding: 4px;">{{.Pernoite.TotalOutrosDestinosNum}}</td>
+			<td colspan="4" width="510" style="width: 510px; padding-left: 10px; font-weight: bold;" class="text-left">TOTAL EM OUTROS DESTINOS: {{.Pernoite.TotalOutrosDestinosExtenso}}</td>
+			<td width="90" style="width: 90px; font-weight: bold;">{{.Pernoite.TotalOutrosDestinosNum}}</td>
 		</tr>
 		<tr>
-			<td colspan="4" class="text-left" style="border: 1px solid black; padding: 4px 4px 4px 10px;">TOTAL GERAL: {{.Pernoite.TotalGeralExtenso}}</td>
-			<td style="border: 1px solid black; padding: 4px;">{{.Pernoite.TotalGeralNum}}</td>
+			<td colspan="4" width="510" style="width: 510px; padding-left: 10px; font-weight: bold;" class="text-left">TOTAL GERAL: {{.Pernoite.TotalGeralExtenso}}</td>
+			<td width="90" style="width: 90px; font-weight: bold;">{{.Pernoite.TotalGeralNum}}</td>
 		</tr>
-
-		<!-- Footer via colspan nested table -->
 		<tr>
-			<td colspan="5" style="border: 1px solid black; padding: 0;">
-				<table style="width: 100%; border-collapse: collapse; text-align: center; font-weight: bold; font-size: 11px;">
-					<tr>
-						<td style="width: 25%; border-right: 1px solid black; vertical-align: top; padding: 5px; height: 80px;">
-							<div style="text-align: left; text-decoration: underline;">Visto:</div>
-							<br><br><br>
-							<div style="text-decoration: underline;">Sgt Dia</div>
-						</td>
-						<td style="width: 50%; vertical-align: top; padding: 5px;">
-							Quartel em Natal/RN, {{.DataExtenso}}.<br><br>
-							<span style="font-size: 13px;">HEBERT CARLOS VIANA - 2º Sgt</span><br>
-							<span style="text-decoration: underline; font-weight: normal;">Sargenteante da Bateria De Comando</span>
-						</td>
-						<td style="width: 25%; border-left: 1px solid black; vertical-align: top; padding: 5px;">
-							<div style="text-align: left; text-decoration: underline;">Visto:</div>
-							<br><br><br>
-							<div style="text-decoration: underline;">Of Dia</div>
-						</td>
-					</tr>
-					<tr>
-						<td colspan="3" style="border-top: 1px solid black; padding: 5px 5px 15px 5px; text-align: left; font-weight: normal; line-height: 1.5;">
-							Alteração: Com alteração ( &nbsp;&nbsp; ) Sem alteração ( &nbsp;&nbsp; )
-							<br>
-							__________________________________________________________________________________________________________________________________<br>
-							__________________________________________________________________________________________________________________________________<br>
-							__________________________________________________________________________________________________________________________________<br>
-						</td>
-					</tr>
-				</table>
+			<td colspan="1" width="90" style="width: 90px; vertical-align: top; padding: 5px; height: 80px; font-weight: bold;">
+				<div style="text-align: left; text-decoration: underline;">Visto:</div>
+				<br><br><br>
+				<div style="text-decoration: underline;">Sgt Dia</div>
+			</td>
+			<td colspan="3" width="420" style="width: 420px; vertical-align: top; padding: 5px; font-weight: bold;">
+				Quartel em Natal/RN, {{.DataExtenso}}.<br><br>
+				<span style="font-size: 13px;">HEBERT CARLOS VIANA - 2º Sgt</span><br>
+				<span style="text-decoration: underline; font-weight: normal;">Sargenteante da Bateria De Comando</span>
+			</td>
+			<td colspan="1" width="90" style="width: 90px; vertical-align: top; padding: 5px; font-weight: bold;">
+				<div style="text-align: left; text-decoration: underline;">Visto:</div>
+				<br><br><br>
+				<div style="text-decoration: underline;">Of Dia</div>
+			</td>
+		</tr>
+		<tr>
+			<td colspan="5" style="padding: 5px 5px 15px 5px; text-align: left; font-weight: normal; line-height: 1.5;">
+				Alteração: Com alteração ( &nbsp;&nbsp; ) Sem alteração ( &nbsp;&nbsp; )
+				<br>
+				__________________________________________________________________________________________________________________________________<br>
+				__________________________________________________________________________________________________________________________________<br>
+				__________________________________________________________________________________________________________________________________<br>
 			</td>
 		</tr>
 	</table>
@@ -331,6 +363,7 @@ type PernoiteData struct {
 	TotalOutrosDestinosExtenso string
 	TotalGeralNum              string
 	TotalGeralExtenso          string
+	Punidos                    []Punido
 }
 
 type DocDataDay struct {
@@ -474,29 +507,13 @@ func GenerateHTMLReport(items []HistoricoEscala, cmtName string, unidade string,
 				continue
 			}
 
-			// Determine if it's EP or EV
-			isEP := false
-			isEV := false
+			// Funções sorteadas do aditamento são de Soldados EV
+			postoGrad := "SD EV"
 			for _, personID := range list {
-				if p, ok := state.Pessoas[personID]; ok {
-					if p.IsEP {
-						isEP = true
-					} else {
-						isEV = true
-					}
-				} else {
-					// If not found in state, assume EP if it's not a number
-					isEV = true // fallback
+				if p, ok := state.Pessoas[personID]; ok && p.PostoGrad == "Soldado EP" {
+					postoGrad = "SD EP"
+					break
 				}
-			}
-
-			postoGrad := "-"
-			if isEP && !isEV {
-				postoGrad = "SD EP"
-			} else if isEV && !isEP {
-				postoGrad = "SD EV"
-			} else if isEP && isEV {
-				postoGrad = "SD EP/EV"
 			}
 
 			// Format names for EVs
@@ -691,6 +708,7 @@ func GenerateHTMLReport(items []HistoricoEscala, cmtName string, unidade string,
 			TotalOutrosDestinosExtenso: numeroPorExtenso(totalOd),
 			TotalGeralNum: fmt.Sprintf("%02d", totalEf + totalOd),
 			TotalGeralExtenso: numeroPorExtenso(totalEf + totalOd),
+			Punidos: item.Punidos,
 		}
 
 		atividadeDay := item.AtividadeTipo
@@ -713,7 +731,8 @@ func GenerateHTMLReport(items []HistoricoEscala, cmtName string, unidade string,
 
 	var brasaoHTML template.HTML
 	if isWord {
-		brasaoHTML = template.HTML(`<img src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/bf/Coat_of_arms_of_Brazil.svg/200px-Coat_of_arms_of_Brazil.svg.png" style="width:60px;height:auto;display:block;margin:0 auto 5px auto;" />`)
+		b64 := base64.StdEncoding.EncodeToString(brasaoBytes)
+		brasaoHTML = template.HTML(fmt.Sprintf(`<div align="center"><img src="data:image/png;base64,%s" width="60" height="60" /></div>`, b64))
 	} else {
 		brasaoHTML = template.HTML(BrasaoSVG)
 	}
@@ -725,14 +744,26 @@ func GenerateHTMLReport(items []HistoricoEscala, cmtName string, unidade string,
 		atividade = "TFM"
 	}
 
+	aditNr := firstItem.AditamentoNr
+	if aditNr <= 0 {
+		aditNr = 1
+	}
+	bolNr := firstItem.BoletimInternoNr
+	if bolNr <= 0 && firstItem.BoletimNr != "" {
+		fmt.Sscanf(firstItem.BoletimNr, "%d", &bolNr)
+	}
+	if bolNr <= 0 {
+		bolNr = 1
+	}
+
 	data := DocData{
 		DataExtenso:      dataExtenso,
 		DataExtensoUpper: strings.ToUpper(dataExtenso),
 		DiaSemana:        diaSemana,
 		DiaSemanaUpper:   strings.ToUpper(diaSemana),
 		DiaSemanaTitle:   toTitleCaseDia(diaSemana),
-		AditamentoNr:     firstItem.AditamentoNr,
-		BoletimInternoNr: firstItem.BoletimInternoNr,
+		AditamentoNr:     aditNr,
+		BoletimInternoNr: bolNr,
 		Year:             year,
 		CmtName:          cmtName,
 		UnidadeName:      unidade,
